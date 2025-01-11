@@ -16,7 +16,10 @@ class ConnectionManager: NSObject, ObservableObject {
     private var serviceBrowser: MCNearbyServiceBrowser?
     private var retryCount = 0
     private let maxRetries = 3
-    private let imageCompressionQuality: CGFloat = 0.5
+    private let imageCompressionQuality: CGFloat = 0.3
+    private var lastFrameTime: TimeInterval = 0
+    private let minFrameInterval: TimeInterval = 1.0/30.0
+    private let imageScale: CGFloat = 0.5
     
     enum ConnectionState {
         case connected
@@ -72,7 +75,7 @@ class ConnectionManager: NSObject, ObservableObject {
     func sendData(_ data: Data, to peers: [MCPeerID]) {
         guard let session = session else { return }
         do {
-            try session.send(data, toPeers: peers, with: .reliable)
+            try session.send(data, toPeers: peers, with: .unreliable)
         } catch {
             print("Error sending data: \(error.localizedDescription)")
         }
@@ -108,18 +111,30 @@ class ConnectionManager: NSObject, ObservableObject {
     }
     
     func sendVideoFrame(_ sampleBuffer: CMSampleBuffer) {
+        let currentTime = CACurrentMediaTime()
+        guard currentTime - lastFrameTime >= minFrameInterval else { return }
+        
         guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
               connectionState == .connected,
               !connectedPeers.isEmpty else { return }
         
         let ciImage = CIImage(cvPixelBuffer: imageBuffer)
         let context = CIContext()
-        guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
+        
+        // Scale down the image
+        let scale = CGAffineTransform(scaleX: imageScale, y: imageScale)
+        let scaledImage = ciImage.transformed(by: scale)
+        
+        guard let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) else { return }
         
         let image = UIImage(cgImage: cgImage)
         guard let imageData = image.jpegData(compressionQuality: imageCompressionQuality) else { return }
         
+        // Only send if data size is reasonable
+        guard imageData.count < 100_000 else { return } // Skip if frame is too large
+        
         sendData(imageData, to: connectedPeers)
+        lastFrameTime = currentTime
     }
 }
 

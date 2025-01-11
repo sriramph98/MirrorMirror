@@ -20,51 +20,67 @@ struct BroadcastView: View {
                 // Camera Preview
                 CameraPreviewView(previewLayer: cameraManager.previewLayer)
                     .edgesIgnoringSafeArea(.all)
+                    .gesture(
+                        MagnificationGesture()
+                            .onChanged { value in
+                                let delta = value / (isZooming ? zoomScale : 1.0)
+                                isZooming = true
+                                zoomScale = value
+                                cameraManager.setZoom(cameraManager.zoomFactor * delta)
+                            }
+                            .onEnded { _ in
+                                isZooming = false
+                            }
+                    )
                 
-                // Zoom Controls
+                // Camera Controls Overlay
                 VStack {
+                    // Top Controls
+                    HStack {
+                        connectionStatusView
+                            .padding(.leading)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            cameraManager.switchCamera()
+                        }) {
+                            Image(systemName: "camera.rotate.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(Color.black.opacity(0.5))
+                                .clipShape(Circle())
+                        }
+                        .padding(.trailing)
+                    }
+                    .padding(.top, geometry.safeAreaInsets.top)
+                    
                     Spacer()
                     
-                    HStack {
-                        Button(action: {
-                            adjustZoom(-1)
-                        }) {
-                            Image(systemName: "minus.magnifyingglass")
-                                .font(.title)
+                    // Bottom Controls
+                    VStack {
+                        // Zoom indicator
+                        if cameraManager.zoomFactor > 1.0 {
+                            Text(String(format: "%.1fx", cameraManager.zoomFactor))
                                 .foregroundColor(.white)
-                                .padding()
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
                                 .background(Color.black.opacity(0.5))
-                                .clipShape(Circle())
+                                .clipShape(Capsule())
+                                .padding(.bottom)
                         }
                         
-                        Spacer()
-                        
-                        Text(String(format: "%.1fx", cameraManager.zoomFactor))
+                        // Camera mode indicator
+                        Text(cameraManager.currentCamera == .front ? "Front Camera" : "Back Camera")
                             .foregroundColor(.white)
-                            .padding(.horizontal)
+                            .font(.system(size: 14, weight: .medium))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
                             .background(Color.black.opacity(0.5))
                             .clipShape(Capsule())
-                        
-                        Spacer()
-                        
-                        Button(action: {
-                            adjustZoom(1)
-                        }) {
-                            Image(systemName: "plus.magnifyingglass")
-                                .font(.title)
-                                .foregroundColor(.white)
-                                .padding()
-                                .background(Color.black.opacity(0.5))
-                                .clipShape(Circle())
-                        }
                     }
-                    .padding()
-                }
-                
-                // Connection Status
-                VStack {
-                    connectionStatusView
-                    Spacer()
+                    .padding(.bottom, geometry.safeAreaInsets.bottom + 20)
                 }
             }
         }
@@ -91,11 +107,12 @@ struct BroadcastView: View {
             
             Text(connectionStatusText)
                 .foregroundColor(.white)
+                .font(.system(size: 14, weight: .medium))
         }
-        .padding()
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
         .background(Color.black.opacity(0.5))
         .clipShape(Capsule())
-        .padding(.top)
     }
     
     private var connectionStatusColor: Color {
@@ -123,11 +140,6 @@ struct BroadcastView: View {
             return "Connection failed"
         }
     }
-    
-    private func adjustZoom(_ direction: CGFloat) {
-        let newZoom = cameraManager.zoomFactor + (direction * 0.5)
-        cameraManager.setZoom(newZoom)
-    }
 }
 
 struct CameraPreviewView: UIViewRepresentable {
@@ -135,9 +147,11 @@ struct CameraPreviewView: UIViewRepresentable {
     
     func makeUIView(context: Context) -> UIView {
         let view = UIView()
+        view.backgroundColor = .black
         
         if let previewLayer = previewLayer {
             previewLayer.frame = view.bounds
+            previewLayer.videoGravity = .resizeAspectFill
             view.layer.addSublayer(previewLayer)
         }
         
@@ -146,7 +160,9 @@ struct CameraPreviewView: UIViewRepresentable {
     
     func updateUIView(_ uiView: UIView, context: Context) {
         if let previewLayer = previewLayer {
-            previewLayer.frame = uiView.bounds
+            DispatchQueue.main.async {
+                previewLayer.frame = uiView.bounds
+            }
         }
     }
 } 
