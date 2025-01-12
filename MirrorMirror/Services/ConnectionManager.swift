@@ -8,6 +8,27 @@ class ConnectionManager: NSObject, ObservableObject {
     @Published var connectionState: ConnectionState = .disconnected
     @Published var selectedPeer: MCPeerID?
     @Published var receivedImage: UIImage?
+    @Published var isStreamEnabled: Bool = true {
+        didSet {
+            if oldValue != isStreamEnabled {
+                // Notify stream state change to peers
+                if !connectedPeers.isEmpty {
+                    let streamMessage: [String: String] = [
+                        "type": "stream_state",
+                        "enabled": isStreamEnabled ? "true" : "false"
+                    ]
+                    if let streamData = try? JSONSerialization.data(withJSONObject: streamMessage) {
+                        sendData(streamData, to: connectedPeers)
+                    }
+                }
+                // Clear received image if stream is disabled
+                if !isStreamEnabled {
+                    receivedImage = nil
+                }
+            }
+        }
+    }
+    @Published var isRemoteStreamEnabled: Bool = true
     @Published var streamQuality: StreamQuality = .performance {
         didSet {
             if oldValue != streamQuality {
@@ -16,8 +37,13 @@ class ConnectionManager: NSObject, ObservableObject {
                 lastFrameTime = 0
                 // Notify quality change to peers
                 if !connectedPeers.isEmpty {
-                    let qualityData = ["quality": streamQuality.rawValue].description.data(using: .utf8)!
-                    sendData(qualityData, to: connectedPeers)
+                    let qualityMessage: [String: String] = [
+                        "type": "quality_change",
+                        "mode": streamQuality.rawValue
+                    ]
+                    if let qualityData = try? JSONSerialization.data(withJSONObject: qualityMessage) {
+                        sendData(qualityData, to: connectedPeers)
+                    }
                 }
             }
         }
@@ -127,6 +153,9 @@ class ConnectionManager: NSObject, ObservableObject {
     }
     
     func sendVideoFrame(_ sampleBuffer: CMSampleBuffer) {
+        // Don't send frames if streaming is disabled
+        guard isStreamEnabled else { return }
+        
         let currentTime = CACurrentMediaTime()
         guard currentTime - lastFrameTime >= minFrameInterval else { return }
         
@@ -160,16 +189,26 @@ class ConnectionManager: NSObject, ObservableObject {
         
         let image = UIImage(cgImage: cgImage, scale: 1.0, orientation: imageOrientation)
         
-        // Use higher compression quality for quality mode
-        let compressionQuality = streamQuality == .quality ? 0.9 : 0.7
-        guard let imageData = image.jpegData(compressionQuality: compressionQuality) else { return }
+        // Use lossless PNG for quality mode, minimal compression for others
+        let imageData: Data?
+        switch streamQuality {
+        case .quality:
+            imageData = image.pngData()  // Lossless PNG for 4K
+        case .balanced:
+            imageData = image.jpegData(compressionQuality: 1.0)  // No compression JPEG for 1080p
+        case .performance:
+            imageData = image.jpegData(compressionQuality: 0.9)  // Slight compression for 720p
+        }
+        
+        guard let imageData = imageData else { return }
         
         // Create metadata dictionary with original dimensions
         let metadata: [String: Any] = [
             "orientation": imageOrientation.rawValue,
             "timestamp": currentTime,
             "width": extent.width,
-            "height": extent.height
+            "height": extent.height,
+            "quality": streamQuality.rawValue
         ]
         
         // Combine metadata and image data
@@ -183,8 +222,20 @@ class ConnectionManager: NSObject, ObservableObject {
         }
         
         // Adjust max size based on quality mode
-        let maxSize = streamQuality == .quality ? 500_000 : 200_000
-        guard combinedData.count < maxSize else { return }
+        let maxSize: Int
+        switch streamQuality {
+        case .quality:
+            maxSize = 8_000_000  // 8MB for 4K PNG
+        case .balanced:
+            maxSize = 4_000_000  // 4MB for 1080p
+        case .performance:
+            maxSize = 1_000_000  // 1MB for 720p
+        }
+        
+        guard combinedData.count < maxSize else {
+            print("Frame dropped: size \(combinedData.count) exceeds limit \(maxSize)")
+            return
+        }
         
         sendData(combinedData, to: connectedPeers)
         lastFrameTime = currentTime
@@ -231,22 +282,41 @@ extension ConnectionManager: MCSessionDelegate {
     }
     
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
-        // Try to parse quality change message
-        if let message = String(data: data, encoding: .utf8),
-           message.contains("quality") {
-            if message.contains("Quality Mode") {
-                DispatchQueue.main.async {
-                    self.streamQuality = .quality
+        // Try to parse control messages first
+        if let message = try? JSONSerialization.jsonObject(with: data) as? [String: String] {
+            switch message["type"] {
+            case "stream_state":
+                if let enabled = message["enabled"] {
+                    DispatchQueue.main.async {
+                        self.isRemoteStreamEnabled = (enabled == "true")
+                        // Clear received image if stream is disabled
+                        if !self.isRemoteStreamEnabled {
+                            self.receivedImage = nil
+                        }
+                    }
                 }
-            } else if message.contains("Performance Mode") {
-                DispatchQueue.main.async {
-                    self.streamQuality = .performance
+                return
+                
+            case "quality_change":
+                if let qualityMode = message["mode"] {
+                    DispatchQueue.main.async {
+                        if qualityMode.contains("Performance") {
+                            self.streamQuality = .performance
+                        } else if qualityMode.contains("Balanced") {
+                            self.streamQuality = .balanced
+                        } else if qualityMode.contains("Quality") {
+                            self.streamQuality = .quality
+                        }
+                    }
                 }
+                return
+                
+            default:
+                break
             }
-            return
         }
         
-        // Extract metadata and image data
+        // Handle image data
         guard data.count >= MemoryLayout<UInt32>.size else { return }
         
         let metadataSizeData = data.prefix(MemoryLayout<UInt32>.size)

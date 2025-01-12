@@ -42,6 +42,19 @@ struct BroadcastView: View {
                         
                         Spacer()
                         
+                        // Stream Toggle Button
+                        Button(action: {
+                            connectionManager.isStreamEnabled.toggle()
+                        }) {
+                            Image(systemName: connectionManager.isStreamEnabled ? "video.fill" : "video.slash.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(connectionManager.isStreamEnabled ? .white : .red)
+                                .padding()
+                                .background(Color.black.opacity(0.5))
+                                .clipShape(Circle())
+                        }
+                        .padding(.trailing, 8)
+                        
                         Button(action: {
                             cameraManager.switchCamera()
                         }) {

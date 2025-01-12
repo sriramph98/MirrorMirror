@@ -34,7 +34,17 @@ struct ReceiverView: View {
         ZStack {
             Color.black.edgesIgnoringSafeArea(.all)
             
-            if let receivedImage = connectionManager.receivedImage {
+            if !connectionManager.isRemoteStreamEnabled {
+                VStack(spacing: 20) {
+                    Image(systemName: "video.slash.fill")
+                        .font(.system(size: 50))
+                        .foregroundColor(.red)
+                    
+                    Text("Stream Paused by Broadcaster")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                }
+            } else if let receivedImage = connectionManager.receivedImage {
                 GeometryReader { geometry in
                     Image(uiImage: receivedImage)
                         .resizable()
@@ -129,9 +139,9 @@ struct ReceiverView: View {
                     VStack(spacing: 8) {
                         // Quality mode indicator
                         HStack {
-                            Image(systemName: connectionManager.streamQuality == .quality ? "4k.tv.fill" : "speedometer")
+                            Image(systemName: qualityModeIcon)
                                 .foregroundColor(.white)
-                            Text(connectionManager.streamQuality.rawValue)
+                            Text("\(connectionManager.streamQuality.rawValue)")
                                 .foregroundColor(.white)
                                 .font(.system(size: 14, weight: .medium))
                         }
@@ -141,14 +151,22 @@ struct ReceiverView: View {
                         .clipShape(Capsule())
                         
                         // Quality selection buttons
-                        HStack(spacing: 16) {
+                        VStack(spacing: 12) {
+                            // Performance Mode Button
                             Button(action: {
                                 connectionManager.streamQuality = .performance
                             }) {
                                 HStack {
                                     Image(systemName: "speedometer")
-                                    Text("Performance")
+                                    VStack(alignment: .leading) {
+                                        Text("Performance")
+                                            .fontWeight(.medium)
+                                        Text("720p • 60 FPS")
+                                            .font(.caption)
+                                            .opacity(0.8)
+                                    }
                                 }
+                                .frame(maxWidth: .infinity)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
                                 .background(connectionManager.streamQuality == .performance ? Color.blue : Color.black.opacity(0.5))
@@ -156,13 +174,43 @@ struct ReceiverView: View {
                                 .clipShape(Capsule())
                             }
                             
+                            // Balanced Mode Button
+                            Button(action: {
+                                connectionManager.streamQuality = .balanced
+                            }) {
+                                HStack {
+                                    Image(systemName: "dial.medium")
+                                    VStack(alignment: .leading) {
+                                        Text("Balanced")
+                                            .fontWeight(.medium)
+                                        Text("1080p • 60 FPS")
+                                            .font(.caption)
+                                            .opacity(0.8)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(connectionManager.streamQuality == .balanced ? Color.blue : Color.black.opacity(0.5))
+                                .foregroundColor(.white)
+                                .clipShape(Capsule())
+                            }
+                            
+                            // Quality Mode Button
                             Button(action: {
                                 connectionManager.streamQuality = .quality
                             }) {
                                 HStack {
                                     Image(systemName: "4k.tv.fill")
-                                    Text("Quality")
+                                    VStack(alignment: .leading) {
+                                        Text("Quality")
+                                            .fontWeight(.medium)
+                                        Text("4K • 30 FPS")
+                                            .font(.caption)
+                                            .opacity(0.8)
+                                    }
                                 }
+                                .frame(maxWidth: .infinity)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
                                 .background(connectionManager.streamQuality == .quality ? Color.blue : Color.black.opacity(0.5))
@@ -170,6 +218,7 @@ struct ReceiverView: View {
                                 .clipShape(Capsule())
                             }
                         }
+                        .padding(.horizontal)
                     }
                     .padding(.bottom, 30)
                 }
@@ -222,5 +271,16 @@ struct ReceiverView: View {
     
     private func connectToPeer(_ peer: MCPeerID) {
         connectionManager.invitePeer(peer)
+    }
+    
+    private var qualityModeIcon: String {
+        switch connectionManager.streamQuality {
+        case .performance:
+            return "speedometer"
+        case .balanced:
+            return "dial.medium"
+        case .quality:
+            return "4k.tv.fill"
+        }
     }
 } 
