@@ -137,27 +137,56 @@ class ConnectionManager: NSObject, ObservableObject {
         let ciImage = CIImage(cvPixelBuffer: imageBuffer)
         let context = CIContext()
         
-        // Scale down the image based on quality mode
-        let scale = CGAffineTransform(scaleX: streamQuality.imageScale, y: streamQuality.imageScale)
-        let scaledImage = ciImage.transformed(by: scale)
+        // Get the original dimensions
+        let extent = ciImage.extent
         
-        // Resize image to match quality mode resolution
-        let targetSize = CGSize(width: streamQuality.resolution.width, height: streamQuality.resolution.height)
-        let extent = scaledImage.extent
-        let scaleX = targetSize.width / extent.width
-        let scaleY = targetSize.height / extent.height
-        let scaledCIImage = scaledImage.transformed(by: CGAffineTransform(scaleX: scaleX, y: scaleY))
+        // Create CGImage at original resolution
+        guard let cgImage = context.createCGImage(ciImage, from: extent) else { return }
         
-        guard let cgImage = context.createCGImage(scaledCIImage, from: scaledCIImage.extent) else { return }
+        // Get device orientation
+        let deviceOrientation = UIDevice.current.orientation
+        let imageOrientation: UIImage.Orientation
         
-        let image = UIImage(cgImage: cgImage)
-        guard let imageData = image.jpegData(compressionQuality: streamQuality.compressionQuality) else { return }
+        switch deviceOrientation {
+        case .landscapeLeft:
+            imageOrientation = .left
+        case .landscapeRight:
+            imageOrientation = .right
+        case .portraitUpsideDown:
+            imageOrientation = .down
+        default:
+            imageOrientation = .up
+        }
         
-        // Only send if data size is reasonable (adjust based on quality mode)
-        let maxSize = streamQuality == .quality ? 200_000 : 100_000
-        guard imageData.count < maxSize else { return }
+        let image = UIImage(cgImage: cgImage, scale: 1.0, orientation: imageOrientation)
         
-        sendData(imageData, to: connectedPeers)
+        // Use higher compression quality for quality mode
+        let compressionQuality = streamQuality == .quality ? 0.9 : 0.7
+        guard let imageData = image.jpegData(compressionQuality: compressionQuality) else { return }
+        
+        // Create metadata dictionary with original dimensions
+        let metadata: [String: Any] = [
+            "orientation": imageOrientation.rawValue,
+            "timestamp": currentTime,
+            "width": extent.width,
+            "height": extent.height
+        ]
+        
+        // Combine metadata and image data
+        var combinedData = Data()
+        if let metadataData = try? JSONSerialization.data(withJSONObject: metadata) {
+            var metadataSize = UInt32(metadataData.count)
+            let sizeData = Data(bytes: &metadataSize, count: MemoryLayout<UInt32>.size)
+            combinedData.append(sizeData)
+            combinedData.append(metadataData)
+            combinedData.append(imageData)
+        }
+        
+        // Adjust max size based on quality mode
+        let maxSize = streamQuality == .quality ? 500_000 : 200_000
+        guard combinedData.count < maxSize else { return }
+        
+        sendData(combinedData, to: connectedPeers)
         lastFrameTime = currentTime
     }
 }
@@ -217,10 +246,29 @@ extension ConnectionManager: MCSessionDelegate {
             return
         }
         
-        // Handle image data
-        if let image = UIImage(data: data) {
-            DispatchQueue.main.async {
-                self.receivedImage = image
+        // Extract metadata and image data
+        guard data.count >= MemoryLayout<UInt32>.size else { return }
+        
+        let metadataSizeData = data.prefix(MemoryLayout<UInt32>.size)
+        var metadataSize: UInt32 = 0
+        _ = withUnsafeMutableBytes(of: &metadataSize) { metadataSizeData.copyBytes(to: $0) }
+        
+        guard data.count >= MemoryLayout<UInt32>.size + Int(metadataSize) else { return }
+        
+        let metadataData = data.subdata(in: MemoryLayout<UInt32>.size..<(MemoryLayout<UInt32>.size + Int(metadataSize)))
+        let imageData = data.subdata(in: (MemoryLayout<UInt32>.size + Int(metadataSize))..<data.count)
+        
+        if let metadata = try? JSONSerialization.jsonObject(with: metadataData) as? [String: Any],
+           let orientationRawValue = metadata["orientation"] as? Int,
+           let orientation = UIImage.Orientation(rawValue: orientationRawValue),
+           let image = UIImage(data: imageData) {
+            
+            // Create a new image with the correct orientation
+            if let cgImage = image.cgImage {
+                let orientedImage = UIImage(cgImage: cgImage, scale: image.scale, orientation: orientation)
+                DispatchQueue.main.async {
+                    self.receivedImage = orientedImage
+                }
             }
         }
     }

@@ -7,6 +7,11 @@ class CameraManager: NSObject, ObservableObject {
     @Published var zoomFactor: CGFloat = 1.0
     @Published var currentCamera: AVCaptureDevice.Position = .back
     @Published var availableCameras: [AVCaptureDevice.Position] = []
+    @Published var currentOrientation: UIDeviceOrientation = .portrait {
+        didSet {
+            updatePreviewLayerOrientation()
+        }
+    }
     
     private var captureSession: AVCaptureSession?
     private var videoOutput: AVCaptureVideoDataOutput?
@@ -14,8 +19,54 @@ class CameraManager: NSObject, ObservableObject {
     
     override init() {
         super.init()
+        setupOrientationObserver()
         checkAvailableCameras()
         setupCaptureSession()
+    }
+    
+    private func setupOrientationObserver() {
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(orientationChanged),
+            name: UIDevice.orientationDidChangeNotification,
+            object: nil)
+        UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+    }
+    
+    deinit {
+        UIDevice.current.endGeneratingDeviceOrientationNotifications()
+    }
+    
+    @objc private func orientationChanged() {
+        currentOrientation = UIDevice.current.orientation
+    }
+    
+    private func updatePreviewLayerOrientation() {
+        guard let connection = previewLayer?.connection else { return }
+        
+        let orientation = currentOrientation
+        guard orientation.isValidInterfaceOrientation else { return }
+        
+        let videoOrientation: AVCaptureVideoOrientation
+        switch orientation {
+        case .landscapeLeft:
+            videoOrientation = .landscapeRight
+        case .landscapeRight:
+            videoOrientation = .landscapeLeft
+        case .portraitUpsideDown:
+            videoOrientation = .portraitUpsideDown
+        default:
+            videoOrientation = .portrait
+        }
+        
+        if connection.isVideoOrientationSupported {
+            connection.videoOrientation = videoOrientation
+        }
+        
+        // Update video output orientation
+        if let videoConnection = videoOutput?.connection(with: .video),
+           videoConnection.isVideoOrientationSupported {
+            videoConnection.videoOrientation = videoOrientation
+        }
     }
     
     private func checkAvailableCameras() {
@@ -65,6 +116,12 @@ class CameraManager: NSObject, ObservableObject {
             if session.canAddOutput(videoOutput) {
                 session.addOutput(videoOutput)
                 self.videoOutput = videoOutput
+                
+                // Set initial orientation
+                if let connection = videoOutput.connection(with: .video),
+                   connection.isVideoOrientationSupported {
+                    connection.videoOrientation = .portrait
+                }
             }
             
             // Configure frame rate
@@ -75,10 +132,9 @@ class CameraManager: NSObject, ObservableObject {
             let supportedRanges = device.activeFormat.videoSupportedFrameRateRanges
             if let range = supportedRanges.first(where: { $0.maxFrameDuration <= desiredFrameRate && $0.minFrameDuration <= desiredFrameRate }) {
                 device.activeVideoMinFrameDuration = range.minFrameDuration
-                device.activeVideoMaxFrameDuration = range.minFrameDuration // Set both to min for consistent frame rate
+                device.activeVideoMaxFrameDuration = range.minFrameDuration
             }
             
-            // Configure initial zoom
             device.videoZoomFactor = zoomFactor
             device.unlockForConfiguration()
             

@@ -1,20 +1,56 @@
 import SwiftUI
 import MultipeerConnectivity
 
+// Orientation manager to handle video orientation
+class OrientationManager: ObservableObject {
+    @Published var currentOrientation: UIDeviceOrientation = .portrait
+    
+    init() {
+        // Start monitoring device orientation
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(orientationChanged),
+            name: UIDevice.orientationDidChangeNotification,
+            object: nil)
+        UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+    }
+    
+    deinit {
+        UIDevice.current.endGeneratingDeviceOrientationNotifications()
+    }
+    
+    @objc private func orientationChanged() {
+        self.currentOrientation = UIDevice.current.orientation
+    }
+}
+
 struct ReceiverView: View {
     @StateObject private var connectionManager = ConnectionManager()
+    @StateObject private var orientationManager = OrientationManager()
     @State private var showConnectionError = false
     @State private var showQualityPicker = false
+    @State private var imageOrientation: UIImage.Orientation = .up
     
     var body: some View {
         ZStack {
             Color.black.edgesIgnoringSafeArea(.all)
             
             if let receivedImage = connectionManager.receivedImage {
-                Image(uiImage: receivedImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .edgesIgnoringSafeArea(.all)
+                GeometryReader { geometry in
+                    Image(uiImage: receivedImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(
+                            maxWidth: min(geometry.size.width, CGFloat(receivedImage.size.width)),
+                            maxHeight: min(geometry.size.height, CGFloat(receivedImage.size.height))
+                        )
+                        .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+                        .rotation3DEffect(
+                            orientationRotationAngle,
+                            axis: orientationRotationAxis
+                        )
+                        .background(Color.black)
+                        .edgesIgnoringSafeArea(.all)
+                }
             }
             
             if connectionManager.availablePeers.isEmpty {
@@ -137,6 +173,10 @@ struct ReceiverView: View {
                     }
                     .padding(.bottom, 30)
                 }
+                .rotation3DEffect(
+                    orientationRotationAngle,
+                    axis: orientationRotationAxis
+                )
             }
         }
         .alert("Connection Error", isPresented: $showConnectionError) {
@@ -156,6 +196,27 @@ struct ReceiverView: View {
         }
         .onDisappear {
             connectionManager.stopBrowsing()
+        }
+    }
+    
+    // Helper computed properties for orientation handling
+    private var orientationRotationAngle: Angle {
+        switch orientationManager.currentOrientation {
+        case .landscapeLeft: return .degrees(90)
+        case .landscapeRight: return .degrees(-90)
+        case .portraitUpsideDown: return .degrees(180)
+        default: return .degrees(0)
+        }
+    }
+    
+    private var orientationRotationAxis: (CGFloat, CGFloat, CGFloat) {
+        switch orientationManager.currentOrientation {
+        case .landscapeLeft, .landscapeRight:
+            return (0, 0, 1) // Rotate around Z axis
+        case .portraitUpsideDown:
+            return (0, 0, 1) // Rotate around Z axis
+        default:
+            return (0, 0, 1)
         }
     }
     
