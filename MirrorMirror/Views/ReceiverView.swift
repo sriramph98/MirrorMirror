@@ -73,40 +73,69 @@ struct ReceiverView: View {
             
             if connectionManager.connectionState == .connected {
                 VStack {
+                    // Top status bar
                     HStack {
-                        // Connection status
+                        Circle()
+                            .fill(Color.green)
+                            .frame(width: 10, height: 10)
+                        Text("Connected to \(connectionManager.connectedPeers.first?.displayName ?? "")")
+                            .foregroundColor(.white)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.black.opacity(0.5))
+                    .clipShape(Capsule())
+                    .padding(.top)
+                    
+                    Spacer()
+                    
+                    // Bottom quality control
+                    VStack(spacing: 8) {
+                        // Quality mode indicator
                         HStack {
-                            Circle()
-                                .fill(Color.green)
-                                .frame(width: 10, height: 10)
-                            Text("Connected to \(connectionManager.connectedPeers.first?.displayName ?? "")")
+                            Image(systemName: connectionManager.streamQuality == .quality ? "4k.tv.fill" : "speedometer")
                                 .foregroundColor(.white)
+                            Text(connectionManager.streamQuality.rawValue)
+                                .foregroundColor(.white)
+                                .font(.system(size: 14, weight: .medium))
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
                         .background(Color.black.opacity(0.5))
                         .clipShape(Capsule())
                         
-                        Spacer()
-                        
-                        // Quality mode button
-                        Button(action: {
-                            showQualityPicker.toggle()
-                        }) {
-                            HStack {
-                                Image(systemName: connectionManager.streamQuality == .quality ? "4k.tv.fill" : "speedometer")
-                                Text(connectionManager.streamQuality.rawValue)
+                        // Quality selection buttons
+                        HStack(spacing: 16) {
+                            Button(action: {
+                                connectionManager.streamQuality = .performance
+                            }) {
+                                HStack {
+                                    Image(systemName: "speedometer")
+                                    Text("Performance")
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(connectionManager.streamQuality == .performance ? Color.blue : Color.black.opacity(0.5))
+                                .foregroundColor(.white)
+                                .clipShape(Capsule())
                             }
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.black.opacity(0.5))
-                            .clipShape(Capsule())
+                            
+                            Button(action: {
+                                connectionManager.streamQuality = .quality
+                            }) {
+                                HStack {
+                                    Image(systemName: "4k.tv.fill")
+                                    Text("Quality")
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(connectionManager.streamQuality == .quality ? Color.blue : Color.black.opacity(0.5))
+                                .foregroundColor(.white)
+                                .clipShape(Capsule())
+                            }
                         }
                     }
-                    .padding()
-                    
-                    Spacer()
+                    .padding(.bottom, 30)
                 }
             }
         }
@@ -116,17 +145,6 @@ struct ReceiverView: View {
             }
         } message: {
             Text("Failed to connect to the selected device. Please try again.")
-        }
-        .actionSheet(isPresented: $showQualityPicker) {
-            ActionSheet(
-                title: Text("Stream Quality"),
-                message: Text("Select streaming quality mode"),
-                buttons: StreamQuality.allCases.map { quality in
-                    .default(Text(quality.rawValue)) {
-                        connectionManager.streamQuality = quality
-                    }
-                } + [.cancel()]
-            )
         }
         .onChange(of: connectionManager.connectionState) { newState in
             if newState == .disconnected && connectionManager.selectedPeer != nil {

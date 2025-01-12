@@ -8,7 +8,20 @@ class ConnectionManager: NSObject, ObservableObject {
     @Published var connectionState: ConnectionState = .disconnected
     @Published var selectedPeer: MCPeerID?
     @Published var receivedImage: UIImage?
-    @Published var streamQuality: StreamQuality = .performance
+    @Published var streamQuality: StreamQuality = .performance {
+        didSet {
+            if oldValue != streamQuality {
+                print("Quality changed to: \(streamQuality.rawValue)")
+                // Reset the frame time to allow immediate next frame
+                lastFrameTime = 0
+                // Notify quality change to peers
+                if !connectedPeers.isEmpty {
+                    let qualityData = ["quality": streamQuality.rawValue].description.data(using: .utf8)!
+                    sendData(qualityData, to: connectedPeers)
+                }
+            }
+        }
+    }
     
     private let serviceType = "mirror-mirror"
     private let myPeerId: MCPeerID
@@ -18,7 +31,9 @@ class ConnectionManager: NSObject, ObservableObject {
     private var retryCount = 0
     private let maxRetries = 3
     private var lastFrameTime: TimeInterval = 0
-    private let minFrameInterval: TimeInterval = 1.0/60.0 // 60 fps
+    private var minFrameInterval: TimeInterval {
+        return 1.0 / TimeInterval(streamQuality.frameRate)
+    }
     
     enum ConnectionState {
         case connected
@@ -74,7 +89,9 @@ class ConnectionManager: NSObject, ObservableObject {
     func sendData(_ data: Data, to peers: [MCPeerID]) {
         guard let session = session else { return }
         do {
-            try session.send(data, toPeers: peers, with: .unreliable)
+            // Use reliable for quality mode, unreliable for performance mode
+            let dataMode: MCSessionSendDataMode = streamQuality == .quality ? .reliable : .unreliable
+            try session.send(data, toPeers: peers, with: dataMode)
         } catch {
             print("Error sending data: \(error.localizedDescription)")
         }
@@ -124,7 +141,14 @@ class ConnectionManager: NSObject, ObservableObject {
         let scale = CGAffineTransform(scaleX: streamQuality.imageScale, y: streamQuality.imageScale)
         let scaledImage = ciImage.transformed(by: scale)
         
-        guard let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) else { return }
+        // Resize image to match quality mode resolution
+        let targetSize = CGSize(width: streamQuality.resolution.width, height: streamQuality.resolution.height)
+        let extent = scaledImage.extent
+        let scaleX = targetSize.width / extent.width
+        let scaleY = targetSize.height / extent.height
+        let scaledCIImage = scaledImage.transformed(by: CGAffineTransform(scaleX: scaleX, y: scaleY))
+        
+        guard let cgImage = context.createCGImage(scaledCIImage, from: scaledCIImage.extent) else { return }
         
         let image = UIImage(cgImage: cgImage)
         guard let imageData = image.jpegData(compressionQuality: streamQuality.compressionQuality) else { return }
@@ -178,6 +202,22 @@ extension ConnectionManager: MCSessionDelegate {
     }
     
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
+        // Try to parse quality change message
+        if let message = String(data: data, encoding: .utf8),
+           message.contains("quality") {
+            if message.contains("Quality Mode") {
+                DispatchQueue.main.async {
+                    self.streamQuality = .quality
+                }
+            } else if message.contains("Performance Mode") {
+                DispatchQueue.main.async {
+                    self.streamQuality = .performance
+                }
+            }
+            return
+        }
+        
+        // Handle image data
         if let image = UIImage(data: data) {
             DispatchQueue.main.async {
                 self.receivedImage = image
