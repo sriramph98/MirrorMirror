@@ -4,6 +4,7 @@ import MultipeerConnectivity
 struct ReceiverView: View {
     @StateObject private var connectionManager = ConnectionManager()
     @State private var showConnectionError = false
+    @State private var showQualityPicker = false
     
     var body: some View {
         ZStack {
@@ -73,19 +74,40 @@ struct ReceiverView: View {
             if connectionManager.connectionState == .connected {
                 VStack {
                     HStack {
-                        Circle()
-                            .fill(Color.green)
-                            .frame(width: 10, height: 10)
-                        Text("Connected to \(connectionManager.connectedPeers.first?.displayName ?? "")")
+                        // Connection status
+                        HStack {
+                            Circle()
+                                .fill(Color.green)
+                                .frame(width: 10, height: 10)
+                            Text("Connected to \(connectionManager.connectedPeers.first?.displayName ?? "")")
+                                .foregroundColor(.white)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.black.opacity(0.5))
+                        .clipShape(Capsule())
+                        
+                        Spacer()
+                        
+                        // Quality mode button
+                        Button(action: {
+                            showQualityPicker.toggle()
+                        }) {
+                            HStack {
+                                Image(systemName: connectionManager.streamQuality == .quality ? "4k.tv.fill" : "speedometer")
+                                Text(connectionManager.streamQuality.rawValue)
+                            }
                             .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.black.opacity(0.5))
+                            .clipShape(Capsule())
+                        }
                     }
                     .padding()
-                    .background(Color.black.opacity(0.5))
-                    .clipShape(Capsule())
                     
                     Spacer()
                 }
-                .padding(.top)
             }
         }
         .alert("Connection Error", isPresented: $showConnectionError) {
@@ -94,6 +116,17 @@ struct ReceiverView: View {
             }
         } message: {
             Text("Failed to connect to the selected device. Please try again.")
+        }
+        .actionSheet(isPresented: $showQualityPicker) {
+            ActionSheet(
+                title: Text("Stream Quality"),
+                message: Text("Select streaming quality mode"),
+                buttons: StreamQuality.allCases.map { quality in
+                    .default(Text(quality.rawValue)) {
+                        connectionManager.streamQuality = quality
+                    }
+                } + [.cancel()]
+            )
         }
         .onChange(of: connectionManager.connectionState) { newState in
             if newState == .disconnected && connectionManager.selectedPeer != nil {

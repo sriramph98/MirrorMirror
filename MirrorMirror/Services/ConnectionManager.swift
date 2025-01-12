@@ -8,6 +8,7 @@ class ConnectionManager: NSObject, ObservableObject {
     @Published var connectionState: ConnectionState = .disconnected
     @Published var selectedPeer: MCPeerID?
     @Published var receivedImage: UIImage?
+    @Published var streamQuality: StreamQuality = .performance
     
     private let serviceType = "mirror-mirror"
     private let myPeerId: MCPeerID
@@ -16,10 +17,8 @@ class ConnectionManager: NSObject, ObservableObject {
     private var serviceBrowser: MCNearbyServiceBrowser?
     private var retryCount = 0
     private let maxRetries = 3
-    private let imageCompressionQuality: CGFloat = 0.3
     private var lastFrameTime: TimeInterval = 0
-    private let minFrameInterval: TimeInterval = 1.0/30.0
-    private let imageScale: CGFloat = 0.5
+    private let minFrameInterval: TimeInterval = 1.0/60.0 // 60 fps
     
     enum ConnectionState {
         case connected
@@ -121,17 +120,18 @@ class ConnectionManager: NSObject, ObservableObject {
         let ciImage = CIImage(cvPixelBuffer: imageBuffer)
         let context = CIContext()
         
-        // Scale down the image
-        let scale = CGAffineTransform(scaleX: imageScale, y: imageScale)
+        // Scale down the image based on quality mode
+        let scale = CGAffineTransform(scaleX: streamQuality.imageScale, y: streamQuality.imageScale)
         let scaledImage = ciImage.transformed(by: scale)
         
         guard let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) else { return }
         
         let image = UIImage(cgImage: cgImage)
-        guard let imageData = image.jpegData(compressionQuality: imageCompressionQuality) else { return }
+        guard let imageData = image.jpegData(compressionQuality: streamQuality.compressionQuality) else { return }
         
-        // Only send if data size is reasonable
-        guard imageData.count < 100_000 else { return } // Skip if frame is too large
+        // Only send if data size is reasonable (adjust based on quality mode)
+        let maxSize = streamQuality == .quality ? 200_000 : 100_000
+        guard imageData.count < maxSize else { return }
         
         sendData(imageData, to: connectedPeers)
         lastFrameTime = currentTime
