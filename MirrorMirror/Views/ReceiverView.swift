@@ -29,6 +29,7 @@ struct ReceiverView: View {
     @State private var showConnectionError = false
     @State private var showQualityPicker = false
     @State private var imageOrientation: UIImage.Orientation = .up
+    @State private var showCaptureConfirmation = false
     
     var body: some View {
         ZStack {
@@ -63,60 +64,6 @@ struct ReceiverView: View {
                 }
             }
             
-            if connectionManager.availablePeers.isEmpty {
-                VStack(spacing: 20) {
-                    Image(systemName: "antenna.radiowaves.left.and.right")
-                        .font(.system(size: 50))
-                        .foregroundColor(.white)
-                    
-                    Text("Searching for broadcasters...")
-                        .font(.title2)
-                        .foregroundColor(.white)
-                }
-            } else if connectionManager.connectionState != .connected {
-                ScrollView {
-                    VStack(spacing: 16) {
-                        Text("Available Broadcasters")
-                            .font(.title2)
-                            .foregroundColor(.white)
-                            .padding(.top)
-                        
-                        ForEach(connectionManager.availablePeers, id: \.self) { peer in
-                            Button(action: {
-                                connectionManager.selectedPeer = peer
-                                connectToPeer(peer)
-                            }) {
-                                HStack {
-                                    Image(systemName: "video.fill")
-                                        .foregroundColor(.white)
-                                    
-                                    Text(peer.displayName)
-                                        .foregroundColor(.white)
-                                    
-                                    Spacer()
-                                    
-                                    if connectionManager.connectedPeers.contains(peer) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundColor(.green)
-                                    } else if connectionManager.selectedPeer == peer && connectionManager.connectionState == .connecting {
-                                        ProgressView()
-                                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    } else {
-                                        Image(systemName: "chevron.right")
-                                            .foregroundColor(.white.opacity(0.5))
-                                    }
-                                }
-                                .padding()
-                                .background(Color.blue.opacity(0.3))
-                                .cornerRadius(10)
-                            }
-                            .disabled(connectionManager.connectionState == .connecting)
-                        }
-                    }
-                    .padding()
-                }
-            }
-            
             if connectionManager.connectionState == .connected {
                 VStack {
                     // Top status bar
@@ -135,7 +82,31 @@ struct ReceiverView: View {
                     
                     Spacer()
                     
-                    // Bottom quality control
+                    // Capture Button
+                    Button(action: {
+                        connectionManager.capturePhoto { success in
+                            if success {
+                                showCaptureConfirmation = true
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                    showCaptureConfirmation = false
+                                }
+                            }
+                        }
+                    }) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: 70, height: 70)
+                            
+                            Circle()
+                                .stroke(Color.white, lineWidth: 4)
+                                .frame(width: 80, height: 80)
+                        }
+                        .shadow(radius: 5)
+                    }
+                    .padding(.bottom, 20)
+                    
+                    // Quality controls
                     VStack(spacing: 8) {
                         // Quality mode indicator
                         HStack {
@@ -226,6 +197,139 @@ struct ReceiverView: View {
                     orientationRotationAngle,
                     axis: orientationRotationAxis
                 )
+            }
+            
+            if connectionManager.connectionState != .connected {
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Wireless Section
+                        VStack(alignment: .leading, spacing: 16) {
+                            HStack {
+                                Image(systemName: "antenna.radiowaves.left.and.right")
+                                    .foregroundColor(.blue)
+                                Text("Wireless Connections")
+                                    .font(.title2)
+                                    .foregroundColor(.white)
+                            }
+                            .padding(.top)
+                            
+                            if connectionManager.availablePeers.isEmpty {
+                                HStack {
+                                    Spacer()
+                                    Text("Searching for wireless broadcasters...")
+                                        .foregroundColor(.gray)
+                                    Spacer()
+                                }
+                                .padding()
+                                .background(Color.black.opacity(0.3))
+                                .cornerRadius(10)
+                            } else {
+                                ForEach(connectionManager.availablePeers, id: \.self) { peer in
+                                    Button(action: {
+                                        connectionManager.selectedPeer = peer
+                                        connectToPeer(peer)
+                                    }) {
+                                        HStack {
+                                            Image(systemName: "iphone")
+                                                .foregroundColor(.white)
+                                            
+                                            Text(peer.displayName)
+                                                .foregroundColor(.white)
+                                            
+                                            Spacer()
+                                            
+                                            if connectionManager.connectedPeers.contains(peer) {
+                                                Image(systemName: "checkmark.circle.fill")
+                                                    .foregroundColor(.green)
+                                            } else if connectionManager.selectedPeer == peer && connectionManager.connectionState == .connecting {
+                                                ProgressView()
+                                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                            } else {
+                                                Image(systemName: "chevron.right")
+                                                    .foregroundColor(.white.opacity(0.5))
+                                            }
+                                        }
+                                        .padding()
+                                        .background(Color.blue.opacity(0.3))
+                                        .cornerRadius(10)
+                                    }
+                                    .disabled(connectionManager.connectionState == .connecting)
+                                }
+                            }
+                        }
+                        
+                        // USB Section
+                        VStack(alignment: .leading, spacing: 16) {
+                            HStack {
+                                Image(systemName: "cable.connector")
+                                    .foregroundColor(.green)
+                                Text("USB Connections")
+                                    .font(.title2)
+                                    .foregroundColor(.white)
+                            }
+                            
+                            if connectionManager.usbDevices.isEmpty {
+                                HStack {
+                                    Spacer()
+                                    Text("No USB devices connected")
+                                        .foregroundColor(.gray)
+                                    Spacer()
+                                }
+                                .padding()
+                                .background(Color.black.opacity(0.3))
+                                .cornerRadius(10)
+                            } else {
+                                ForEach(connectionManager.usbDevices) { device in
+                                    Button(action: {
+                                        connectionManager.connectToUSBDevice(device)
+                                    }) {
+                                        HStack {
+                                            Image(systemName: "video")
+                                                .foregroundColor(.white)
+                                            
+                                            VStack(alignment: .leading) {
+                                                Text(device.name)
+                                                    .foregroundColor(.white)
+                                                Text(device.type)
+                                                    .font(.caption)
+                                                    .foregroundColor(.gray)
+                                            }
+                                            
+                                            Spacer()
+                                            
+                                            if connectionManager.selectedUSBDevice?.id == device.id {
+                                                Image(systemName: "checkmark.circle.fill")
+                                                    .foregroundColor(.green)
+                                            } else {
+                                                Image(systemName: "chevron.right")
+                                                    .foregroundColor(.white.opacity(0.5))
+                                            }
+                                        }
+                                        .padding()
+                                        .background(Color.green.opacity(0.3))
+                                        .cornerRadius(10)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .padding()
+                }
+            }
+            
+            // Capture confirmation overlay
+            if showCaptureConfirmation {
+                VStack {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.green)
+                    Text("Photo Captured")
+                        .foregroundColor(.white)
+                        .font(.headline)
+                }
+                .padding()
+                .background(Color.black.opacity(0.7))
+                .cornerRadius(15)
             }
         }
         .alert("Connection Error", isPresented: $showConnectionError) {

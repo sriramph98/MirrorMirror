@@ -2,8 +2,8 @@ import SwiftUI
 import AVFoundation
 
 struct BroadcastView: View {
-    @StateObject private var cameraManager = CameraManager()
     @StateObject private var connectionManager = ConnectionManager()
+    @StateObject private var cameraManager: CameraManager
     @State private var isZooming = false
     @State private var zoomScale: CGFloat = 1.0
     private let videoCaptureDelegate: VideoCaptureDelegate
@@ -11,6 +11,7 @@ struct BroadcastView: View {
     init() {
         let connectionManager = ConnectionManager()
         self._connectionManager = StateObject(wrappedValue: connectionManager)
+        self._cameraManager = StateObject(wrappedValue: CameraManager(connectionManager: connectionManager))
         self.videoCaptureDelegate = VideoCaptureDelegate(connectionManager: connectionManager)
     }
     

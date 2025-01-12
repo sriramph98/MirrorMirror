@@ -16,8 +16,10 @@ class CameraManager: NSObject, ObservableObject {
     private var captureSession: AVCaptureSession?
     private var videoOutput: AVCaptureVideoDataOutput?
     var videoDataDelegate: AVCaptureVideoDataOutputSampleBufferDelegate?
+    private let connectionManager: ConnectionManager
     
-    override init() {
+    init(connectionManager: ConnectionManager) {
+        self.connectionManager = connectionManager
         super.init()
         setupOrientationObserver()
         checkAvailableCameras()
@@ -87,7 +89,16 @@ class CameraManager: NSObject, ObservableObject {
     
     private func setupCaptureSession() {
         let session = AVCaptureSession()
-        session.sessionPreset = .medium
+        
+        // Set session preset based on quality mode
+        switch connectionManager.streamQuality {
+        case .quality:
+            session.sessionPreset = .hd4K3840x2160
+        case .balanced:
+            session.sessionPreset = .hd1920x1080
+        case .performance:
+            session.sessionPreset = .hd1280x720
+        }
         
         guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: currentCamera) else { return }
         
@@ -107,10 +118,9 @@ class CameraManager: NSObject, ObservableObject {
             let videoOutput = AVCaptureVideoDataOutput()
             videoOutput.setSampleBufferDelegate(videoDataDelegate, queue: DispatchQueue(label: "videoQueue", qos: .userInteractive))
             videoOutput.alwaysDiscardsLateVideoFrames = true
+            
             videoOutput.videoSettings = [
-                kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
-                kCVPixelBufferWidthKey as String: 720,
-                kCVPixelBufferHeightKey as String: 1280
+                kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
             ]
             
             if session.canAddOutput(videoOutput) {
@@ -127,8 +137,9 @@ class CameraManager: NSObject, ObservableObject {
             // Configure frame rate
             try device.lockForConfiguration()
             
-            // Find the closest frame rate range to 30 fps
-            let desiredFrameRate = CMTime(value: 1, timescale: 30)
+            // Set frame rate based on quality mode
+            let frameRate = connectionManager.streamQuality == .quality ? 30 : 60
+            let desiredFrameRate = CMTime(value: 1, timescale: CMTimeScale(frameRate))
             let supportedRanges = device.activeFormat.videoSupportedFrameRateRanges
             if let range = supportedRanges.first(where: { $0.maxFrameDuration <= desiredFrameRate && $0.minFrameDuration <= desiredFrameRate }) {
                 device.activeVideoMinFrameDuration = range.minFrameDuration

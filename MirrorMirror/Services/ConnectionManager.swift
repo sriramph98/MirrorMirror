@@ -2,11 +2,13 @@ import MultipeerConnectivity
 import Combine
 import AVFoundation
 
-class ConnectionManager: NSObject, ObservableObject {
+class ConnectionManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCapturePhotoCaptureDelegate {
     @Published var connectedPeers: [MCPeerID] = []
     @Published var availablePeers: [MCPeerID] = []
+    @Published var usbDevices: [USBDevice] = []
     @Published var connectionState: ConnectionState = .disconnected
     @Published var selectedPeer: MCPeerID?
+    @Published var selectedUSBDevice: USBDevice?
     @Published var receivedImage: UIImage?
     @Published var isStreamEnabled: Bool = true {
         didSet {
@@ -48,17 +50,24 @@ class ConnectionManager: NSObject, ObservableObject {
             }
         }
     }
+    @Published var connectionType: ConnectionType = .wireless
     
     private let serviceType = "mirror-mirror"
     private let myPeerId: MCPeerID
     private var session: MCSession?
     private var serviceAdvertiser: MCNearbyServiceAdvertiser?
     private var serviceBrowser: MCNearbyServiceBrowser?
+    private var usbConnectionObserver: NSObjectProtocol?
     private var retryCount = 0
     private let maxRetries = 3
     private var lastFrameTime: TimeInterval = 0
     private var minFrameInterval: TimeInterval {
         return 1.0 / TimeInterval(streamQuality.frameRate)
+    }
+    
+    enum ConnectionType {
+        case wireless
+        case usb
     }
     
     enum ConnectionState {
@@ -68,10 +77,29 @@ class ConnectionManager: NSObject, ObservableObject {
         case failed
     }
     
+    struct USBDevice: Identifiable, Hashable {
+        let id: String
+        let name: String
+        let type: String
+        
+        static func == (lhs: USBDevice, rhs: USBDevice) -> Bool {
+            return lhs.id == rhs.id
+        }
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
+        }
+    }
+    
+    private var captureSession: AVCaptureSession?
+    private var photoOutput: AVCapturePhotoOutput?
+    private var photoCaptureCompletion: ((Bool) -> Void)?
+    
     override init() {
         myPeerId = MCPeerID(displayName: UIDevice.current.name)
         super.init()
         setupSession()
+        setupUSBConnectionObserver()
     }
     
     private func setupSession() {
@@ -90,6 +118,240 @@ class ConnectionManager: NSObject, ObservableObject {
         
         serviceBrowser = MCNearbyServiceBrowser(peer: myPeerId, serviceType: serviceType)
         serviceBrowser?.delegate = self
+    }
+    
+    private func setupUSBConnectionObserver() {
+        // Request camera access first
+        AVCaptureDevice.requestAccess(for: .video) { granted in
+            if granted {
+                print("Camera access granted")
+                // Start monitoring for device connections
+                NotificationCenter.default.addObserver(
+                    forName: .AVCaptureDeviceWasConnected,
+                    object: nil,
+                    queue: .main
+                ) { [weak self] notification in
+                    if let device = notification.object as? AVCaptureDevice {
+                        self?.handleDeviceConnection(device)
+                    }
+                }
+                
+                NotificationCenter.default.addObserver(
+                    forName: .AVCaptureDeviceWasDisconnected,
+                    object: nil,
+                    queue: .main
+                ) { [weak self] notification in
+                    if let device = notification.object as? AVCaptureDevice {
+                        self?.removeUSBDevice(device)
+                    }
+                }
+                
+                // Initial scan for connected devices
+                DispatchQueue.main.async { [weak self] in
+                    self?.scanForUSBDevices()
+                }
+            } else {
+                print("Camera access denied")
+            }
+        }
+    }
+    
+    private func scanForUSBDevices() {
+        print("Scanning for external devices...")
+        
+        // First check for Continuity Camera devices
+        if #available(iOS 16.0, *) {
+            print("Checking Continuity Camera availability...")
+            let screenCaptureSession = AVCaptureDevice.DiscoverySession(
+                deviceTypes: [.continuityCamera],
+                mediaType: .video,
+                position: .unspecified
+            )
+            screenCaptureSession.devices.forEach { device in
+                print("Found Continuity device: \(device.localizedName), modelID: \(device.modelID)")
+                handleContinuityDevice(device)
+            }
+        }
+        
+        // Then check for other external devices
+        let discoverySession = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.external],
+            mediaType: .video,
+            position: .unspecified
+        )
+        
+        discoverySession.devices.forEach { device in
+            handleDeviceConnection(device)
+        }
+    }
+    
+    private func handleContinuityDevice(_ device: AVCaptureDevice) {
+        print("Setting up Continuity device: \(device.localizedName)")
+        
+        do {
+            // Try to lock device for configuration
+            try device.lockForConfiguration()
+            
+            // Enable Continuity Camera features if available
+            if device.isContinuityCamera {
+                print("Device supports Continuity Camera")
+            }
+            
+            device.unlockForConfiguration()
+            
+            // Add the device to our list
+            addUSBDevice(device)
+            
+        } catch {
+            print("Failed to configure Continuity device: \(error.localizedDescription)")
+        }
+    }
+    
+    private func handleDeviceConnection(_ device: AVCaptureDevice) {
+        print("Found device: \(device.localizedName), type: \(device.deviceType), modelID: \(device.modelID)")
+        
+        // Only add external or continuity devices, skip built-in cameras
+        if device.deviceType == .continuityCamera || 
+           (device.deviceType == .external && !device.modelID.contains("built-in")) {
+            addUSBDevice(device)
+        }
+    }
+    
+    private func addUSBDevice(_ device: AVCaptureDevice) {
+        DispatchQueue.main.async {
+            let deviceType: String
+            let deviceName: String
+            
+            switch device.deviceType {
+            case .continuityCamera:
+                deviceType = "Continuity Camera"
+                deviceName = device.localizedName
+            case .external:
+                deviceType = "USB Camera"
+                deviceName = device.localizedName
+            default:
+                deviceType = "External Device"
+                deviceName = device.localizedName
+            }
+            
+            let usbDevice = USBDevice(
+                id: device.uniqueID,
+                name: deviceName,
+                type: deviceType
+            )
+            
+            if !self.usbDevices.contains(usbDevice) {
+                print("Adding external device: \(deviceName) (\(deviceType))")
+                self.usbDevices.append(usbDevice)
+            }
+        }
+    }
+    
+    private func removeUSBDevice(_ device: AVCaptureDevice) {
+        DispatchQueue.main.async {
+            self.usbDevices.removeAll { $0.id == device.uniqueID }
+            if self.selectedUSBDevice?.id == device.uniqueID {
+                self.connectionState = .disconnected
+                self.selectedUSBDevice = nil
+            }
+        }
+    }
+    
+    func connectToUSBDevice(_ device: USBDevice) {
+        print("Connecting to device: \(device.name) (\(device.type))")
+        connectionType = .usb
+        selectedUSBDevice = device
+        connectionState = .connected
+        
+        // Start the capture session for the selected device
+        setupCaptureSession(for: device)
+    }
+    
+    private func setupCaptureSession(for device: USBDevice) {
+        // Clean up any existing session
+        captureSession?.stopRunning()
+        captureSession = nil
+        
+        let discoverySession = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.continuityCamera, .external],
+            mediaType: .video,
+            position: .unspecified
+        )
+        
+        guard let captureDevice = discoverySession.devices.first(where: { $0.uniqueID == device.id }) else {
+            print("Failed to find capture device: \(device.id)")
+            return
+        }
+        
+        do {
+            print("Setting up capture session for device: \(device.name)")
+            let session = AVCaptureSession()
+            session.beginConfiguration()
+            
+            // Configure for high quality
+            if device.type == "Continuity Camera" {
+                session.sessionPreset = .photo
+                print("Using photo preset for Continuity Camera")
+            }
+            
+            // Try to lock device for configuration
+            try captureDevice.lockForConfiguration()
+            
+            // Enable Continuity Camera features if available
+            if captureDevice.isContinuityCamera {
+                print("Enabling Continuity Camera features")
+            }
+            
+            captureDevice.unlockForConfiguration()
+            
+            let input = try AVCaptureDeviceInput(device: captureDevice)
+            if session.canAddInput(input) {
+                session.addInput(input)
+                print("Added input for device: \(device.name)")
+            }
+            
+            // Add video output
+            let videoOutput = AVCaptureVideoDataOutput()
+            videoOutput.videoSettings = [
+                kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+            ]
+            videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
+            
+            if session.canAddOutput(videoOutput) {
+                session.addOutput(videoOutput)
+                print("Added video output")
+            }
+            
+            // Add photo output
+            let photoOutput = AVCapturePhotoOutput()
+            if session.canAddOutput(photoOutput) {
+                session.addOutput(photoOutput)
+                self.photoOutput = photoOutput
+                print("Added photo output")
+            }
+            
+            session.commitConfiguration()
+            
+            self.captureSession = session
+            
+            DispatchQueue.global(qos: .userInitiated).async {
+                session.startRunning()
+                print("Capture session started for device: \(device.name)")
+            }
+            
+        } catch {
+            print("Failed to setup capture session: \(error.localizedDescription)")
+            disconnectUSBDevice()
+        }
+    }
+    
+    func disconnectUSBDevice() {
+        captureSession?.stopRunning()
+        captureSession = nil
+        connectionType = .wireless
+        selectedUSBDevice = nil
+        connectionState = .disconnected
+        receivedImage = nil
     }
     
     func startAdvertising() {
@@ -189,15 +451,13 @@ class ConnectionManager: NSObject, ObservableObject {
         
         let image = UIImage(cgImage: cgImage, scale: 1.0, orientation: imageOrientation)
         
-        // Use lossless PNG for quality mode, minimal compression for others
+        // Use lossless PNG for quality mode, high quality JPEG for others
         let imageData: Data?
         switch streamQuality {
         case .quality:
             imageData = image.pngData()  // Lossless PNG for 4K
-        case .balanced:
-            imageData = image.jpegData(compressionQuality: 1.0)  // No compression JPEG for 1080p
-        case .performance:
-            imageData = image.jpegData(compressionQuality: 0.9)  // Slight compression for 720p
+        case .balanced, .performance:
+            imageData = image.jpegData(compressionQuality: streamQuality.compressionQuality)  // High quality JPEG
         }
         
         guard let imageData = imageData else { return }
@@ -239,6 +499,114 @@ class ConnectionManager: NSObject, ObservableObject {
         
         sendData(combinedData, to: connectedPeers)
         lastFrameTime = currentTime
+    }
+    
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        guard connectionType == .usb else { return }
+        
+        guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        
+        let ciImage = CIImage(cvPixelBuffer: imageBuffer)
+        let context = CIContext()
+        
+        // Get the original dimensions
+        let extent = ciImage.extent
+        
+        // Create CGImage at original resolution
+        guard let cgImage = context.createCGImage(ciImage, from: extent) else { return }
+        
+        // Get device orientation
+        let deviceOrientation = UIDevice.current.orientation
+        let imageOrientation: UIImage.Orientation
+        
+        switch deviceOrientation {
+        case .landscapeLeft:
+            imageOrientation = .left
+        case .landscapeRight:
+            imageOrientation = .right
+        case .portraitUpsideDown:
+            imageOrientation = .down
+        default:
+            imageOrientation = .up
+        }
+        
+        let image = UIImage(cgImage: cgImage, scale: 1.0, orientation: imageOrientation)
+        
+        DispatchQueue.main.async {
+            self.receivedImage = image
+        }
+    }
+    
+    func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        // Handle dropped frames if needed
+        print("Dropped frame")
+    }
+    
+    func capturePhoto(completion: @escaping (Bool) -> Void) {
+        switch connectionType {
+        case .usb:
+            capturePhotoFromUSB(completion: completion)
+        case .wireless:
+            capturePhotoFromWireless(completion: completion)
+        }
+    }
+    
+    private func capturePhotoFromUSB(completion: @escaping (Bool) -> Void) {
+        guard let photoOutput = photoOutput else {
+            print("Photo output not available for USB")
+            completion(false)
+            return
+        }
+        
+        self.photoCaptureCompletion = completion
+        
+        let settings = AVCapturePhotoSettings()
+        settings.flashMode = .off
+        
+        print("Capturing photo from USB device...")
+        photoOutput.capturePhoto(with: settings, delegate: self)
+    }
+    
+    private func capturePhotoFromWireless(completion: @escaping (Bool) -> Void) {
+        guard let currentImage = receivedImage else {
+            print("No image available to capture")
+            completion(false)
+            return
+        }
+        
+        print("Capturing current frame from wireless stream...")
+        UIImageWriteToSavedPhotosAlbum(currentImage, self, #selector(image(_:didFinishSavingWithError:contextInfo:)), nil)
+        self.photoCaptureCompletion = completion
+    }
+    
+    // AVCapturePhotoCaptureDelegate methods
+    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+        if let error = error {
+            print("Error capturing photo: \(error.localizedDescription)")
+            photoCaptureCompletion?(false)
+            return
+        }
+        
+        guard let imageData = photo.fileDataRepresentation(),
+              let image = UIImage(data: imageData) else {
+            print("Failed to create image from photo data")
+            photoCaptureCompletion?(false)
+            return
+        }
+        
+        print("Photo captured successfully, saving to library...")
+        UIImageWriteToSavedPhotosAlbum(image, self, #selector(image(_:didFinishSavingWithError:contextInfo:)), nil)
+    }
+    
+    @objc func image(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
+        if let error = error {
+            print("Error saving photo: \(error.localizedDescription)")
+            photoCaptureCompletion?(false)
+        } else {
+            print("Photo saved successfully")
+            photoCaptureCompletion?(true)
+        }
+        photoCaptureCompletion = nil
     }
 }
 

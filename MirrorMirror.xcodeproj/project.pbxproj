@@ -415,12 +415,17 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirror/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "MirrorMirror needs to use camera to stream.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mirror Mirror needs local network.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "MirrorMirror needs access to your microphone to stream audio.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror needs access to save captured photos to your library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "MirrorMirror needs access to save captured photos to your library.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -446,12 +451,17 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirror/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "MirrorMirror needs to use camera to stream.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mirror Mirror needs local network.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "MirrorMirror needs access to your microphone to stream audio.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror needs access to save captured photos to your library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "MirrorMirror needs access to save captured photos to your library.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
