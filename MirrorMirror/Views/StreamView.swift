@@ -5,6 +5,7 @@ struct StreamView: View {
     @StateObject private var orientationManager = OrientationManager()
     @ObservedObject var connectionManager: ConnectionManager
     @State private var showCaptureConfirmation = false
+    @State private var showQualityMenu = false
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -15,7 +16,7 @@ struct StreamView: View {
                 VStack {
                     Spacer()
                     
-                    // Stream Preview with Connection Status
+                    // Stream Preview
                     ZStack {
                         if let receivedImage = connectionManager.receivedImage {
                             Image(uiImage: receivedImage)
@@ -39,7 +40,7 @@ struct StreamView: View {
                                             .font(.system(size: 50))
                                             .foregroundColor(.red)
                                         
-                                        Text("Stream Paused by Broadcaster")
+                                        Text("Stream Paused")
                                             .font(.title2)
                                             .foregroundColor(.white)
                                     }
@@ -53,7 +54,7 @@ struct StreamView: View {
                     HStack {
                         // Quality Button
                         Button(action: {
-                            // Toggle quality settings
+                            showQualityMenu = true
                         }) {
                             Image(systemName: qualityModeIcon)
                                 .font(.system(size: 24))
@@ -63,12 +64,23 @@ struct StreamView: View {
                                 .clipShape(Circle())
                         }
                         .padding(.leading, 24)
+                        .confirmationDialog("Streaming Quality", isPresented: $showQualityMenu, titleVisibility: .visible) {
+                            Button("Performance (720p 60FPS)") {
+                                connectionManager.streamQuality = .performance
+                            }
+                            Button("Quality (1080p 60FPS)") {
+                                connectionManager.streamQuality = .quality
+                            }
+                        } message: {
+                            Text("Select streaming quality")
+                        }
                         
                         Spacer()
                         
                         // Capture Button
                         Button(action: {
-                            connectionManager.capturePhoto { success in
+                            // Capture frame from video stream
+                            connectionManager.captureFrame { success in
                                 if success {
                                     showCaptureConfirmation = true
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -77,19 +89,10 @@ struct StreamView: View {
                                 }
                             }
                         }) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.white.opacity(0.2))
-                                    .frame(width: 72, height: 72)
-                                
-                                Circle()
-                                    .stroke(Color.white, lineWidth: 2)
-                                    .frame(width: 72, height: 72)
-                                
-                                Image(systemName: "camera")
-                                    .font(.system(size: 30))
-                                    .foregroundColor(.white)
-                            }
+                            Image("captureButton")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 72, height: 72)
                         }
                         
                         Spacer()
@@ -197,8 +200,6 @@ struct StreamView: View {
         switch connectionManager.streamQuality {
         case .performance:
             return "speedometer"
-        case .balanced:
-            return "dial.medium"
         case .quality:
             return "4k.tv.fill"
         }

@@ -87,19 +87,10 @@ struct BroadcastView: View {
                         Button(action: {
                             // Capture logic here
                         }) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.red.opacity(0.5))
-                                    .frame(width: 72, height: 72)
-                                
-                                Circle()
-                                    .stroke(Color.red, lineWidth: 2)
-                                    .frame(width: 72, height: 72)
-                                
-                                Circle()
-                                    .fill(Color.white)
-                                    .frame(width: 60, height: 60)
-                            }
+                            Image("captureButton")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 72, height: 72)
                         }
                         
                         Spacer()

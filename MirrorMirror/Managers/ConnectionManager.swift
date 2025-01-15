@@ -3,6 +3,7 @@ import MultipeerConnectivity
 import SwiftUI
 import AVFoundation
 import UIKit
+import Photos
 
 enum ConnectionState {
     case disconnected
@@ -17,6 +18,8 @@ class ConnectionManager: NSObject, ObservableObject {
     private var advertiser: MCNearbyServiceAdvertiser?
     private var browser: MCNearbyServiceBrowser?
     private let myPeerId = MCPeerID(displayName: UIDevice.current.name)
+    private var videoWriter: AVAssetWriter?
+    private var videoInput: AVAssetWriterInput?
     
     @Published var connectionState: ConnectionState = .disconnected
     @Published var isStreamEnabled: Bool = false
@@ -24,7 +27,7 @@ class ConnectionManager: NSObject, ObservableObject {
     @Published var connectedPeers: [MCPeerID] = []
     @Published var availablePeers: [MCPeerID] = []
     @Published var selectedPeer: MCPeerID?
-    @Published var streamQuality: StreamQuality = .balanced
+    @Published var streamQuality: StreamQuality = .quality
     @Published var receivedImage: UIImage?
     
     override init() {
@@ -115,6 +118,43 @@ class ConnectionManager: NSObject, ObservableObject {
             print("Error saving image: \(error.localizedDescription)")
         } else {
             print("Image saved successfully")
+        }
+    }
+    
+    func captureFrame(completion: @escaping (Bool) -> Void) {
+        // Capture current frame from video stream
+        if let currentFrame = receivedImage {
+            if let data = currentFrame.jpegData(compressionQuality: 0.8) {
+                saveImageToPhotos(data) { success in
+                    completion(success)
+                }
+            } else {
+                completion(false)
+            }
+        } else {
+            completion(false)
+        }
+    }
+    
+    private func saveImageToPhotos(_ imageData: Data, completion: @escaping (Bool) -> Void) {
+        guard let image = UIImage(data: imageData) else {
+            completion(false)
+            return
+        }
+        
+        PHPhotoLibrary.requestAuthorization { status in
+            guard status == .authorized else {
+                completion(false)
+                return
+            }
+            
+            PHPhotoLibrary.shared().performChanges({
+                PHAssetCreationRequest.forAsset().addResource(with: .photo, data: imageData, options: nil)
+            }) { success, error in
+                DispatchQueue.main.async {
+                    completion(success)
+                }
+            }
         }
     }
 }

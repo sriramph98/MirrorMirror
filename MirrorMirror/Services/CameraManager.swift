@@ -93,11 +93,9 @@ class CameraManager: NSObject, ObservableObject {
         // Set session preset based on quality mode
         switch connectionManager.streamQuality {
         case .quality:
-            session.sessionPreset = .hd4K3840x2160
-        case .balanced:
-            session.sessionPreset = .hd1920x1080
+            session.sessionPreset = .hd1920x1080 // 1080p
         case .performance:
-            session.sessionPreset = .hd1280x720
+            session.sessionPreset = .hd1280x720  // 720p
         }
         
         guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: currentCamera) else { return }
@@ -137,9 +135,8 @@ class CameraManager: NSObject, ObservableObject {
             // Configure frame rate
             try device.lockForConfiguration()
             
-            // Set frame rate based on quality mode
-            let frameRate = connectionManager.streamQuality == .quality ? 30 : 60
-            let desiredFrameRate = CMTime(value: 1, timescale: CMTimeScale(frameRate))
+            // Set frame rate to 60 FPS for both quality modes
+            let desiredFrameRate = CMTime(value: 1, timescale: 60)
             let supportedRanges = device.activeFormat.videoSupportedFrameRateRanges
             if let range = supportedRanges.first(where: { $0.maxFrameDuration <= desiredFrameRate && $0.minFrameDuration <= desiredFrameRate }) {
                 device.activeVideoMinFrameDuration = range.minFrameDuration
@@ -196,7 +193,7 @@ class CameraManager: NSObject, ObservableObject {
             device.videoZoomFactor = zoomFactor
             
             // Set frame rate
-            let desiredFrameRate = CMTime(value: 1, timescale: 30)
+            let desiredFrameRate = CMTime(value: 1, timescale: 60)
             let supportedRanges = device.activeFormat.videoSupportedFrameRateRanges
             if let range = supportedRanges.first(where: { $0.maxFrameDuration <= desiredFrameRate && $0.minFrameDuration <= desiredFrameRate }) {
                 device.activeVideoMinFrameDuration = range.minFrameDuration
