@@ -56,21 +56,38 @@ struct BroadcastView: View {
                             
                             Spacer()
                             
-                            // Capture Button
-                            Button(action: {
-                                // Action to capture the photo or start/stop video recording
-                                // Implement your capture logic here
-                            }) {
-                                Image(systemName: "circle.fill")
-                                    .font(.system(size: 50))
-                                    .foregroundColor(.red)
-                                    .padding(15)
-                                    .background(Color.white.opacity(0.5))
-                                    .clipShape(Circle())
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color.red, lineWidth: 2)
-                                    )
+                            // Capture and Zoom Level Buttons
+                            VStack {
+                                // Zoom Level Button
+                                Button(action: {
+                                    // Action to adjust zoom level
+                                    // Implement your zoom logic here
+                                }) {
+                                    Text(String(format: "%.1fx", cameraManager.zoomFactor))
+                                        .font(.system(size: 20))
+                                        .foregroundColor(.white)
+                                        .padding(10)
+                                        .background(Color.black.opacity(0.5))
+                                        .clipShape(Capsule())
+                                }
+                                .padding(.bottom, 10) // Add some space above the capture button
+                                
+                                // Capture Button
+                                Button(action: {
+                                    // Action to capture the photo or start/stop video recording
+                                    // Implement your capture logic here
+                                }) {
+                                    Image(systemName: "circle.fill")
+                                        .font(.system(size: 50))
+                                        .foregroundColor(.white)
+                                        .padding(15)
+                                        .background(Color.red.opacity(0.5))
+                                        .clipShape(Circle())
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.red, lineWidth: 2)
+                                        )
+                                }
                             }
                             
                             Spacer()
