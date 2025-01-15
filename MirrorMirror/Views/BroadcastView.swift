@@ -123,6 +123,7 @@ struct BroadcastView: View {
             setupVideoStreaming()
             cameraManager.startSession()
             connectionManager.startAdvertising()
+            startBroadcasting()
         }
         .onDisappear {
             cameraManager.stopSession()
@@ -176,9 +177,14 @@ struct BroadcastView: View {
         }
     }
     
-    func startBroadcasting() {
+    private func startBroadcasting() {
         let deviceInfo = getDeviceInfo()
         broadcastDeviceInfo(deviceInfo)
+        
+        Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
+            let deviceInfo = getDeviceInfo()
+            broadcastDeviceInfo(deviceInfo)
+        }
     }
     
     private func getDeviceInfo() -> DeviceInfo {

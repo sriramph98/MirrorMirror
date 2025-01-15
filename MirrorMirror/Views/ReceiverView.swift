@@ -49,10 +49,10 @@ class ReceiverViewModel: NSObject, ObservableObject {
     }
 }
 
-struct ReceiverView: View {
-    @StateObject private var connectionManager = ConnectionManager()
-    @StateObject private var viewModel = ReceiverViewModel()
-    @State private var showConnectionError = false
+struct DeviceListView: View {
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject var connectionManager: ConnectionManager
+    let onDeviceSelected: (MCPeerID) -> Void
     
     var body: some View {
         NavigationView {
@@ -60,7 +60,6 @@ struct ReceiverView: View {
                 Color.black.edgesIgnoringSafeArea(.all)
                 
                 VStack(spacing: 0) {
-                    // Available Devices Section
                     VStack(alignment: .leading, spacing: 16) {
                         if connectionManager.availablePeers.isEmpty {
                             HStack {
@@ -74,7 +73,10 @@ struct ReceiverView: View {
                             .cornerRadius(10)
                         } else {
                             ForEach(connectionManager.availablePeers, id: \.self) { peer in
-                                NavigationLink(destination: StreamView(connectionManager: connectionManager)) {
+                                Button(action: {
+                                    onDeviceSelected(peer)
+                                    dismiss()
+                                }) {
                                     HStack {
                                         Image(systemName: "iphone")
                                             .foregroundColor(.white)
@@ -99,9 +101,6 @@ struct ReceiverView: View {
                                     .background(Color.blue.opacity(0.3))
                                     .cornerRadius(10)
                                 }
-                                .simultaneousGesture(TapGesture().onEnded {
-                                    connectToPeer(peer)
-                                })
                             }
                         }
                     }
@@ -110,25 +109,51 @@ struct ReceiverView: View {
                     Spacer()
                 }
             }
+            .navigationTitle("Available Devices")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .principal) {
-                    HStack {
-                        Image(systemName: "antenna.radiowaves.left.and.right")
-                            .foregroundColor(.blue)
-                        Text("Available Devices")
-                            .font(.headline)
-                            .foregroundColor(.white)
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
                     }
                 }
             }
-            .alert("Connection Error", isPresented: $showConnectionError) {
-                Button("OK", role: .cancel) {
-                    connectionManager.selectedPeer = nil
-                }
-            } message: {
-                Text("Failed to connect to the selected device. Please try again.")
+        }
+        .onAppear {
+            connectionManager.startBrowsing()
+        }
+        .onDisappear {
+            connectionManager.stopBrowsing()
+        }
+    }
+}
+
+struct ReceiverView: View {
+    @StateObject private var connectionManager = ConnectionManager()
+    @StateObject private var viewModel = ReceiverViewModel()
+    @State private var showConnectionError = false
+    @State private var showDeviceList = true
+    
+    var body: some View {
+        ZStack {
+            Color.black.edgesIgnoringSafeArea(.all)
+            
+            if connectionManager.connectionState == .connected {
+                StreamView(connectionManager: connectionManager)
             }
+        }
+        .sheet(isPresented: $showDeviceList) {
+            DeviceListView(connectionManager: connectionManager) { peer in
+                connectToPeer(peer)
+            }
+        }
+        .alert("Connection Error", isPresented: $showConnectionError) {
+            Button("OK", role: .cancel) {
+                connectionManager.selectedPeer = nil
+                showDeviceList = true
+            }
+        } message: {
+            Text("Failed to connect to the selected device. Please try again.")
         }
         .onAppear {
             connectionManager.startBrowsing()

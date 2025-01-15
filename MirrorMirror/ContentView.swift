@@ -10,7 +10,8 @@ import SwiftUI
 struct ContentView: View {
     @State private var selectedMode: CameraMode?
     @State private var hasCapturedPhotos: Bool = false
-    @State private var devices: [DeviceInfo] = []
+    @State private var showDeviceList = false
+    @StateObject private var connectionManager = ConnectionManager()
     
     var body: some View {
         NavigationStack {
@@ -29,14 +30,18 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
                 VStack(spacing: 16) {
-                    ForEach(CameraMode.allCases, id: \.self) { mode in
-                        NavigationLink(destination: modeView(for: mode)) {
-                            ModeSelectionButton(mode: mode, isSelected: selectedMode == mode)
-                                .frame(maxWidth: .infinity)
-                        }
+                    NavigationLink(destination: BroadcastView()) {
+                        ModeSelectionButton(mode: .broadcast, isSelected: selectedMode == .broadcast)
+                            .frame(maxWidth: .infinity)
+                    }
+                    
+                    Button(action: {
+                        showDeviceList = true
+                    }) {
+                        ModeSelectionButton(mode: .view, isSelected: selectedMode == .view)
+                            .frame(maxWidth: .infinity)
                     }
                 }
-                
                 
                 Spacer()
                 
@@ -84,21 +89,30 @@ struct ContentView: View {
                     )
                     .foregroundColor(.white)
                 }
-                
                 .disabled(!hasCapturedPhotos)
             }
             .padding(.vertical)
             .padding(.horizontal, 16)
         }
-    }
-    
-    @ViewBuilder
-    private func modeView(for mode: CameraMode) -> some View {
-        switch mode {
-        case .broadcast:
-            BroadcastView()
-        case .view:
-            ReceiverView()
+        .sheet(isPresented: $showDeviceList) {
+            DeviceListView(connectionManager: connectionManager) { peer in
+                connectionManager.invitePeer(peer)
+                if connectionManager.connectionState == .connecting {
+                    // Navigate to StreamView after connection is initiated
+                    selectedMode = .view
+                }
+            }
+        }
+        .fullScreenCover(isPresented: .init(
+            get: { selectedMode == .view && connectionManager.connectionState == .connected },
+            set: { if !$0 { selectedMode = nil } }
+        )) {
+            StreamView(connectionManager: connectionManager)
+        }
+        .onChange(of: connectionManager.connectionState) { newState in
+            if newState == .connected && selectedMode == .view {
+                showDeviceList = false
+            }
         }
     }
 }
