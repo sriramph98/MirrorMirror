@@ -16,96 +16,92 @@ struct BroadcastView: View {
     }
     
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                // Camera Preview
-                CameraPreviewView(previewLayer: cameraManager.previewLayer)
-                    .edgesIgnoringSafeArea(.all)
-                    .gesture(
-                        MagnificationGesture()
-                            .onChanged { value in
-                                let delta = value / (isZooming ? zoomScale : 1.0)
-                                isZooming = true
-                                zoomScale = value
-                                cameraManager.setZoom(cameraManager.zoomFactor * delta)
-                            }
-                            .onEnded { _ in
-                                isZooming = false
-                            }
-                    )
-                
-                // Camera Controls Overlay
-                VStack {
-                    // Top Controls
-                    HStack {
-                        connectionStatusView
-                            .padding(.leading)
-                        
+        NavigationView {
+            GeometryReader { geometry in
+                ZStack {
+                    // Camera Preview
+                    CameraPreviewView(previewLayer: cameraManager.previewLayer)
+                        .edgesIgnoringSafeArea(.all)
+                        .gesture(
+                            MagnificationGesture()
+                                .onChanged { value in
+                                    let delta = value / (isZooming ? zoomScale : 1.0)
+                                    isZooming = true
+                                    zoomScale = value
+                                    cameraManager.setZoom(cameraManager.zoomFactor * delta)
+                                }
+                                .onEnded { _ in
+                                    isZooming = false
+                                }
+                        )
+                    
+                    // Camera Controls Overlay
+                    VStack {
                         Spacer()
                         
-                        // Stream Toggle Button
-                        Button(action: {
-                            connectionManager.isStreamEnabled.toggle()
-                        }) {
-                            Image(systemName: connectionManager.isStreamEnabled ? "video.fill" : "video.slash.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(connectionManager.isStreamEnabled ? .white : .red)
-                                .padding()
-                                .background(Color.black.opacity(0.5))
-                                .clipShape(Circle())
+                        // Bottom Controls
+                        HStack {
+                            // Flip Camera Button
+                            Button(action: {
+                                cameraManager.switchCamera()
+                            }) {
+                                Image(systemName: "camera.rotate.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .background(Color.black.opacity(0.5))
+                                    .clipShape(Circle())
+                            }
+                            .padding(.leading, 20)
+                            
+                            Spacer()
+                            
+                            // Capture Button
+                            Button(action: {
+                                // Action to capture the photo or start/stop video recording
+                                // Implement your capture logic here
+                            }) {
+                                Image(systemName: "circle.fill")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(.red)
+                                    .padding(15)
+                                    .background(Color.white.opacity(0.5))
+                                    .clipShape(Circle())
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.red, lineWidth: 2)
+                                    )
+                            }
+                            
+                            Spacer()
+                            
+                            // Stream Toggle Button
+                            Button(action: {
+                                connectionManager.isStreamEnabled.toggle()
+                            }) {
+                                Image(systemName: connectionManager.isStreamEnabled ? "video.fill" : "video.slash.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(connectionManager.isStreamEnabled ? .white : .red)
+                                    .padding()
+                                    .background(Color.black.opacity(0.5))
+                                    .clipShape(Circle())
+                            }
+                            .padding(.trailing, 20)
                         }
-                        .padding(.trailing, 8)
-                        
-                        Button(action: {
-                            cameraManager.switchCamera()
-                        }) {
-                            Image(systemName: "camera.rotate.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(.white)
-                                .padding()
-                                .background(Color.black.opacity(0.5))
-                                .clipShape(Circle())
-                        }
-                        .padding(.trailing)
+                        .padding(.bottom, geometry.safeAreaInsets.bottom + 20)
                     }
-                    .padding(.top, geometry.safeAreaInsets.top)
-                    
-                    Spacer()
-                    
-                    // Bottom Controls
-                    VStack {
-                        // Zoom indicator
-                        if cameraManager.zoomFactor > 1.0 {
-                            Text(String(format: "%.1fx", cameraManager.zoomFactor))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.black.opacity(0.5))
-                                .clipShape(Capsule())
-                                .padding(.bottom)
-                        }
-                        
-                        // Camera mode indicator
-                        Text(cameraManager.currentCamera == .front ? "Front Camera" : "Back Camera")
-                            .foregroundColor(.white)
-                            .font(.system(size: 14, weight: .medium))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.black.opacity(0.5))
-                            .clipShape(Capsule())
-                    }
-                    .padding(.bottom, geometry.safeAreaInsets.bottom + 20)
                 }
             }
-        }
-        .onAppear {
-            setupVideoStreaming()
-            cameraManager.startSession()
-            connectionManager.startAdvertising()
-        }
-        .onDisappear {
-            cameraManager.stopSession()
-            connectionManager.stopAdvertising()
+            .navigationBarTitle("Broadcast", displayMode: .inline)
+            .onAppear {
+                setupVideoStreaming()
+                cameraManager.startSession()
+                connectionManager.startAdvertising()
+            }
+            .onDisappear {
+                cameraManager.stopSession()
+                connectionManager.stopAdvertising()
+            }
         }
     }
     
