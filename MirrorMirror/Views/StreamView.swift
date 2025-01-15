@@ -5,6 +5,7 @@ struct StreamView: View {
     @StateObject private var orientationManager = OrientationManager()
     @ObservedObject var connectionManager: ConnectionManager
     @State private var showCaptureConfirmation = false
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         ZStack {
@@ -37,6 +38,29 @@ struct StreamView: View {
                 }
             }
             
+            // Close Button
+            VStack {
+                HStack {
+                    Button(action: {
+                        connectionManager.connectionState = .disconnected
+                        connectionManager.selectedPeer = nil
+                        dismiss()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 30))
+                            .foregroundColor(.white)
+                            .background(Color.black.opacity(0.5))
+                            .clipShape(Circle())
+                    }
+                    .padding(.leading)
+                    
+                    Spacer()
+                }
+                .padding(.top, 50)
+                
+                Spacer()
+            }
+            
             // Overlay controls
             VStack {
                 // Top bar with quality controls
@@ -51,7 +75,7 @@ struct StreamView: View {
                 .padding(.vertical, 8)
                 .background(Color.black.opacity(0.5))
                 .clipShape(Capsule())
-                .padding(.top)
+                .padding(.top, 100) // Adjusted to account for close button
                 
                 Spacer()
                 
@@ -95,7 +119,8 @@ struct StreamView: View {
                 .cornerRadius(15)
             }
         }
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarHidden(true)
+        .edgesIgnoringSafeArea(.all)
     }
     
     private var orientationRotationAngle: Angle {
