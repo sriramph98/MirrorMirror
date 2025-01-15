@@ -15,8 +15,15 @@ class CameraManager: NSObject, ObservableObject {
     
     private var captureSession: AVCaptureSession?
     private var videoOutput: AVCaptureVideoDataOutput?
+    private var currentDevice: AVCaptureDevice?
     var videoDataDelegate: AVCaptureVideoDataOutputSampleBufferDelegate?
     private let connectionManager: ConnectionManager
+    
+    // Zoom-related properties
+    private var availableDevices: [AVCaptureDevice] = []
+    private var currentZoomFactor: CGFloat = 1.0
+    private var minAvailableZoomScale: CGFloat = 1.0
+    private var maxAvailableZoomScale: CGFloat = 1.0
     
     init(connectionManager: ConnectionManager) {
         self.connectionManager = connectionManager
@@ -98,7 +105,23 @@ class CameraManager: NSObject, ObservableObject {
             session.sessionPreset = .hd1280x720  // 720p
         }
         
-        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: currentCamera) else { return }
+        // Get all available devices for the current position
+        availableDevices = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [
+                .builtInWideAngleCamera,
+                .builtInTelephotoCamera,
+                .builtInUltraWideCamera
+            ],
+            mediaType: .video,
+            position: currentCamera
+        ).devices
+        
+        // Start with the wide-angle camera if available
+        guard let device = availableDevices.first(where: { $0.deviceType == .builtInWideAngleCamera }) 
+              ?? availableDevices.first else { return }
+        
+        currentDevice = device
+        updateZoomLimits()
         
         do {
             // Configure preview layer first
@@ -158,7 +181,58 @@ class CameraManager: NSObject, ObservableObject {
         }
     }
     
-    func switchCamera() {
+    private func updateZoomLimits() {
+        guard let device = currentDevice else { return }
+        minAvailableZoomScale = 1.0
+        maxAvailableZoomScale = device.maxAvailableVideoZoomFactor
+        
+        // Update current zoom factor if it's outside the new limits
+        currentZoomFactor = max(minAvailableZoomScale, min(currentZoomFactor, maxAvailableZoomScale))
+    }
+    
+    func setZoom(_ factor: CGFloat) {
+        guard let device = currentDevice else { return }
+        
+        do {
+            try device.lockForConfiguration()
+            
+            // Calculate the target zoom factor
+            let targetZoomFactor = factor
+            
+            // Check if we need to switch cameras based on the zoom level
+            if targetZoomFactor > device.maxAvailableVideoZoomFactor,
+               let nextCamera = findNextCameraForZoom(currentZoomFactor: targetZoomFactor) {
+                switchToCamera(nextCamera)
+                return
+            }
+            
+            // Apply zoom within the device's limits
+            let newZoomFactor = max(1.0, min(targetZoomFactor, device.maxAvailableVideoZoomFactor))
+            device.videoZoomFactor = newZoomFactor
+            currentZoomFactor = newZoomFactor
+            zoomFactor = newZoomFactor
+            
+            device.unlockForConfiguration()
+        } catch {
+            print("Could not lock device for configuration: \(error)")
+        }
+    }
+    
+    private func findNextCameraForZoom(currentZoomFactor: CGFloat) -> AVCaptureDevice? {
+        let sortedDevices = availableDevices.sorted { first, second in
+            first.deviceType.zoomFactor < second.deviceType.zoomFactor
+        }
+        
+        for device in sortedDevices {
+            if device.maxAvailableVideoZoomFactor >= currentZoomFactor {
+                return device
+            }
+        }
+        
+        return nil
+    }
+    
+    private func switchToCamera(_ newDevice: AVCaptureDevice) {
         guard let session = captureSession else { return }
         
         session.beginConfiguration()
@@ -168,41 +242,16 @@ class CameraManager: NSObject, ObservableObject {
             session.removeInput(currentInput)
         }
         
-        // Switch camera position
-        currentCamera = currentCamera == .front ? .back : .front
-        
-        // Add new input
-        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: currentCamera) else {
-            session.commitConfiguration()
-            return
-        }
-        
         do {
-            let input = try AVCaptureDeviceInput(device: device)
-            if session.canAddInput(input) {
-                session.addInput(input)
+            // Add new input
+            let newInput = try AVCaptureDeviceInput(device: newDevice)
+            if session.canAddInput(newInput) {
+                session.addInput(newInput)
+                currentDevice = newDevice
+                updateZoomLimits()
             }
             
-            // Configure frame rate and zoom
-            try device.lockForConfiguration()
-            
-            // Reset zoom for front camera
-            if currentCamera == .front {
-                zoomFactor = 1.0
-            }
-            device.videoZoomFactor = zoomFactor
-            
-            // Set frame rate
-            let desiredFrameRate = CMTime(value: 1, timescale: 60)
-            let supportedRanges = device.activeFormat.videoSupportedFrameRateRanges
-            if let range = supportedRanges.first(where: { $0.maxFrameDuration <= desiredFrameRate && $0.minFrameDuration <= desiredFrameRate }) {
-                device.activeVideoMinFrameDuration = range.minFrameDuration
-                device.activeVideoMaxFrameDuration = range.minFrameDuration
-            }
-            
-            device.unlockForConfiguration()
             session.commitConfiguration()
-            
         } catch {
             session.commitConfiguration()
             print("Error switching cameras: \(error.localizedDescription)")
@@ -226,17 +275,85 @@ class CameraManager: NSObject, ObservableObject {
         }
     }
     
-    func setZoom(_ factor: CGFloat) {
-        guard let device = (captureSession?.inputs.first as? AVCaptureDeviceInput)?.device else { return }
+    func switchCamera() {
+        guard let session = captureSession else { return }
+        
+        session.beginConfiguration()
+        
+        // Remove existing input
+        if let currentInput = session.inputs.first as? AVCaptureDeviceInput {
+            session.removeInput(currentInput)
+        }
+        
+        // Switch camera position
+        currentCamera = currentCamera == .front ? .back : .front
+        
+        // Get all available devices for the new position
+        availableDevices = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [
+                .builtInWideAngleCamera,
+                .builtInTelephotoCamera,
+                .builtInUltraWideCamera
+            ],
+            mediaType: .video,
+            position: currentCamera
+        ).devices
+        
+        // Start with wide-angle camera for the new position
+        guard let device = availableDevices.first(where: { $0.deviceType == .builtInWideAngleCamera })
+              ?? availableDevices.first else {
+            session.commitConfiguration()
+            return
+        }
         
         do {
-            try device.lockForConfiguration()
-            let newZoomFactor = max(1.0, min(factor, device.maxAvailableVideoZoomFactor))
-            device.videoZoomFactor = newZoomFactor
-            device.unlockForConfiguration()
-            zoomFactor = newZoomFactor
+            let input = try AVCaptureDeviceInput(device: device)
+            if session.canAddInput(input) {
+                session.addInput(input)
+                currentDevice = device
+                
+                // Reset zoom for front camera
+                if currentCamera == .front {
+                    zoomFactor = 1.0
+                    currentZoomFactor = 1.0
+                }
+                
+                // Configure frame rate
+                try device.lockForConfiguration()
+                device.videoZoomFactor = zoomFactor
+                
+                // Set frame rate to 60 FPS
+                let desiredFrameRate = CMTime(value: 1, timescale: 60)
+                let supportedRanges = device.activeFormat.videoSupportedFrameRateRanges
+                if let range = supportedRanges.first(where: { $0.maxFrameDuration <= desiredFrameRate && $0.minFrameDuration <= desiredFrameRate }) {
+                    device.activeVideoMinFrameDuration = range.minFrameDuration
+                    device.activeVideoMaxFrameDuration = range.minFrameDuration
+                }
+                
+                device.unlockForConfiguration()
+                updateZoomLimits()
+            }
+            
+            session.commitConfiguration()
         } catch {
-            print("Could not lock device for configuration: \(error)")
+            session.commitConfiguration()
+            print("Error switching cameras: \(error.localizedDescription)")
+        }
+    }
+}
+
+// Extension to handle device type zoom factors
+private extension AVCaptureDevice.DeviceType {
+    var zoomFactor: CGFloat {
+        switch self {
+        case .builtInUltraWideCamera:
+            return 0.5
+        case .builtInWideAngleCamera:
+            return 1.0
+        case .builtInTelephotoCamera:
+            return 2.0
+        default:
+            return 1.0
         }
     }
 } 

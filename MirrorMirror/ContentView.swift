@@ -34,20 +34,18 @@ struct ContentView: View {
                         selectedMode = .broadcast
                     }) {
                         ModeSelectionButton(mode: .broadcast, isSelected: selectedMode == .broadcast)
-                            .frame(maxWidth: .infinity)
                     }
                     
                     Button(action: {
                         showDeviceList = true
                     }) {
                         ModeSelectionButton(mode: .view, isSelected: selectedMode == .view)
-                            .frame(maxWidth: .infinity)
                     }
                 }
                 
                 Spacer()
                 
-                // Updated Captures Button
+                // Captures Button
                 NavigationLink(destination: Text("Captures View")) {
                     HStack(alignment: .center, spacing: 16) {
                         Image(systemName: "folder.fill")
@@ -59,35 +57,33 @@ struct ContentView: View {
                                 .font(.title3)
                                 .fontWeight(.medium)
                             
-                            Text("Check out all images from your session")
+                            Text("View all your captured photos and videos.")
                                 .font(.subheadline)
                                 .foregroundColor(.gray)
                                 .multilineTextAlignment(.leading)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
-                        .opacity(hasCapturedPhotos ? 1 : 0.5)
                         
                         Spacer(minLength: 0)
                     }
                     .padding(.horizontal, 24)
-                    .padding(.vertical, 24)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 36)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
                     .background(
                         EllipticalGradient(
                             stops: [
                                 Gradient.Stop(color: Color(red: 0.11, green: 0.11, blue: 0.11), location: 0.00),
                                 Gradient.Stop(color: Color(red: 0.05, green: 0.05, blue: 0.05), location: 1.00),
                             ],
-                            center: UnitPoint(x: 0, y: -0.61)
+                            center: UnitPoint(x: 0.48, y: -0.06)
                         )
-                        .opacity(hasCapturedPhotos ? 1 : 0.5)
                     )
-                    .cornerRadius(24)
-                    .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: 4)
+                    .cornerRadius(16)
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
-                            .inset(by: 0.5)
-                            .stroke(.white.opacity(hasCapturedPhotos ? 0.14 : 0.07), lineWidth: 1)
+                            .inset(by: 0.75)
+                            .stroke(.white.opacity(0.14), lineWidth: 1.5)
                     )
                     .foregroundColor(.white)
                 }
@@ -157,23 +153,23 @@ struct ModeSelectionButton: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 24)
-        .padding(.vertical, 24)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 36)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
         .background(
             EllipticalGradient(
                 stops: [
                     Gradient.Stop(color: Color(red: 0.11, green: 0.11, blue: 0.11), location: 0.00),
                     Gradient.Stop(color: Color(red: 0.05, green: 0.05, blue: 0.05), location: 1.00),
                 ],
-                center: UnitPoint(x: 0, y: -0.61)
+                center: UnitPoint(x: 0.48, y: -0.06)
             )
         )
-        .cornerRadius(24)
-        .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: 4)
+        .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .inset(by: 0.5)
-                .stroke(.white.opacity(0.14), lineWidth: 1)
+                .inset(by: 0.75)
+                .stroke(.white.opacity(0.14), lineWidth: 1.5)
         )
         .foregroundColor(.white)
     }

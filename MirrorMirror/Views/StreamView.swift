@@ -24,13 +24,13 @@ struct StreamView: View {
                                 .aspectRatio(contentMode: .fill)
                                 .frame(width: min(geometry.size.width - 48, geometry.size.height * 0.75 * 0.75))
                                 .frame(height: min(geometry.size.height * 0.75, (geometry.size.width - 48) * 4/3))
-                                .clipShape(RoundedRectangle(cornerRadius: 24))
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 24)
+                                    RoundedRectangle(cornerRadius: 16)
                                         .stroke(Color.white.opacity(0.2), lineWidth: 1)
                                 )
                         } else {
-                            RoundedRectangle(cornerRadius: 24)
+                            RoundedRectangle(cornerRadius: 16)
                                 .fill(Color.black.opacity(0.5))
                                 .frame(width: min(geometry.size.width - 48, geometry.size.height * 0.75 * 0.75))
                                 .frame(height: min(geometry.size.height * 0.75, (geometry.size.width - 48) * 4/3))
@@ -165,7 +165,7 @@ struct StreamView: View {
                 }
                 .padding()
                 .background(Color.black.opacity(0.7))
-                .cornerRadius(15)
+                .cornerRadius(16)
             }
         }
         .navigationBarHidden(true)

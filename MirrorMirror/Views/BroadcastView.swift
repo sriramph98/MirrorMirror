@@ -49,6 +49,19 @@ struct BroadcastView: View {
                                 .background(Color.black.opacity(0.5))
                                 .clipShape(Capsule())
                                 .padding(.bottom, 16)
+                                .onTapGesture {
+                                    // Cycle through zoom levels: 0.5x (ultra-wide) -> 1x (wide) -> 2x (telephoto) -> max zoom
+                                    let currentZoom = cameraManager.zoomFactor
+                                    if currentZoom < 1.0 {
+                                        cameraManager.setZoom(1.0) // Switch to wide
+                                    } else if currentZoom == 1.0 {
+                                        cameraManager.setZoom(2.0) // Switch to telephoto
+                                    } else if currentZoom == 2.0 {
+                                        cameraManager.setZoom(0.5) // Switch to ultra-wide
+                                    } else {
+                                        cameraManager.setZoom(1.0) // Reset to wide
+                                    }
+                                }
                         }
                     }
                     .gesture(

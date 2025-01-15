@@ -107,6 +107,27 @@ struct DeviceListView: View {
                     .padding()
                     
                     Spacer()
+                    
+                    // Bottom Banner
+                    HStack(spacing: 16) {
+                        Image(systemName: "antenna.radiowaves.left.and.right")
+                            .font(.system(size: 24))
+                            .foregroundColor(.white)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Looking for devices")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                            
+                            Text("Make sure both devices are on the same network with Wi-Fi and Bluetooth turned on.")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(white: 0.1))
                 }
             }
             .navigationTitle("Available Devices")
