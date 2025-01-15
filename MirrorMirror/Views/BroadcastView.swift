@@ -16,109 +16,117 @@ struct BroadcastView: View {
     }
     
     var body: some View {
-        NavigationView {
+        ZStack {
             GeometryReader { geometry in
-                ZStack {
-                    // Camera Preview
-                    CameraPreviewView(previewLayer: cameraManager.previewLayer)
-                        .edgesIgnoringSafeArea(.all)
-                        .gesture(
-                            MagnificationGesture()
-                                .onChanged { value in
-                                    let delta = value / (isZooming ? zoomScale : 1.0)
-                                    isZooming = true
-                                    zoomScale = value
-                                    cameraManager.setZoom(cameraManager.zoomFactor * delta)
-                                }
-                                .onEnded { _ in
-                                    isZooming = false
-                                }
-                        )
+                // Camera Preview
+                CameraPreviewView(previewLayer: cameraManager.previewLayer)
+                    .edgesIgnoringSafeArea(.all)
+                    .gesture(
+                        MagnificationGesture()
+                            .onChanged { value in
+                                let delta = value / (isZooming ? zoomScale : 1.0)
+                                isZooming = true
+                                zoomScale = value
+                                cameraManager.setZoom(cameraManager.zoomFactor * delta)
+                            }
+                            .onEnded { _ in
+                                isZooming = false
+                            }
+                    )
+                
+                // Camera Controls Overlay
+                VStack {
+                    // Custom Navigation Bar
+                    HStack {
+                        Spacer()
+                        Text("Broadcast")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                        Spacer()
+                    }
+                    .padding()
+                    .background(Color.black.opacity(0.7))
                     
-                    // Camera Controls Overlay
-                    VStack {
+                    Spacer()
+                    
+                    // Bottom Controls
+                    HStack {
+                        // Flip Camera Button
+                        Button(action: {
+                            cameraManager.switchCamera()
+                        }) {
+                            Image(systemName: "camera.rotate.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(Color.black.opacity(0.5))
+                                .clipShape(Circle())
+                        }
+                        .padding(.leading, 20)
+                        
                         Spacer()
                         
-                        // Bottom Controls
-                        HStack {
-                            // Flip Camera Button
+                        // Capture and Zoom Level Buttons
+                        VStack {
+                            // Zoom Level Button
                             Button(action: {
-                                cameraManager.switchCamera()
+                                // Action to adjust zoom level
+                                // Implement your zoom logic here
                             }) {
-                                Image(systemName: "camera.rotate.fill")
-                                    .font(.system(size: 24))
+                                Text(String(format: "%.1fx", cameraManager.zoomFactor))
+                                    .font(.system(size: 20))
                                     .foregroundColor(.white)
-                                    .padding()
+                                    .padding(10)
                                     .background(Color.black.opacity(0.5))
-                                    .clipShape(Circle())
+                                    .clipShape(Capsule())
                             }
-                            .padding(.leading, 20)
+                            .padding(.bottom, 10) // Add some space above the capture button
                             
-                            Spacer()
-                            
-                            // Capture and Zoom Level Buttons
-                            VStack {
-                                // Zoom Level Button
-                                Button(action: {
-                                    // Action to adjust zoom level
-                                    // Implement your zoom logic here
-                                }) {
-                                    Text(String(format: "%.1fx", cameraManager.zoomFactor))
-                                        .font(.system(size: 20))
-                                        .foregroundColor(.white)
-                                        .padding(10)
-                                        .background(Color.black.opacity(0.5))
-                                        .clipShape(Capsule())
-                                }
-                                .padding(.bottom, 10) // Add some space above the capture button
-                                
-                                // Capture Button
-                                Button(action: {
-                                    // Action to capture the photo or start/stop video recording
-                                    // Implement your capture logic here
-                                }) {
-                                    Image(systemName: "circle.fill")
-                                        .font(.system(size: 50))
-                                        .foregroundColor(.white)
-                                        .padding(15)
-                                        .background(Color.red.opacity(0.5))
-                                        .clipShape(Circle())
-                                        .overlay(
-                                            Circle()
-                                                .stroke(Color.red, lineWidth: 2)
-                                        )
-                                }
-                            }
-                            
-                            Spacer()
-                            
-                            // Stream Toggle Button
+                            // Capture Button
                             Button(action: {
-                                connectionManager.isStreamEnabled.toggle()
+                                // Action to capture the photo or start/stop video recording
+                                // Implement your capture logic here
                             }) {
-                                Image(systemName: connectionManager.isStreamEnabled ? "video.fill" : "video.slash.fill")
-                                    .font(.system(size: 24))
-                                    .foregroundColor(connectionManager.isStreamEnabled ? .white : .red)
-                                    .padding()
-                                    .background(Color.black.opacity(0.5))
+                                Image(systemName: "circle.fill")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(.white)
+                                    .padding(15)
+                                    .background(Color.red.opacity(0.5))
                                     .clipShape(Circle())
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.red, lineWidth: 2)
+                                    )
                             }
-                            .padding(.trailing, 20)
                         }
-                        .padding(.bottom, geometry.safeAreaInsets.bottom + 20)
+                        
+                        Spacer()
+                        
+                        // Stream Toggle Button
+                        Button(action: {
+                            connectionManager.isStreamEnabled.toggle()
+                        }) {
+                            Image(systemName: connectionManager.isStreamEnabled ? "video.fill" : "video.slash.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(connectionManager.isStreamEnabled ? .white : .red)
+                                .padding()
+                                .background(Color.black.opacity(0.5))
+                                .clipShape(Circle())
+                        }
+                        .padding(.trailing, 20)
                     }
+                    .padding(.bottom, geometry.safeAreaInsets.bottom + 20)
                 }
             }
-            .navigationBarTitle("Broadcast", displayMode: .inline)
-            .onAppear {
-                setupVideoStreaming()
-                cameraManager.startSession()
-                connectionManager.startAdvertising()
-            }
-            .onDisappear {
-                cameraManager.stopSession()
-                connectionManager.stopAdvertising()
-            }
+        }
+        .onAppear {
+            setupVideoStreaming()
+            cameraManager.startSession()
+            connectionManager.startAdvertising()
+        }
+        .onDisappear {
+            cameraManager.stopSession()
+            connectionManager.stopAdvertising()
         }
     }
     

@@ -32,304 +32,282 @@ struct ReceiverView: View {
     @State private var showCaptureConfirmation = false
     
     var body: some View {
-        ZStack {
-            Color.black.edgesIgnoringSafeArea(.all)
-            
-            if !connectionManager.isRemoteStreamEnabled {
-                VStack(spacing: 20) {
-                    Image(systemName: "video.slash.fill")
-                        .font(.system(size: 50))
-                        .foregroundColor(.red)
-                    
-                    Text("Stream Paused by Broadcaster")
-                        .font(.title2)
-                        .foregroundColor(.white)
-                }
-            } else if let receivedImage = connectionManager.receivedImage {
-                GeometryReader { geometry in
-                    Image(uiImage: receivedImage)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(
-                            maxWidth: min(geometry.size.width, CGFloat(receivedImage.size.width)),
-                            maxHeight: min(geometry.size.height, CGFloat(receivedImage.size.height))
-                        )
-                        .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-                        .rotation3DEffect(
-                            orientationRotationAngle,
-                            axis: orientationRotationAxis
-                        )
-                        .background(Color.black)
-                        .edgesIgnoringSafeArea(.all)
-                }
-            }
-            
-            if connectionManager.connectionState == .connected {
-                VStack {
-                    // Top status bar
-                    HStack {
-                        Circle()
-                            .fill(Color.green)
-                            .frame(width: 10, height: 10)
-                        Text("Connected to \(connectionManager.connectedPeers.first?.displayName ?? "")")
+        NavigationView {
+            ZStack {
+                Color.black.edgesIgnoringSafeArea(.all)
+                
+                if !connectionManager.isRemoteStreamEnabled {
+                    VStack(spacing: 20) {
+                        Image(systemName: "video.slash.fill")
+                            .font(.system(size: 50))
+                            .foregroundColor(.red)
+                        
+                        Text("Stream Paused by Broadcaster")
+                            .font(.title2)
                             .foregroundColor(.white)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.black.opacity(0.5))
-                    .clipShape(Capsule())
-                    .padding(.top)
-                    
-                    Spacer()
-                    
-                    // Capture Button
-                    Button(action: {
-                        connectionManager.capturePhoto { success in
-                            if success {
-                                showCaptureConfirmation = true
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                    showCaptureConfirmation = false
-                                }
-                            }
-                        }
-                    }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.white)
-                                .frame(width: 70, height: 70)
-                            
-                            Circle()
-                                .stroke(Color.white, lineWidth: 4)
-                                .frame(width: 80, height: 80)
-                        }
-                        .shadow(radius: 5)
+                } else if let receivedImage = connectionManager.receivedImage {
+                    GeometryReader { geometry in
+                        Image(uiImage: receivedImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(
+                                maxWidth: min(geometry.size.width, CGFloat(receivedImage.size.width)),
+                                maxHeight: min(geometry.size.height, CGFloat(receivedImage.size.height))
+                            )
+                            .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+                            .rotation3DEffect(
+                                orientationRotationAngle,
+                                axis: orientationRotationAxis
+                            )
+                            .background(Color.black)
+                            .edgesIgnoringSafeArea(.all)
                     }
-                    .padding(.bottom, 20)
-                    
-                    // Quality controls
-                    VStack(spacing: 8) {
-                        // Quality mode indicator
-                        HStack {
-                            Image(systemName: qualityModeIcon)
-                                .foregroundColor(.white)
-                            Text("\(connectionManager.streamQuality.rawValue)")
-                                .foregroundColor(.white)
-                                .font(.system(size: 14, weight: .medium))
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.black.opacity(0.5))
-                        .clipShape(Capsule())
-                        
-                        // Quality selection buttons
-                        VStack(spacing: 12) {
-                            // Performance Mode Button
-                            Button(action: {
-                                connectionManager.streamQuality = .performance
-                            }) {
-                                HStack {
-                                    Image(systemName: "speedometer")
-                                    VStack(alignment: .leading) {
-                                        Text("Performance")
-                                            .fontWeight(.medium)
-                                        Text("720p • 60 FPS")
-                                            .font(.caption)
-                                            .opacity(0.8)
-                                    }
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(connectionManager.streamQuality == .performance ? Color.blue : Color.black.opacity(0.5))
-                                .foregroundColor(.white)
-                                .clipShape(Capsule())
-                            }
-                            
-                            // Balanced Mode Button
-                            Button(action: {
-                                connectionManager.streamQuality = .balanced
-                            }) {
-                                HStack {
-                                    Image(systemName: "dial.medium")
-                                    VStack(alignment: .leading) {
-                                        Text("Balanced")
-                                            .fontWeight(.medium)
-                                        Text("1080p • 60 FPS")
-                                            .font(.caption)
-                                            .opacity(0.8)
-                                    }
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(connectionManager.streamQuality == .balanced ? Color.blue : Color.black.opacity(0.5))
-                                .foregroundColor(.white)
-                                .clipShape(Capsule())
-                            }
-                            
-                            // Quality Mode Button
-                            Button(action: {
-                                connectionManager.streamQuality = .quality
-                            }) {
-                                HStack {
-                                    Image(systemName: "4k.tv.fill")
-                                    VStack(alignment: .leading) {
-                                        Text("Quality")
-                                            .fontWeight(.medium)
-                                        Text("4K • 30 FPS")
-                                            .font(.caption)
-                                            .opacity(0.8)
-                                    }
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(connectionManager.streamQuality == .quality ? Color.blue : Color.black.opacity(0.5))
-                                .foregroundColor(.white)
-                                .clipShape(Capsule())
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                    .padding(.bottom, 30)
                 }
-                .rotation3DEffect(
-                    orientationRotationAngle,
-                    axis: orientationRotationAxis
-                )
-            }
-            
-            if connectionManager.connectionState != .connected {
-                ScrollView {
-                    VStack(spacing: 24) {
-                        // Wireless Section
-                        VStack(alignment: .leading, spacing: 16) {
-                            HStack {
-                                Image(systemName: "antenna.radiowaves.left.and.right")
-                                    .foregroundColor(.blue)
-                                Text("Wireless Connections")
-                                    .font(.title2)
+                
+                if connectionManager.connectionState == .connected {
+                    VStack {
+                        // Custom Navigation Bar
+                        HStack {
+                            Button(action: {
+                                // Action to go back
+                            }) {
+                                Image(systemName: "chevron.left")
                                     .foregroundColor(.white)
+                                    .padding()
                             }
-                            .padding(.top)
-                            
-                            if connectionManager.availablePeers.isEmpty {
-                                HStack {
-                                    Spacer()
-                                    Text("Searching for wireless broadcasters...")
-                                        .foregroundColor(.gray)
-                                    Spacer()
-                                }
-                                .padding()
-                                .background(Color.black.opacity(0.3))
-                                .cornerRadius(10)
-                            } else {
-                                ForEach(connectionManager.availablePeers, id: \.self) { peer in
-                                    Button(action: {
-                                        connectionManager.selectedPeer = peer
-                                        connectToPeer(peer)
-                                    }) {
-                                        HStack {
-                                            Image(systemName: "iphone")
-                                                .foregroundColor(.white)
-                                            
-                                            Text(peer.displayName)
-                                                .foregroundColor(.white)
-                                            
-                                            Spacer()
-                                            
-                                            if connectionManager.connectedPeers.contains(peer) {
-                                                Image(systemName: "checkmark.circle.fill")
-                                                    .foregroundColor(.green)
-                                            } else if connectionManager.selectedPeer == peer && connectionManager.connectionState == .connecting {
-                                                ProgressView()
-                                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                            } else {
-                                                Image(systemName: "chevron.right")
-                                                    .foregroundColor(.white.opacity(0.5))
-                                            }
-                                        }
-                                        .padding()
-                                        .background(Color.blue.opacity(0.3))
-                                        .cornerRadius(10)
-                                    }
-                                    .disabled(connectionManager.connectionState == .connecting)
-                                }
-                            }
+                            Spacer()
+                            Text("Available Devices")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                            Spacer()
                         }
+                        .padding()
+                        .background(Color.black.opacity(0.7))
                         
-                        // USB Section
-                        VStack(alignment: .leading, spacing: 16) {
-                            HStack {
-                                Image(systemName: "cable.connector")
-                                    .foregroundColor(.green)
-                                Text("USB Connections")
-                                    .font(.title2)
-                                    .foregroundColor(.white)
-                            }
-                            
-                            if connectionManager.usbDevices.isEmpty {
-                                HStack {
-                                    Spacer()
-                                    Text("No USB devices connected")
-                                        .foregroundColor(.gray)
-                                    Spacer()
-                                }
-                                .padding()
-                                .background(Color.black.opacity(0.3))
-                                .cornerRadius(10)
-                            } else {
-                                ForEach(connectionManager.usbDevices) { device in
-                                    Button(action: {
-                                        connectionManager.connectToUSBDevice(device)
-                                    }) {
-                                        HStack {
-                                            Image(systemName: "video")
-                                                .foregroundColor(.white)
-                                            
-                                            VStack(alignment: .leading) {
-                                                Text(device.name)
-                                                    .foregroundColor(.white)
-                                                Text(device.type)
-                                                    .font(.caption)
-                                                    .foregroundColor(.gray)
-                                            }
-                                            
-                                            Spacer()
-                                            
-                                            if connectionManager.selectedUSBDevice?.id == device.id {
-                                                Image(systemName: "checkmark.circle.fill")
-                                                    .foregroundColor(.green)
-                                            } else {
-                                                Image(systemName: "chevron.right")
-                                                    .foregroundColor(.white.opacity(0.5))
-                                            }
-                                        }
-                                        .padding()
-                                        .background(Color.green.opacity(0.3))
-                                        .cornerRadius(10)
+                        Spacer()
+                        
+                        // Capture Button
+                        Button(action: {
+                            connectionManager.capturePhoto { success in
+                                if success {
+                                    showCaptureConfirmation = true
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                        showCaptureConfirmation = false
                                     }
                                 }
                             }
+                        }) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.white)
+                                    .frame(width: 70, height: 70)
+                                
+                                Circle()
+                                    .stroke(Color.white, lineWidth: 4)
+                                    .frame(width: 80, height: 80)
+                            }
+                            .shadow(radius: 5)
                         }
+                        .padding(.bottom, 20)
+                        
+                        // Quality controls
+                        VStack(spacing: 8) {
+                            // Quality mode indicator
+                            HStack {
+                                Image(systemName: qualityModeIcon)
+                                    .foregroundColor(.white)
+                                Text("\(connectionManager.streamQuality.rawValue)")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 14, weight: .medium))
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.black.opacity(0.5))
+                            .clipShape(Capsule())
+                            
+                            // Quality selection buttons
+                            VStack(spacing: 12) {
+                                // Performance Mode Button
+                                Button(action: {
+                                    connectionManager.streamQuality = .performance
+                                }) {
+                                    HStack {
+                                        Image(systemName: "speedometer")
+                                        VStack(alignment: .leading) {
+                                            Text("Performance")
+                                                .fontWeight(.medium)
+                                            Text("720p • 60 FPS")
+                                                .font(.caption)
+                                                .opacity(0.8)
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .background(connectionManager.streamQuality == .performance ? Color.blue : Color.black.opacity(0.5))
+                                    .foregroundColor(.white)
+                                    .clipShape(Capsule())
+                                }
+                                
+                                // Balanced Mode Button
+                                Button(action: {
+                                    connectionManager.streamQuality = .balanced
+                                }) {
+                                    HStack {
+                                        Image(systemName: "dial.medium")
+                                        VStack(alignment: .leading) {
+                                            Text("Balanced")
+                                                .fontWeight(.medium)
+                                            Text("1080p • 60 FPS")
+                                                .font(.caption)
+                                                .opacity(0.8)
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .background(connectionManager.streamQuality == .balanced ? Color.blue : Color.black.opacity(0.5))
+                                    .foregroundColor(.white)
+                                    .clipShape(Capsule())
+                                }
+                                
+                                // Quality Mode Button
+                                Button(action: {
+                                    connectionManager.streamQuality = .quality
+                                }) {
+                                    HStack {
+                                        Image(systemName: "4k.tv.fill")
+                                        VStack(alignment: .leading) {
+                                            Text("Quality")
+                                                .fontWeight(.medium)
+                                            Text("4K • 30 FPS")
+                                                .font(.caption)
+                                                .opacity(0.8)
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .background(connectionManager.streamQuality == .quality ? Color.blue : Color.black.opacity(0.5))
+                                    .foregroundColor(.white)
+                                    .clipShape(Capsule())
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                        .padding(.bottom, 30)
+                    }
+                    .rotation3DEffect(
+                        orientationRotationAngle,
+                        axis: orientationRotationAxis
+                    )
+                }
+                
+                if connectionManager.connectionState != .connected {
+                    ScrollView {
+                        VStack(spacing: 24) {
+                            // Removed Wireless Section
+                            // This section is now deleted
+                            /*
+                            VStack(alignment: .leading, spacing: 16) {
+                                HStack {
+                                    Image(systemName: "antenna.radiowaves.left.and.right")
+                                        .foregroundColor(.blue)
+                                    Text("Wireless Connections")
+                                        .font(.title2)
+                                        .foregroundColor(.white)
+                                }
+                                .padding(.top)
+                                
+                                if connectionManager.availablePeers.isEmpty {
+                                    HStack {
+                                        Spacer()
+                                        Text("Searching for wireless broadcasters...")
+                                            .foregroundColor(.gray)
+                                        Spacer()
+                                    }
+                                    .padding()
+                                    .background(Color.black.opacity(0.3))
+                                    .cornerRadius(10)
+                                } else {
+                                    ForEach(connectionManager.availablePeers, id: \.self) { peer in
+                                        Button(action: {
+                                            connectionManager.selectedPeer = peer
+                                            connectToPeer(peer)
+                                        }) {
+                                            HStack {
+                                                Image(systemName: "iphone")
+                                                    .foregroundColor(.white)
+                                                
+                                                Text(peer.displayName)
+                                                    .foregroundColor(.white)
+                                                
+                                                Spacer()
+                                                
+                                                if connectionManager.connectedPeers.contains(peer) {
+                                                    Image(systemName: "checkmark.circle.fill")
+                                                        .foregroundColor(.green)
+                                                } else if connectionManager.selectedPeer == peer && connectionManager.connectionState == .connecting {
+                                                    ProgressView()
+                                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                                } else {
+                                                    Image(systemName: "chevron.right")
+                                                        .foregroundColor(.white.opacity(0.5))
+                                                }
+                                            }
+                                            .padding()
+                                            .background(Color.blue.opacity(0.3))
+                                            .cornerRadius(10)
+                                        }
+                                        .disabled(connectionManager.connectionState == .connecting)
+                                    }
+                                }
+                            }
+                            */
+                        }
+                        .padding()
+                    }
+                }
+                
+                // Capture confirmation overlay
+                if showCaptureConfirmation {
+                    VStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(.green)
+                        Text("Photo Captured")
+                            .foregroundColor(.white)
+                            .font(.headline)
                     }
                     .padding()
+                    .background(Color.black.opacity(0.7))
+                    .cornerRadius(15)
                 }
-            }
-            
-            // Capture confirmation overlay
-            if showCaptureConfirmation {
+                
+                // Looking for devices banner
                 VStack {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.green)
-                    Text("Photo Captured")
-                        .foregroundColor(.white)
-                        .font(.headline)
+                    Spacer() // Push the banner to the bottom
+                    HStack {
+                        Image(systemName: "antenna.radiowaves.left.and.right")
+                            .foregroundColor(.blue)
+                            .font(.system(size: 24))
+                        
+                        VStack(alignment: .leading) {
+                            Text("Looking for Devices")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                            Text("Make sure both devices are on the same network with Wi-Fi and Bluetooth turned on.")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
+                        .padding(.leading, 8)
+                    }
+                    .padding()
+                    .background(Color.black.opacity(0.7))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
                 }
-                .padding()
-                .background(Color.black.opacity(0.7))
-                .cornerRadius(15)
             }
         }
         .alert("Connection Error", isPresented: $showConnectionError) {
