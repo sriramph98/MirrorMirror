@@ -1,52 +1,40 @@
 import Foundation
-import CoreGraphics  // Add for CGFloat
+import CoreGraphics
+import UIKit
 
-enum StreamQuality: String, CaseIterable {
-    case performance = "Performance (720p)"
-    case balanced = "Balanced (1080p)"
-    case quality = "Quality (4K)"
+enum StreamQuality: String, Codable, CaseIterable {
+    case performance = "Performance"
+    case balanced = "Balanced"
+    case quality = "Quality"
     
-    var resolution: (width: Int, height: Int) {
+    var resolution: CGSize {
         switch self {
         case .performance:
-            return (1280, 720)  // 720p
+            return CGSize(width: 1280, height: 720)  // 720p
         case .balanced:
-            return (1920, 1080)  // 1080p
+            return CGSize(width: 1920, height: 1080) // 1080p
         case .quality:
-            return (3840, 2160)  // 4K
+            return CGSize(width: 3840, height: 2160) // 4K
         }
     }
     
-    var frameRate: Int {
+    var fps: Int {
         switch self {
-        case .performance:
-            return 60
-        case .balanced:
+        case .performance, .balanced:
             return 60
         case .quality:
             return 30
         }
     }
     
-    var compressionQuality: CGFloat {
+    var description: String {
         switch self {
         case .performance:
-            return 0.95  // Higher quality for performance mode
+            return "Performance (720p • 60 FPS)"
         case .balanced:
-            return 0.98  // Very high quality for balanced mode
+            return "Balanced (1080p • 60 FPS)"
         case .quality:
-            return 1.0   // Lossless for quality mode
-        }
-    }
-    
-    var maxDataSize: Int {
-        switch self {
-        case .performance:
-            return 2_000_000    // 2MB for 720p
-        case .balanced:
-            return 5_000_000    // 5MB for 1080p
-        case .quality:
-            return 15_000_000   // 15MB for 4K
+            return "Quality (4K • 30 FPS)"
         }
     }
 } 

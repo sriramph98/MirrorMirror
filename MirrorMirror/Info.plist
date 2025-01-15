@@ -19,5 +19,7 @@
 		<string>audio</string>
 		<string>voip</string>
 	</array>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>MirrorMirror needs access to save captured photos to your photo library.</string>
 </dict>
 </plist>

@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @State private var selectedMode: CameraMode?
     @State private var hasCapturedPhotos: Bool = false
+    @State private var devices: [DeviceInfo] = []
     
     var body: some View {
         NavigationStack {

@@ -175,6 +175,19 @@ struct BroadcastView: View {
             return "Connection failed"
         }
     }
+    
+    func startBroadcasting() {
+        let deviceInfo = getDeviceInfo()
+        broadcastDeviceInfo(deviceInfo)
+    }
+    
+    private func getDeviceInfo() -> DeviceInfo {
+        return DeviceInfo()
+    }
+    
+    private func broadcastDeviceInfo(_ deviceInfo: DeviceInfo) {
+        connectionManager.broadcast(deviceInfo: deviceInfo)
+    }
 }
 
 struct CameraPreviewView: UIViewRepresentable {
