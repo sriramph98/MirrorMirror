@@ -11,6 +11,7 @@ struct BroadcastView: View {
     
     init() {
         let connectionManager = ConnectionManager()
+        connectionManager.isStreamEnabled = true
         self._connectionManager = StateObject(wrappedValue: connectionManager)
         self._cameraManager = StateObject(wrappedValue: CameraManager(connectionManager: connectionManager))
         self.videoCaptureDelegate = VideoCaptureDelegate(connectionManager: connectionManager)
@@ -28,8 +29,9 @@ struct BroadcastView: View {
                     ZStack {
                         // Camera Preview
                         CameraPreviewView(previewLayer: cameraManager.previewLayer)
-                            .aspectRatio(3/4, contentMode: .fit)
+                            .aspectRatio(contentMode: .fill)
                             .frame(width: min(geometry.size.width - 48, geometry.size.height * 0.75 * 0.75))
+                            .frame(height: min(geometry.size.height * 0.75, (geometry.size.width - 48) * 4/3))
                             .clipShape(RoundedRectangle(cornerRadius: 24))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 24)
@@ -149,8 +151,7 @@ struct BroadcastView: View {
                     .padding(.vertical, 8)
                     .background(Color.black.opacity(0.5))
                     .clipShape(Capsule())
-                    
-                    Spacer()
+                    .padding(.trailing, 24)
                 }
                 .padding(.top, 50)
                 

@@ -20,8 +20,9 @@ struct StreamView: View {
                         if let receivedImage = connectionManager.receivedImage {
                             Image(uiImage: receivedImage)
                                 .resizable()
-                                .aspectRatio(3/4, contentMode: .fit)
+                                .aspectRatio(contentMode: .fill)
                                 .frame(width: min(geometry.size.width - 48, geometry.size.height * 0.75 * 0.75))
+                                .frame(height: min(geometry.size.height * 0.75, (geometry.size.width - 48) * 4/3))
                                 .clipShape(RoundedRectangle(cornerRadius: 24))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 24)
@@ -31,7 +32,7 @@ struct StreamView: View {
                             RoundedRectangle(cornerRadius: 24)
                                 .fill(Color.black.opacity(0.5))
                                 .frame(width: min(geometry.size.width - 48, geometry.size.height * 0.75 * 0.75))
-                                .aspectRatio(3/4, contentMode: .fit)
+                                .frame(height: min(geometry.size.height * 0.75, (geometry.size.width - 48) * 4/3))
                                 .overlay(
                                     VStack(spacing: 20) {
                                         Image(systemName: "video.slash.fill")
@@ -142,8 +143,7 @@ struct StreamView: View {
                     .padding(.vertical, 8)
                     .background(Color.black.opacity(0.5))
                     .clipShape(Capsule())
-                    
-                    Spacer()
+                    .padding(.trailing, 24)
                 }
                 .padding(.top, 50)
                 
