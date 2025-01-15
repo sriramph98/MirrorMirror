@@ -30,7 +30,9 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
                 VStack(spacing: 16) {
-                    NavigationLink(destination: BroadcastView()) {
+                    Button(action: {
+                        selectedMode = .broadcast
+                    }) {
                         ModeSelectionButton(mode: .broadcast, isSelected: selectedMode == .broadcast)
                             .frame(maxWidth: .infinity)
                     }
@@ -98,7 +100,6 @@ struct ContentView: View {
             DeviceListView(connectionManager: connectionManager) { peer in
                 connectionManager.invitePeer(peer)
                 if connectionManager.connectionState == .connecting {
-                    // Navigate to StreamView after connection is initiated
                     selectedMode = .view
                 }
             }
@@ -108,6 +109,12 @@ struct ContentView: View {
             set: { if !$0 { selectedMode = nil } }
         )) {
             StreamView(connectionManager: connectionManager)
+        }
+        .fullScreenCover(isPresented: .init(
+            get: { selectedMode == .broadcast },
+            set: { if !$0 { selectedMode = nil } }
+        )) {
+            BroadcastView()
         }
         .onChange(of: connectionManager.connectionState) { newState in
             if newState == .connected && selectedMode == .view {

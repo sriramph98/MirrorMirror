@@ -11,34 +11,106 @@ struct StreamView: View {
         ZStack {
             Color.black.edgesIgnoringSafeArea(.all)
             
-            if !connectionManager.isRemoteStreamEnabled {
-                VStack(spacing: 20) {
-                    Image(systemName: "video.slash.fill")
-                        .font(.system(size: 50))
-                        .foregroundColor(.red)
+            GeometryReader { geometry in
+                VStack {
+                    Spacer()
                     
-                    Text("Stream Paused by Broadcaster")
-                        .font(.title2)
-                        .foregroundColor(.white)
-                }
-            } else if let receivedImage = connectionManager.receivedImage {
-                GeometryReader { geometry in
-                    Image(uiImage: receivedImage)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(
-                            maxWidth: min(geometry.size.width, CGFloat(receivedImage.size.width)),
-                            maxHeight: min(geometry.size.height, CGFloat(receivedImage.size.height))
-                        )
-                        .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-                        .rotation3DEffect(
-                            orientationRotationAngle,
-                            axis: orientationRotationAxis
-                        )
+                    // Stream Preview with Connection Status
+                    ZStack {
+                        if let receivedImage = connectionManager.receivedImage {
+                            Image(uiImage: receivedImage)
+                                .resizable()
+                                .aspectRatio(3/4, contentMode: .fit)
+                                .frame(width: min(geometry.size.width - 48, geometry.size.height * 0.75 * 0.75))
+                                .clipShape(RoundedRectangle(cornerRadius: 24))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 24)
+                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                )
+                        } else {
+                            RoundedRectangle(cornerRadius: 24)
+                                .fill(Color.black.opacity(0.5))
+                                .frame(width: min(geometry.size.width - 48, geometry.size.height * 0.75 * 0.75))
+                                .aspectRatio(3/4, contentMode: .fit)
+                                .overlay(
+                                    VStack(spacing: 20) {
+                                        Image(systemName: "video.slash.fill")
+                                            .font(.system(size: 50))
+                                            .foregroundColor(.red)
+                                        
+                                        Text("Stream Paused by Broadcaster")
+                                            .font(.title2)
+                                            .foregroundColor(.white)
+                                    }
+                                )
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    // Bottom Controls
+                    HStack {
+                        // Quality Button
+                        Button(action: {
+                            // Toggle quality settings
+                        }) {
+                            Image(systemName: qualityModeIcon)
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                                .frame(width: 50, height: 50)
+                                .background(Color.black.opacity(0.5))
+                                .clipShape(Circle())
+                        }
+                        .padding(.leading, 24)
+                        
+                        Spacer()
+                        
+                        // Capture Button
+                        Button(action: {
+                            connectionManager.capturePhoto { success in
+                                if success {
+                                    showCaptureConfirmation = true
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                        showCaptureConfirmation = false
+                                    }
+                                }
+                            }
+                        }) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.white.opacity(0.2))
+                                    .frame(width: 72, height: 72)
+                                
+                                Circle()
+                                    .stroke(Color.white, lineWidth: 2)
+                                    .frame(width: 72, height: 72)
+                                
+                                Image(systemName: "camera")
+                                    .font(.system(size: 30))
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        // Settings Button
+                        Button(action: {
+                            // Show settings
+                        }) {
+                            Image(systemName: "gear")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                                .frame(width: 50, height: 50)
+                                .background(Color.black.opacity(0.5))
+                                .clipShape(Circle())
+                        }
+                        .padding(.trailing, 24)
+                    }
+                    .padding(.bottom, max(geometry.safeAreaInsets.bottom + 20, 30))
                 }
             }
             
-            // Close Button
+            // Close Button and Status
             VStack {
                 HStack {
                     Button(action: {
@@ -49,10 +121,27 @@ struct StreamView: View {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 30))
                             .foregroundColor(.white)
+                            .frame(width: 44, height: 44)
                             .background(Color.black.opacity(0.5))
                             .clipShape(Circle())
                     }
-                    .padding(.leading)
+                    .padding(.leading, 24)
+                    
+                    Spacer()
+                    
+                    // Connection Status
+                    HStack {
+                        Circle()
+                            .fill(connectionStatusColor)
+                            .frame(width: 8, height: 8)
+                        Text(connectionStatusText)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color.black.opacity(0.5))
+                    .clipShape(Capsule())
                     
                     Spacer()
                 }
@@ -61,50 +150,7 @@ struct StreamView: View {
                 Spacer()
             }
             
-            // Overlay controls
-            VStack {
-                // Top bar with quality controls
-                HStack {
-                    Image(systemName: qualityModeIcon)
-                        .foregroundColor(.white)
-                    Text(connectionManager.streamQuality.description)
-                        .foregroundColor(.white)
-                        .font(.system(size: 14, weight: .medium))
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(Color.black.opacity(0.5))
-                .clipShape(Capsule())
-                .padding(.top, 100) // Adjusted to account for close button
-                
-                Spacer()
-                
-                // Capture button
-                Button(action: {
-                    connectionManager.capturePhoto { success in
-                        if success {
-                            showCaptureConfirmation = true
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                showCaptureConfirmation = false
-                            }
-                        }
-                    }
-                }) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 70, height: 70)
-                        
-                        Circle()
-                            .stroke(Color.white, lineWidth: 4)
-                            .frame(width: 80, height: 80)
-                    }
-                    .shadow(radius: 5)
-                }
-                .padding(.bottom, 20)
-            }
-            
-            // Capture confirmation overlay
+            // Capture Confirmation Overlay
             if showCaptureConfirmation {
                 VStack {
                     Image(systemName: "checkmark.circle.fill")
@@ -123,23 +169,27 @@ struct StreamView: View {
         .edgesIgnoringSafeArea(.all)
     }
     
-    private var orientationRotationAngle: Angle {
-        switch orientationManager.currentOrientation {
-        case .landscapeLeft: return .degrees(90)
-        case .landscapeRight: return .degrees(-90)
-        case .portraitUpsideDown: return .degrees(180)
-        default: return .degrees(0)
+    private var connectionStatusColor: Color {
+        switch connectionManager.connectionState {
+        case .connected:
+            return .green
+        case .connecting:
+            return .yellow
+        case .disconnected, .failed:
+            return .red
         }
     }
     
-    private var orientationRotationAxis: (CGFloat, CGFloat, CGFloat) {
-        switch orientationManager.currentOrientation {
-        case .landscapeLeft, .landscapeRight:
-            return (0, 0, 1)
-        case .portraitUpsideDown:
-            return (0, 0, 1)
-        default:
-            return (0, 0, 1)
+    private var connectionStatusText: String {
+        switch connectionManager.connectionState {
+        case .connected:
+            return "Connected"
+        case .connecting:
+            return "Connecting..."
+        case .disconnected:
+            return "Disconnected"
+        case .failed:
+            return "Connection Failed"
         }
     }
     
