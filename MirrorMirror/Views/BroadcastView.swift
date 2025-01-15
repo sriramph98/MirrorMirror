@@ -50,32 +50,21 @@ struct BroadcastView: View {
                                 .clipShape(Capsule())
                                 .padding(.bottom, 16)
                                 .onTapGesture {
-                                    // Cycle through zoom levels: 0.5x (ultra-wide) -> 1x (wide) -> 2x (telephoto) -> max zoom
-                                    let currentZoom = cameraManager.zoomFactor
-                                    if currentZoom < 1.0 {
-                                        cameraManager.setZoom(1.0) // Switch to wide
-                                    } else if currentZoom == 1.0 {
-                                        cameraManager.setZoom(2.0) // Switch to telephoto
-                                    } else if currentZoom == 2.0 {
-                                        cameraManager.setZoom(0.5) // Switch to ultra-wide
+                                    // Get current zoom factor index
+                                    if let currentIndex = cameraManager.availableZoomFactors.firstIndex(of: cameraManager.zoomFactor) {
+                                        // Get next zoom factor (cycle back to first if at end)
+                                        let nextIndex = (currentIndex + 1) % cameraManager.availableZoomFactors.count
+                                        let nextZoom = cameraManager.availableZoomFactors[nextIndex]
+                                        cameraManager.setZoom(nextZoom)
                                     } else {
-                                        cameraManager.setZoom(1.0) // Reset to wide
+                                        // If current zoom is not in list, reset to first available zoom
+                                        if let firstZoom = cameraManager.availableZoomFactors.first {
+                                            cameraManager.setZoom(firstZoom)
+                                        }
                                     }
                                 }
                         }
                     }
-                    .gesture(
-                        MagnificationGesture()
-                            .onChanged { value in
-                                let delta = value / (isZooming ? zoomScale : 1.0)
-                                isZooming = true
-                                zoomScale = value
-                                cameraManager.setZoom(cameraManager.zoomFactor * delta)
-                            }
-                            .onEnded { _ in
-                                isZooming = false
-                            }
-                    )
                     
                     Spacer()
                     
