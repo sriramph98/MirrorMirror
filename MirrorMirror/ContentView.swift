@@ -13,7 +13,7 @@ struct ContentView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 32) {
+            VStack(alignment: .leading, spacing: 48) {
                 VStack(alignment: .leading, spacing: 0) {
                     Text("Mirror")
                         .font(.largeTitle)
@@ -31,10 +31,11 @@ struct ContentView: View {
                     ForEach(CameraMode.allCases, id: \.self) { mode in
                         NavigationLink(destination: modeView(for: mode)) {
                             ModeSelectionButton(mode: mode, isSelected: selectedMode == mode)
+                                .frame(maxWidth: .infinity)
                         }
                     }
                 }
-                .padding(.horizontal)
+                
                 
                 Spacer()
                 
@@ -73,7 +74,7 @@ struct ContentView: View {
                         )
                         .opacity(hasCapturedPhotos ? 1 : 0.5)
                     )
-                    .cornerRadius(16)
+                    .cornerRadius(24)
                     .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: 4)
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
@@ -82,7 +83,7 @@ struct ContentView: View {
                     )
                     .foregroundColor(.white)
                 }
-                .padding(.horizontal)
+                
                 .disabled(!hasCapturedPhotos)
             }
             .padding(.vertical)
@@ -145,7 +146,7 @@ struct ModeSelectionButton: View {
                 center: UnitPoint(x: 0, y: -0.61)
             )
         )
-        .cornerRadius(16)
+        .cornerRadius(24)
         .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: 4)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
