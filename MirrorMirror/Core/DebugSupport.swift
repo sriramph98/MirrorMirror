@@ -7,14 +7,22 @@ enum DebugSupport {
     /// `-MMAutoStartCamera`: open camera mode at launch (for driving a physical camera from a Mac).
     static let autoStartCamera = arguments.contains("-MMAutoStartCamera")
     /// `-MMSegmentSeconds 3`: short recording segments so tests don't wait a minute.
-    static let segmentDuration: TimeInterval? = UserDefaults.standard.object(forKey: "MMSegmentSeconds") as? TimeInterval
+    static let segmentDuration: TimeInterval? = number("MMSegmentSeconds")
     /// `-MMPairURL mirrormirror://pair?...`: add this camera at launch (pairing a physical viewer from a Mac).
     static let pairURL: String? = UserDefaults.standard.string(forKey: "MMPairURL")
     /// `-MMAutoWatch`: open the most recently added camera's live view at launch.
     static let autoWatch = arguments.contains("-MMAutoWatch")
     /// `-MMDisableLAN`: viewer ignores Bonjour and signals only through iCloud, as if away from home.
     static let disableLAN = arguments.contains("-MMDisableLAN")
+    /// `-MMTestEventAfter 20`: camera raises a synthetic "Baby crying" event after N seconds.
+    static let testEventDelay: TimeInterval? = number("MMTestEventAfter")
+
+    /// Launch arguments arrive as strings ("-MMSegmentSeconds 20"); tests set real numbers.
+    private static func number(_ key: String) -> TimeInterval? {
+        UserDefaults.standard.object(forKey: key) == nil ? nil : UserDefaults.standard.double(forKey: key)
+    }
     #else
+    static let testEventDelay: TimeInterval? = nil
     static let disableLAN = false
     static let pairURL: String? = nil
     static let autoWatch = false

@@ -103,6 +103,7 @@ final class CloudRelay {
         let record = CKRecord(recordType: RecordType.event)
         record["mailbox"] = mailbox
         record["payload"] = payload
+        record[sealedEventField] = payload.base64EncodedString()
         do {
             _ = try await database.save(record)
             DebugSupport.log("cloud", "event posted")
@@ -131,9 +132,16 @@ final class CloudRelay {
         info.alertBody = "New activity detected. Tap to watch live."
         info.soundName = "default"
         info.shouldSendContentAvailable = true
+        // Lets the notification extension decrypt the sealed event (carried in the push) and
+        // rewrite the alert; without it the generic text above is shown.
+        info.shouldSendMutableContent = true
+        info.desiredKeys = [sealedEventField]
         info.category = "camera-event"
         subscription.notificationInfo = info
         do {
+            // CloudKit keeps an existing subscription's settings when one is re-saved under the
+            // same ID, so replace it to apply new alert text or options.
+            _ = try? await database.modifySubscriptions(saving: [], deleting: [subscriptionID])
             _ = try await database.modifySubscriptions(saving: [subscription], deleting: [])
             DebugSupport.log("cloud", "subscribed to events for \(cameraName)")
         } catch {

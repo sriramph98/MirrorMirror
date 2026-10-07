@@ -108,6 +108,12 @@ final class CameraHost: ObservableObject {
         observeDevice()
         DebugSupport.log("camera", "started synthetic=\(engine.state.isSynthetic) audio=\(engine.state.hasAudio) remote=\(relay.isConfigured)")
         DebugSupport.log("camera", "invite \(invite.url.absoluteString)")
+        if let delay = DebugSupport.testEventDelay {
+            tasks.append(Task { [weak self] in
+                try? await Task.sleep(for: .seconds(delay))
+                self?.record(DetectionResult(kind: .crying, label: "Baby crying", confidence: 0.93))
+            })
+        }
 
         tasks.append(Task { [weak self] in await self?.statusLoop() })
         tasks.append(Task { [weak self] in await self?.maintenanceLoop() })

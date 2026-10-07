@@ -44,6 +44,13 @@ struct LiveView: View {
             if ownsConnection, !pip.isActive { connection.disconnect() }
             hub.audioFocus = previousAudioFocus ?? nil
         }
+        .onChange(of: connection.phase) { _, phase in
+            // Opened from an event notification: jump to a few seconds before it.
+            guard phase == .connected, let replay = hub.pendingReplay, replay.cameraID == connection.id else { return }
+            hub.pendingReplay = nil
+            connection.refreshTimeline()
+            connection.play(from: replay.date.addingTimeInterval(-5))
+        }
         .onChange(of: connection.latestEvent) { _, event in
             guard let event else { return }
             withAnimation { banner = event }

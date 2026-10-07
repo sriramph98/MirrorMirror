@@ -66,6 +66,22 @@ struct PairingTests {
         #expect(PairingInvite(string: string) == nil)
     }
 
+    @Test func notificationKeysAndPushFieldRoundTrip() throws {
+        let key = PairingKey.generate(cameraID: "cam-push")
+        NotificationKeyStore.save(["ev-cam-push": .init(key: key, cameraName: "Nursery")])
+        let entry = try #require(NotificationKeyStore.load()["ev-cam-push"])
+        #expect(entry.key == key && entry.cameraName == "Nursery")
+        #expect(NotificationKeyStore.accessGroup?.hasSuffix("com.sriramph.mirrormirror.shared") == true)
+
+        // What the camera puts in the push, and what the extension does with it.
+        let info = CloudEventInfo(event: CameraEvent(date: Date(), kind: .crying, label: "Baby crying", confidence: 0.9), cameraName: "Nursery")
+        let field = try key.seal(info).base64EncodedString()
+        #expect(field.utf8.count < 1500, "must fit comfortably in a 4 KB push")
+        let opened = try entry.key.open(CloudEventInfo.self, from: try #require(Data(base64Encoded: field)))
+        #expect(opened.event.label == "Baby crying" && opened.event.kind.isUrgent)
+        #expect(!EventKind.motion.isUrgent)
+    }
+
     @Test func base64URLRoundTrips() {
         for length in 0..<40 {
             let data = Data((0..<length).map { UInt8(($0 * 37 + 250) % 256) })

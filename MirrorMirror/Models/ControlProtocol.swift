@@ -55,19 +55,3 @@ struct FileTransferHeader: Codable {
 struct FileTransferFooter: Codable {
     var id: UUID
 }
-
-/// Sealed into the CloudKit presence record every couple of minutes.
-struct PresenceInfo: Codable {
-    var name: String
-    var batteryLevel: Double?
-    var isCharging: Bool
-    var isRecording: Bool
-    var viewerCount: Int
-    var updated: Date
-}
-
-/// Sealed into the CloudKit event record that triggers viewer push notifications.
-struct CloudEventInfo: Codable {
-    var event: CameraEvent
-    var cameraName: String
-}

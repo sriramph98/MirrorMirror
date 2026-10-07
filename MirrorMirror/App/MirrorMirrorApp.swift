@@ -59,6 +59,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         await MainActor.run {
             let hub = ViewerHub.shared
             if let id = userInfo["cameraID"] as? String {
+                if let seconds = userInfo["eventDate"] as? Double {
+                    hub.pendingReplay = (id, Date(timeIntervalSince1970: seconds))
+                }
                 hub.pendingOpenCameraID = id
             } else if let notification = CKNotification(fromRemoteNotificationDictionary: userInfo),
                       let subscriptionID = notification.subscriptionID,

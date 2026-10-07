@@ -25,6 +25,8 @@ final class ViewerHub: ObservableObject {
     @Published var audioFocus: String? { didSet { applyAudioFocus() } }
     /// Set when a notification or link should open a camera.
     @Published var pendingOpenCameraID: String?
+    /// Set when a notification should open a camera replaying from just before an event.
+    var pendingReplay: (cameraID: String, date: Date)?
 
     let lan = LocalSignalBrowser()
     private var connections: [String: CameraConnection] = [:]
@@ -40,6 +42,7 @@ final class ViewerHub: ObservableObject {
 
     private init() {
         cameras = Keychain.codable([PairedCamera].self, for: "viewer-cameras") ?? []
+        mirrorKeysForNotifications()
         lan.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }.store(in: &cancellables)
     }
 
@@ -124,6 +127,14 @@ final class ViewerHub: ObservableObject {
 
     private func save() {
         Keychain.setCodable(cameras, for: "viewer-cameras")
+        mirrorKeysForNotifications()
+    }
+
+    /// The notification extension decrypts event pushes with these keys.
+    private func mirrorKeysForNotifications() {
+        NotificationKeyStore.save(Dictionary(uniqueKeysWithValues: cameras.map {
+            ($0.subscriptionID, NotificationKeyStore.Entry(key: $0.key, cameraName: $0.name))
+        }))
     }
 
     private func importFromICloud() {

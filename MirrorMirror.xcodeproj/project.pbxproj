@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A1B2C3D4E5F60718293A4B03 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F60718293A4B02 /* WebRTC */; };
+		B10000000000000000000002 /* MirrorMirrorNotifications.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* MirrorMirrorNotifications.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,12 +26,34 @@
 			remoteGlobalIDString = 805B950A2D3322570073A444;
 			remoteInfo = MirrorMirror;
 		};
+		B10000000000000000000004 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 805B95032D3322570073A444 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B1000000000000000000000C;
+			remoteInfo = MirrorMirrorNotifications;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B10000000000000000000003 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B10000000000000000000002 /* MirrorMirrorNotifications.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		805B950B2D3322570073A444 /* MirrorMirror.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MirrorMirror.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		805B951B2D3322590073A444 /* MirrorMirrorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MirrorMirrorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		805B95252D3322590073A444 /* MirrorMirrorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MirrorMirrorUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000000000000000000001 /* MirrorMirrorNotifications.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MirrorMirrorNotifications.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -40,6 +63,14 @@
 				Info.plist,
 			);
 			target = 805B950A2D3322570073A444 /* MirrorMirror */;
+		};
+		B10000000000000000000008 /* Exceptions for "MirrorMirrorNotifications" folder in "MirrorMirrorNotifications" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				MirrorMirrorNotifications.entitlements,
+			);
+			target = B1000000000000000000000C /* MirrorMirrorNotifications */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -60,6 +91,19 @@
 		805B95282D3322590073A444 /* MirrorMirrorUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = MirrorMirrorUITests;
+			sourceTree = "<group>";
+		};
+		B10000000000000000000006 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		B10000000000000000000007 /* MirrorMirrorNotifications */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B10000000000000000000008 /* Exceptions for "MirrorMirrorNotifications" folder in "MirrorMirrorNotifications" target */,
+			);
+			path = MirrorMirrorNotifications;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -87,6 +131,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B1000000000000000000000A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -96,6 +147,8 @@
 				805B950D2D3322570073A444 /* MirrorMirror */,
 				805B951E2D3322590073A444 /* MirrorMirrorTests */,
 				805B95282D3322590073A444 /* MirrorMirrorUITests */,
+				B10000000000000000000006 /* Shared */,
+				B10000000000000000000007 /* MirrorMirrorNotifications */,
 				805B950C2D3322570073A444 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -106,6 +159,7 @@
 				805B950B2D3322570073A444 /* MirrorMirror.app */,
 				805B951B2D3322590073A444 /* MirrorMirrorTests.xctest */,
 				805B95252D3322590073A444 /* MirrorMirrorUITests.xctest */,
+				B10000000000000000000001 /* MirrorMirrorNotifications.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -120,13 +174,16 @@
 				805B95072D3322570073A444 /* Sources */,
 				805B95082D3322570073A444 /* Frameworks */,
 				805B95092D3322570073A444 /* Resources */,
+				B10000000000000000000003 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				B10000000000000000000005 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				805B950D2D3322570073A444 /* MirrorMirror */,
+				B10000000000000000000006 /* Shared */,
 			);
 			name = MirrorMirror;
 			packageProductDependencies = (
@@ -182,6 +239,29 @@
 			productReference = 805B95252D3322590073A444 /* MirrorMirrorUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		B1000000000000000000000C /* MirrorMirrorNotifications */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B1000000000000000000000F /* Build configuration list for PBXNativeTarget "MirrorMirrorNotifications" */;
+			buildPhases = (
+				B10000000000000000000009 /* Sources */,
+				B1000000000000000000000A /* Frameworks */,
+				B1000000000000000000000B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B10000000000000000000007 /* MirrorMirrorNotifications */,
+				B10000000000000000000006 /* Shared */,
+			);
+			name = MirrorMirrorNotifications;
+			packageProductDependencies = (
+			);
+			productName = MirrorMirrorNotifications;
+			productReference = B10000000000000000000001 /* MirrorMirrorNotifications.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -192,6 +272,9 @@
 				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
+					B1000000000000000000000C = {
+						CreatedOnToolsVersion = 26.0;
+					};
 					805B950A2D3322570073A444 = {
 						CreatedOnToolsVersion = 16.2;
 					};
@@ -225,6 +308,7 @@
 				805B950A2D3322570073A444 /* MirrorMirror */,
 				805B951A2D3322590073A444 /* MirrorMirrorTests */,
 				805B95242D3322590073A444 /* MirrorMirrorUITests */,
+				B1000000000000000000000C /* MirrorMirrorNotifications */,
 			);
 		};
 /* End PBXProject section */
@@ -245,6 +329,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		805B95232D3322590073A444 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B1000000000000000000000B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -275,6 +366,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B10000000000000000000009 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -287,6 +385,11 @@
 			isa = PBXTargetDependency;
 			target = 805B950A2D3322570073A444 /* MirrorMirror */;
 			targetProxy = 805B95262D3322590073A444 /* PBXContainerItemProxy */;
+		};
+		B10000000000000000000005 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B1000000000000000000000C /* MirrorMirrorNotifications */;
+			targetProxy = B10000000000000000000004 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -562,6 +665,60 @@
 			};
 			name = Release;
 		};
+		B1000000000000000000000D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorNotifications/MirrorMirrorNotifications.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MirrorMirrorNotifications/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "MirrorMirror Alerts";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.notifications;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B1000000000000000000000E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorNotifications/MirrorMirrorNotifications.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MirrorMirrorNotifications/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "MirrorMirror Alerts";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.notifications;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -597,6 +754,15 @@
 			buildConfigurations = (
 				805B95362D3322590073A444 /* Debug */,
 				805B95372D3322590073A444 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B1000000000000000000000F /* Build configuration list for PBXNativeTarget "MirrorMirrorNotifications" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B1000000000000000000000D /* Debug */,
+				B1000000000000000000000E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

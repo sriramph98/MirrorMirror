@@ -8,25 +8,27 @@ import UIKit
 enum Keychain {
     private static let service = "sriramph.MirrorMirror"
 
-    static func data(for key: String) -> Data? {
-        let query: [String: Any] = [
+    static func data(for key: String, accessGroup: String? = nil) -> Data? {
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: key,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne,
         ]
+        if let accessGroup { query[kSecAttrAccessGroup as String] = accessGroup }
         var result: AnyObject?
         guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess else { return nil }
         return result as? Data
     }
 
-    static func set(_ data: Data, for key: String) {
-        let query: [String: Any] = [
+    static func set(_ data: Data, for key: String, accessGroup: String? = nil) {
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: key,
         ]
+        if let accessGroup { query[kSecAttrAccessGroup as String] = accessGroup }
         // AfterFirstUnlock so a camera left running behind a locked screen can still read its keys.
         let attributes: [String: Any] = [
             kSecValueData as String: data,
