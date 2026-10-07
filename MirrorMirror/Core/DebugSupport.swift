@@ -14,6 +14,8 @@ enum DebugSupport {
     static let autoWatch = arguments.contains("-MMAutoWatch")
     /// `-MMDisableLAN`: viewer ignores Bonjour and signals only through iCloud, as if away from home.
     static let disableLAN = arguments.contains("-MMDisableLAN")
+    /// `-MMGallery`: open the design system gallery instead of the app.
+    static let showGallery = arguments.contains("-MMGallery")
     /// `-MMTestEventAfter 20`: camera raises a synthetic "Baby crying" event after N seconds.
     static let testEventDelay: TimeInterval? = number("MMTestEventAfter")
 
@@ -24,6 +26,7 @@ enum DebugSupport {
     #else
     static let testEventDelay: TimeInterval? = nil
     static let disableLAN = false
+    static let showGallery = false
     static let pairURL: String? = nil
     static let autoWatch = false
     static let autoStartCamera = false

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		A1B2C3D4E5F60718293A4B03 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F60718293A4B02 /* WebRTC */; };
 		B10000000000000000000002 /* MirrorMirrorNotifications.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* MirrorMirrorNotifications.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C10000000000000000000003 /* MirrorUI in Frameworks */ = {isa = PBXBuildFile; productRef = C10000000000000000000002 /* MirrorUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -114,6 +115,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1B2C3D4E5F60718293A4B03 /* WebRTC in Frameworks */,
+				C10000000000000000000003 /* MirrorUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -188,6 +190,7 @@
 			name = MirrorMirror;
 			packageProductDependencies = (
 				A1B2C3D4E5F60718293A4B02 /* WebRTC */,
+				C10000000000000000000002 /* MirrorUI */,
 			);
 			productName = MirrorMirror;
 			productReference = 805B950B2D3322570073A444 /* MirrorMirror.app */;
@@ -299,6 +302,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "WebRTC" */,
+				C10000000000000000000001 /* XCLocalSwiftPackageReference "Packages/MirrorUI" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 805B950C2D3322570073A444 /* Products */;
@@ -769,6 +773,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		C10000000000000000000001 /* XCLocalSwiftPackageReference "Packages/MirrorUI" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/MirrorUI;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "WebRTC" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -785,6 +796,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "WebRTC" */;
 			productName = WebRTC;
+		};
+		C10000000000000000000002 /* MirrorUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MirrorUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

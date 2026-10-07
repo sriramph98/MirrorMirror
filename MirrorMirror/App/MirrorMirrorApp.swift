@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import MirrorUI
 import CloudKit
 import UserNotifications
 
@@ -15,9 +16,16 @@ struct MirrorMirrorApp: App {
     @StateObject private var hub = ViewerHub.shared
     @State private var pendingInvite: PairingInvite?
 
+    init() {
+        Fonts.register()
+    }
+
     var body: some Scene {
         WindowGroup {
-            HomeView()
+            if DebugSupport.showGallery {
+                DesignSystemGallery()
+            } else {
+                HomeView()
                 .environmentObject(hub)
                 .tint(Theme.accent)
                 .preferredColorScheme(.dark)
@@ -30,6 +38,7 @@ struct MirrorMirrorApp: App {
                         .tint(Theme.accent)
                         .presentationDetents([.medium])
                 }
+            }
         }
     }
 }
