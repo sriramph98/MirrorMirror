@@ -113,6 +113,7 @@ final class CameraHost: ObservableObject {
         tasks.append(Task { [weak self] in await self?.maintenanceLoop() })
         if await relay.accountAvailable() {
             remoteReady = true
+            DebugSupport.log("camera", "iCloud relay ready")
             tasks.append(Task { [weak self] in await self?.cloudInboxLoop() })
             tasks.append(Task { [weak self] in await self?.presenceLoop() })
         }
@@ -594,6 +595,7 @@ final class CameraHost: ObservableObject {
                     processedSignals.insert(message.id.recordName)
                     guard let offer = try? key.open(SignalMessage.self, from: message.payload),
                           offer.kind == .offer, offer.sentAt > started.addingTimeInterval(-30) else { continue }
+                    DebugSupport.log("camera", "offer via iCloud from \(offer.fromName)")
                     let answer = await handleOffer(offer)
                     if let sealed = try? key.seal(answer),
                        let id = try? await relay.post(sealed, to: key.replyMailbox(session: offer.session)) {

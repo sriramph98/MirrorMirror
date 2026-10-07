@@ -12,7 +12,10 @@ enum DebugSupport {
     static let pairURL: String? = UserDefaults.standard.string(forKey: "MMPairURL")
     /// `-MMAutoWatch`: open the most recently added camera's live view at launch.
     static let autoWatch = arguments.contains("-MMAutoWatch")
+    /// `-MMDisableLAN`: viewer ignores Bonjour and signals only through iCloud, as if away from home.
+    static let disableLAN = arguments.contains("-MMDisableLAN")
     #else
+    static let disableLAN = false
     static let pairURL: String? = nil
     static let autoWatch = false
     static let autoStartCamera = false

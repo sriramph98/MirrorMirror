@@ -9,7 +9,7 @@ import MachO
 /// hashed mailbox names. Video never goes through CloudKit; it flows peer-to-peer.
 final class CloudRelay {
     static let shared = CloudRelay()
-    static let containerID = "iCloud.sriramph.MirrorMirror"
+    static let containerID = "iCloud.com.sriramph.mirrormirror"
 
     private enum RecordType {
         static let signal = "Signal"
@@ -24,7 +24,14 @@ final class CloudRelay {
 
     func accountAvailable() async -> Bool {
         guard isConfigured else { return false }
-        return (try? await CKContainer(identifier: Self.containerID).accountStatus()) == .available
+        do {
+            let status = try await CKContainer(identifier: Self.containerID).accountStatus()
+            DebugSupport.log("cloud", "account status \(status.rawValue) (1 = available)")
+            return status == .available
+        } catch {
+            DebugSupport.log("cloud", "account status error \(error)")
+            return false
+        }
     }
 
     // MARK: Signaling mailboxes
@@ -34,14 +41,25 @@ final class CloudRelay {
         let record = CKRecord(recordType: RecordType.signal)
         record["mailbox"] = mailbox
         record["payload"] = payload
-        return try await database.save(record).recordID
+        do {
+            return try await database.save(record).recordID
+        } catch {
+            DebugSupport.log("cloud", "post failed: \(error)")
+            throw error
+        }
     }
 
     /// Newest-first messages in a mailbox, created within the last `maxAge` seconds.
     func fetch(mailbox: String, maxAge: TimeInterval = 90) async throws -> [(id: CKRecord.ID, payload: Data)] {
         try requireConfigured()
         let query = CKQuery(recordType: RecordType.signal, predicate: NSPredicate(format: "mailbox == %@", mailbox))
-        let (results, _) = try await database.records(matching: query, desiredKeys: ["payload"], resultsLimit: 25)
+        let results: [(CKRecord.ID, Result<CKRecord, Error>)]
+        do {
+            results = try await database.records(matching: query, desiredKeys: ["payload"], resultsLimit: 25).matchResults
+        } catch {
+            DebugSupport.log("cloud", "fetch failed: \(error)")
+            throw error
+        }
         let cutoff = Date().addingTimeInterval(-maxAge)
         return results.compactMap { id, result in
             guard let record = try? result.get(),
@@ -63,7 +81,12 @@ final class CloudRelay {
         guard isConfigured else { return }
         let record = CKRecord(recordType: RecordType.presence, recordID: CKRecord.ID(recordName: recordName))
         record["payload"] = payload
-        _ = try? await database.modifyRecords(saving: [record], deleting: [], savePolicy: .allKeys)
+        do {
+            _ = try await database.modifyRecords(saving: [record], deleting: [], savePolicy: .allKeys)
+            DebugSupport.log("cloud", "presence published")
+        } catch {
+            DebugSupport.log("cloud", "presence failed: \(error)")
+        }
     }
 
     func presence(recordName: String) async -> (payload: Data, updated: Date)? {
@@ -80,7 +103,12 @@ final class CloudRelay {
         let record = CKRecord(recordType: RecordType.event)
         record["mailbox"] = mailbox
         record["payload"] = payload
-        _ = try? await database.save(record)
+        do {
+            _ = try await database.save(record)
+            DebugSupport.log("cloud", "event posted")
+        } catch {
+            DebugSupport.log("cloud", "event post failed: \(error)")
+        }
     }
 
     func events(mailbox: String, limit: Int = 30) async -> [Data] {
@@ -105,7 +133,12 @@ final class CloudRelay {
         info.shouldSendContentAvailable = true
         info.category = "camera-event"
         subscription.notificationInfo = info
-        _ = try? await database.modifySubscriptions(saving: [subscription], deleting: [])
+        do {
+            _ = try await database.modifySubscriptions(saving: [subscription], deleting: [])
+            DebugSupport.log("cloud", "subscribed to events for \(cameraName)")
+        } catch {
+            DebugSupport.log("cloud", "subscribe failed: \(error)")
+        }
     }
 
     func unsubscribe(subscriptionID: String) async {

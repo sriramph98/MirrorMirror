@@ -54,6 +54,7 @@ final class ViewerHub: ObservableObject {
         presenceTask = Task { [weak self] in
             guard let self else { return }
             self.cloudAvailable = await self.relay.accountAvailable()
+            DebugSupport.log("viewer", "iCloud relay \(self.cloudAvailable ? "available" : "unavailable")")
             if self.cloudAvailable { await self.subscribeAll() }
             while !Task.isCancelled {
                 await self.refreshPresence()
@@ -140,7 +141,7 @@ final class ViewerHub: ObservableObject {
     // MARK: Reachability
 
     func reachability(of camera: PairedCamera) -> Reachability {
-        if lan.isVisible(camera.key) { return .localNetwork }
+        if lan.isVisible(camera.key) && !DebugSupport.disableLAN { return .localNetwork }
         guard let info = presence[camera.id] else { return cloudAvailable ? .offline(nil) : .unknown }
         // Cameras refresh presence every 2 minutes.
         return Date().timeIntervalSince(info.updated) < 300 ? .online(info.updated) : .offline(info.updated)
@@ -164,7 +165,7 @@ final class ViewerHub: ObservableObject {
         if !lan.isVisible(key) {
             for _ in 0..<6 where !lan.isVisible(key) { try await Task.sleep(for: .milliseconds(250)) }
         }
-        let useLAN = lan.isVisible(key)
+        let useLAN = lan.isVisible(key) && !DebugSupport.disableLAN
         let useCloud = cloudAvailable
         guard useLAN || useCloud else {
             throw SignalingError(message: relay.isConfigured
