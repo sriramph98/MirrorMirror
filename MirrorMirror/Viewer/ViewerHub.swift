@@ -128,6 +128,7 @@ final class ViewerHub: ObservableObject {
 
     private func importFromICloud() {
         let hidden = hiddenICloudCameras
+        DebugSupport.log("viewer", "iCloud pairing store has \(ICloudPairing.invites().count) camera(s)")
         for invite in ICloudPairing.invites() where invite.key.cameraID != DeviceIdentity.id && !hidden.contains(invite.key.cameraID) {
             if let existing = cameras.first(where: { $0.id == invite.key.cameraID }), existing.key == invite.key { continue }
             add(invite, source: .iCloud)

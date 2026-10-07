@@ -473,7 +473,9 @@ final class CameraConnection: ObservableObject {
     }
 
     private func notifyIfBackground(_ event: CameraEvent) {
-        guard UIApplication.shared.applicationState == .background, camera.notificationsEnabled else { return }
+        // With iCloud push active the camera's push already alerts; don't double up.
+        guard UIApplication.shared.applicationState == .background, camera.notificationsEnabled,
+              hub?.cloudAvailable != true else { return }
         let content = UNMutableNotificationContent()
         content.title = camera.name
         content.body = event.label

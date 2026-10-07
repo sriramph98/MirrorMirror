@@ -25,7 +25,8 @@ enum ICloudPairing {
     static func publish(_ invite: PairingInvite) {
         guard let store else { return }
         store.set(invite.url.absoluteString, forKey: prefix + invite.key.cameraID)
-        store.synchronize()
+        let synced = store.synchronize()
+        DebugSupport.log("cloud", "published camera to iCloud pairing store (synchronize=\(synced))")
     }
 
     static func invites() -> [PairingInvite] {
