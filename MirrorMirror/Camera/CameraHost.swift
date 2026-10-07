@@ -563,6 +563,10 @@ final class CameraHost: ObservableObject {
             soundLevel = sound.level
             refreshBattery()
             broadcastStatus()
+            // Keep replaying viewers' clocks and scrubbers moving.
+            for session in sessions where !session.isLive {
+                send(.playbackState(date: session.playbackDate, isPlaying: !session.isPaused, isLive: false, rate: session.currentRate), to: session)
+            }
             tick += 1
             if tick % 5 == 0 {
                 let e = engineState

@@ -234,19 +234,30 @@ final class PiPController: NSObject, ObservableObject, AVPictureInPictureControl
         guard controller == nil, AVPictureInPictureController.isPictureInPictureSupported() else { return }
         let source = AVPictureInPictureController.ContentSource(sampleBufferDisplayLayer: layer, playbackDelegate: self)
         let controller = AVPictureInPictureController(contentSource: source)
+        DebugSupport.log("viewer", "picture in picture ready")
         controller.canStartPictureInPictureAutomaticallyFromInline = true
         controller.requiresLinearPlayback = true
         controller.delegate = self
         self.controller = controller
+        // Coming back to the app brings the video back inline, like FaceTime.
+        activeObserver = NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in
+                if self?.controller?.isPictureInPictureActive == true { self?.controller?.stopPictureInPicture() }
+            }
+        }
     }
+
+    private var activeObserver: NSObjectProtocol?
 
     func start() { controller?.startPictureInPicture() }
 
     nonisolated func pictureInPictureControllerDidStartPictureInPicture(_ controller: AVPictureInPictureController) {
+        DebugSupport.log("viewer", "picture in picture started")
         Task { @MainActor in self.isActive = true }
     }
 
     nonisolated func pictureInPictureControllerDidStopPictureInPicture(_ controller: AVPictureInPictureController) {
+        DebugSupport.log("viewer", "picture in picture stopped")
         Task { @MainActor in self.isActive = false }
     }
 

@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 import Photos
 
 /// Pick a range of the camera's recordings, have the camera cut it, and receive the clip.
@@ -10,6 +11,7 @@ struct ExportSheet: View {
     @State private var quality: ExportQuality = .hd720
     @State private var jobID: UUID?
     @State private var saved = false
+    @State private var clipDuration: Double?
 
     var body: some View {
         NavigationStack {
@@ -94,7 +96,16 @@ struct ExportSheet: View {
             }
         case let .done(url):
             Section {
-                Label("Clip ready", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+                Label(clipDuration.map { "Clip ready · \(Int($0.rounded())) s" } ?? "Clip ready", systemImage: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+                    .task {
+                        clipDuration = try? await AVURLAsset(url: url).load(.duration).seconds
+                    }
+                if let clipDuration, clipDuration < job.to.timeIntervalSince(job.from) - 2 {
+                    Text("Shorter than requested: the camera wasn't recording for part of that time.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
                 ShareLink(item: url) { Label("Share…", systemImage: "square.and.arrow.up") }
                 Button {
                     Task {

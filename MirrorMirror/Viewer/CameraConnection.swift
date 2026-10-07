@@ -390,7 +390,8 @@ final class CameraConnection: ObservableObject {
             self.segments = segments
             self.events = events
         case let .playbackState(date, isPlaying, isLive, rate):
-            playback = PlaybackState(isLive: isLive, date: date, isPlaying: isPlaying, rate: rate)
+            // Periodic updates may carry no date while the reader is between segments; keep the last one.
+            playback = PlaybackState(isLive: isLive, date: date ?? (isLive ? nil : playback.date), isPlaying: isPlaying, rate: rate)
         case let .exportProgress(id, progress):
             exports[id]?.progress = progress
         case let .exportFailed(id, message):
@@ -472,7 +473,7 @@ final class CameraConnection: ObservableObject {
     }
 
     private func notifyIfBackground(_ event: CameraEvent) {
-        guard UIApplication.shared.applicationState != .active, camera.notificationsEnabled else { return }
+        guard UIApplication.shared.applicationState == .background, camera.notificationsEnabled else { return }
         let content = UNMutableNotificationContent()
         content.title = camera.name
         content.body = event.label

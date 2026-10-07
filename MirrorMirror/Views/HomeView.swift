@@ -49,7 +49,11 @@ struct HomeView: View {
                 }
             }
         }
-        .onAppear { if DebugSupport.autoStartCamera { showCamera = true } }
+        .onAppear {
+            if DebugSupport.autoStartCamera { showCamera = true }
+            if let url = DebugSupport.pairURL, let invite = PairingInvite(string: url) { hub.add(invite) }
+            if DebugSupport.autoWatch, let camera = hub.cameras.last { hub.pendingOpenCameraID = camera.id }
+        }
         .fullScreenCover(isPresented: $showCamera) {
             CameraModeView()
         }

@@ -104,12 +104,12 @@ private struct RecordingPlayer: View {
                     HStack {
                         Text("Start").frame(width: 44, alignment: .leading)
                         Slider(value: $trimStart, in: 0...segment.duration) { editing in if !editing { seek(trimStart) } }
-                        Text(time(trimStart)).monospacedDigit().frame(width: 52)
+                        Text(time(trimStart)).monospacedDigit().font(.caption).fixedSize().frame(minWidth: 72, alignment: .trailing)
                     }
                     HStack {
                         Text("End").frame(width: 44, alignment: .leading)
                         Slider(value: $trimEnd, in: 0...segment.duration) { editing in if !editing { seek(trimEnd) } }
-                        Text(time(trimEnd)).monospacedDigit().frame(width: 52)
+                        Text(time(trimEnd)).monospacedDigit().font(.caption).fixedSize().frame(minWidth: 72, alignment: .trailing)
                     }
                 }
                 .font(.subheadline)

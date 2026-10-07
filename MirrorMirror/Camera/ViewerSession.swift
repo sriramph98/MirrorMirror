@@ -64,13 +64,16 @@ final class ViewerSession {
             onStateChange(nil, true, true, 1)
         }
         lock.withLock { _isLive = false }
+        isPaused = false
         playback = reader
         reader.play(from: date)
         onStateChange(date, true, false, playbackRate)
     }
 
-    func pausePlayback() { playback?.pause() }
-    func resumePlayback() { playback?.resume() }
+    private(set) var isPaused = false
+    func pausePlayback() { playback?.pause(); isPaused = true }
+    func resumePlayback() { playback?.resume(); isPaused = false }
+    var currentRate: Double { playbackRate }
 
     func setRate(_ rate: Double) {
         playbackRate = rate
