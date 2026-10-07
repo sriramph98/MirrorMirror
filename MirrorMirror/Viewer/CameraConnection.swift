@@ -172,6 +172,7 @@ final class CameraConnection: ObservableObject {
                 guard let self, let link, link === self.link else { return }
                 switch state {
                 case .connected:
+                    DebugSupport.log("viewer", "connected to \(self.camera.name)")
                     self.phase = .connected
                     self.reconnectAttempt = 0
                     self.startStats()
@@ -202,6 +203,7 @@ final class CameraConnection: ObservableObject {
     }
 
     private func scheduleReconnect(reason: String) {
+        DebugSupport.log("viewer", "connection to \(camera.name) failed: \(reason)")
         teardown()
         guard wantsConnection else {
             phase = .failed(reason)

@@ -68,6 +68,11 @@ struct LinkStats: Equatable {
     var fps: Double?
     var width: Int?
     var height: Int?
+    var framesDecoded: Int?
+    /// Audio bytes received from the other side; proves sound is flowing.
+    var audioBytesReceived: Int?
+    /// Loudness of the incoming audio, 0...1.
+    var audioLevel: Double?
     var path: Path = .unknown
 
     enum Path: String { case unknown, local, direct, relay }
@@ -201,8 +206,12 @@ final class PeerLink: NSObject {
         for (_, s) in report.statistics {
             let v = s.values
             switch s.type {
+            case "inbound-rtp" where (v["kind"] as? String) == "audio":
+                stats.audioBytesReceived = (v["bytesReceived"] as? NSNumber)?.intValue
+                stats.audioLevel = (v["audioLevel"] as? NSNumber)?.doubleValue
             case inbound ? "inbound-rtp" : "outbound-rtp":
                 guard (v["kind"] as? String) == "video" else { continue }
+                stats.framesDecoded = (v[inbound ? "framesDecoded" : "framesEncoded"] as? NSNumber)?.intValue
                 bytes = (v[inbound ? "bytesReceived" : "bytesSent"] as? NSNumber)?.doubleValue
                 stats.fps = (v["framesPerSecond"] as? NSNumber)?.doubleValue
                 stats.width = (v["frameWidth"] as? NSNumber)?.intValue

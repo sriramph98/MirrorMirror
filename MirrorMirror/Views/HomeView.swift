@@ -49,6 +49,7 @@ struct HomeView: View {
                 }
             }
         }
+        .onAppear { if DebugSupport.autoStartCamera { showCamera = true } }
         .fullScreenCover(isPresented: $showCamera) {
             CameraModeView()
         }

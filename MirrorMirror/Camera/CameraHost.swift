@@ -106,6 +106,8 @@ final class CameraHost: ObservableObject {
         server.start()
         publishToICloud()
         observeDevice()
+        DebugSupport.log("camera", "started synthetic=\(engine.state.isSynthetic) audio=\(engine.state.hasAudio) remote=\(relay.isConfigured)")
+        DebugSupport.log("camera", "invite \(invite.url.absoluteString)")
 
         tasks.append(Task { [weak self] in await self?.statusLoop() })
         tasks.append(Task { [weak self] in await self?.maintenanceLoop() })
@@ -214,7 +216,7 @@ final class CameraHost: ObservableObject {
         sound.sensitivity = settings.soundSensitivity
         sound.enabledKinds = settings.soundKinds
         recorder.recordAudio = settings.recordAudio
-        recorder.segmentDuration = settings.recordingMode == .events ? 30 : 60
+        recorder.segmentDuration = DebugSupport.segmentDuration ?? (settings.recordingMode == .events ? 30 : 60)
         updateRecorder()
         for session in sessions { session.remoteAudio?.source.volume = settings.speakerVolume * 10 }
     }
@@ -329,6 +331,7 @@ final class CameraHost: ObservableObject {
             return old
         }
         replaced.forEach { $0.close() }
+        DebugSupport.log("camera", "viewer session \(session.viewerName) attached")
 
         let link = session.link
         link.onControlMessage = { [weak self, weak session] data in
@@ -348,6 +351,7 @@ final class CameraHost: ObservableObject {
         }
         link.onRemoteTrack = { [weak self, weak session] track in
             guard let audio = track as? RTCAudioTrack else { return }
+            DebugSupport.log("camera", "receiving viewer audio track")
             Task { @MainActor in
                 audio.source.volume = (self?.settings.speakerVolume ?? 1) * 10
                 session?.remoteAudio = audio
@@ -369,9 +373,17 @@ final class CameraHost: ObservableObject {
         }
     }
 
+    /// Connection stats for each connected viewer (camera-side view: video sent, audio received).
+    func viewerStats() async -> [LinkStats] {
+        var result: [LinkStats] = []
+        for session in sessions { result.append(await session.link.stats(inbound: false)) }
+        return result
+    }
+
     // MARK: Viewer commands
 
     private func handle(_ command: ViewerCommand, from session: ViewerSession) {
+        DebugSupport.log("camera", "command \(String(describing: command).prefix(80)) from \(session.viewerName)")
         switch command {
         case let .hello(viewerID, name):
             guard viewerID == session.viewerID else { return }
@@ -509,6 +521,7 @@ final class CameraHost: ObservableObject {
     // MARK: Events
 
     private func record(_ result: DetectionResult) {
+        DebugSupport.log("camera", "event \(result.kind.rawValue) \"\(result.label)\" confidence=\(String(format: "%.2f", result.confidence))")
         let event = store.addEvent(CameraEvent(date: Date(), kind: result.kind, label: result.label, confidence: result.confidence),
                                    thumbnailJPEG: result.snapshotJPEG)
         recentEvents.insert(event, at: 0)
