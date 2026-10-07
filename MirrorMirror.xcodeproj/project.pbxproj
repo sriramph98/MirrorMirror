@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A1B2C3D4E5F60718293A4B03 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F60718293A4B02 /* WebRTC */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		805B951C2D3322590073A444 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1B2C3D4E5F60718293A4B03 /* WebRTC in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +130,7 @@
 			);
 			name = MirrorMirror;
 			packageProductDependencies = (
+				A1B2C3D4E5F60718293A4B02 /* WebRTC */,
 			);
 			productName = MirrorMirror;
 			productReference = 805B950B2D3322570073A444 /* MirrorMirror.app */;
@@ -207,6 +213,9 @@
 				Base,
 			);
 			mainGroup = 805B95022D3322570073A444;
+			packageReferences = (
+				A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "WebRTC" */,
+			);
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 805B950C2D3322570073A444 /* Products */;
@@ -417,14 +426,15 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirror/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
-				INFOPLIST_KEY_NSCameraUsageDescription = "MirrorMirror needs to use camera to stream.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mirror Mirror needs local network.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "MirrorMirror needs access to your microphone to stream audio.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror needs access to save captured photos to your library.";
+				CODE_SIGN_ENTITLEMENTS = MirrorMirror.entitlements;
+				INFOPLIST_KEY_NSCameraUsageDescription = "MirrorMirror uses the camera to stream video to your paired devices and to scan pairing QR codes.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your other devices on this network for the fastest, private stream.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "MirrorMirror streams audio, lets you talk back, and listens for sounds like crying or barking on the camera device.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror saves snapshots and exported clips to your photo library.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "MirrorMirror needs access to save captured photos to your library.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = arm64;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -455,14 +465,15 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirror/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
-				INFOPLIST_KEY_NSCameraUsageDescription = "MirrorMirror needs to use camera to stream.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mirror Mirror needs local network.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "MirrorMirror needs access to your microphone to stream audio.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror needs access to save captured photos to your library.";
+				CODE_SIGN_ENTITLEMENTS = MirrorMirror.entitlements;
+				INFOPLIST_KEY_NSCameraUsageDescription = "MirrorMirror uses the camera to stream video to your paired devices and to scan pairing QR codes.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your other devices on this network for the fastest, private stream.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "MirrorMirror streams audio, lets you talk back, and listens for sounds like crying or barking on the camera device.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror saves snapshots and exported clips to your photo library.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "MirrorMirror needs access to save captured photos to your library.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = arm64;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -591,6 +602,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "WebRTC" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stasel/WebRTC.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 154.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A1B2C3D4E5F60718293A4B02 /* WebRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "WebRTC" */;
+			productName = WebRTC;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 805B95032D3322570073A444 /* Project object */;
 }
