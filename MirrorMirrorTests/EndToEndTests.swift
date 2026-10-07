@@ -126,7 +126,9 @@ struct EndToEndTests {
             }
         }
 
-        // 10. Talk-back: viewer microphone reaches the camera.
+        // 10. Talk-back: the viewer sends no audio at all until Talk is pressed, then its mic reaches the camera.
+        let silentBefore = await host.viewerStats().first?.audioBytesReceived ?? 0
+        #expect(silentBefore < 500, "viewer must not stream audio before talking")
         await viewer.setTalking(true)
         #expect(viewer.isTalking)
         #expect(await wait("camera sees talker") { host.talkingViewer != nil })
@@ -134,7 +136,17 @@ struct EndToEndTests {
             (await host.viewerStats().first?.audioBytesReceived ?? 0) > 500
         })
         await viewer.setTalking(false)
+        #expect(!viewer.isTalking)
         #expect(await wait("talk ended") { host.talkingViewer == nil })
+        try await Task.sleep(for: .seconds(1))
+        let afterTalk = await host.viewerStats().first?.audioBytesReceived ?? 0
+        try await Task.sleep(for: .seconds(3))
+        let later = await host.viewerStats().first?.audioBytesReceived ?? 0
+        #expect(later - afterTalk < 300, "viewer audio must stop when talking ends")
+        // Talking again after stopping works (second renegotiation).
+        await viewer.setTalking(true)
+        #expect(await wait("talking again") { host.talkingViewer != nil })
+        await viewer.setTalking(false)
 
         // 11. Snapshot request: full-resolution still from the camera into Photos.
         viewer.takeSnapshot()

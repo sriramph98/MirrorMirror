@@ -22,6 +22,9 @@ enum ViewerCommand: Codable {
     case requestThumbnail(eventID: UUID)
     case requestSnapshot(requestID: UUID)
     case ping(Date)
+    /// In-band SDP offer, used to open/close the viewer's microphone for talk-back
+    /// without a new signaling round trip.
+    case renegotiate(sdp: String)
 }
 
 /// Camera → viewer, JSON over the "control" data channel.
@@ -36,6 +39,7 @@ enum CameraMessage: Codable {
     case exportFailed(requestID: UUID, message: String)
     case talkState(viewerName: String?)
     case pong(Date)
+    case renegotiated(sdp: String)
 }
 
 /// Header sent as a text message on the "files" channel before the binary chunks of a file.

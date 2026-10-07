@@ -147,6 +147,20 @@ final class PeerLink: NSObject {
         return connection.localDescription?.sdp ?? answer.sdp
     }
 
+    /// Offer for a change on an already-connected link (ICE is up, so no gathering wait).
+    func renegotiationOffer() async throws -> String {
+        let offer = try await connection.offer(for: RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil))
+        try await connection.setLocalDescription(offer)
+        return offer.sdp
+    }
+
+    func answerRenegotiation(offerSDP: String) async throws -> String {
+        try await connection.setRemoteDescription(RTCSessionDescription(type: .offer, sdp: offerSDP))
+        let answer = try await connection.answer(for: RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil))
+        try await connection.setLocalDescription(answer)
+        return answer.sdp
+    }
+
     func accept(answerSDP: String) async throws {
         try await connection.setRemoteDescription(RTCSessionDescription(type: .answer, sdp: answerSDP))
     }

@@ -120,8 +120,9 @@ final class CameraConnection: ObservableObject {
         let videoInit = RTCRtpTransceiverInit()
         videoInit.direction = .recvOnly
         link.connection.addTransceiver(of: .video, init: videoInit)
+        // Receive-only until the user taps Talk, so the viewer's microphone is never open otherwise.
         let audioInit = RTCRtpTransceiverInit()
-        audioInit.direction = .sendRecv
+        audioInit.direction = .recvOnly
         audioTransceiver = link.connection.addTransceiver(of: .audio, init: audioInit)
 
         do {
@@ -228,6 +229,8 @@ final class CameraConnection: ObservableObject {
         micTrack = nil
         audioTransceiver = nil
         isTalking = false
+        renegotiationWaiter?.resume(throwing: CancellationError())
+        renegotiationWaiter = nil
         link?.close()
         link = nil
         incomingFile = nil
@@ -245,6 +248,7 @@ final class CameraConnection: ObservableObject {
                 guard let link = self?.link else { return }
                 let stats = await link.stats(inbound: true)
                 self?.stats = stats
+                DebugSupport.log("viewer", "stats \(stats.width ?? 0)x\(stats.height ?? 0) fps=\(Int(stats.fps ?? 0)) kbps=\(Int((stats.bitrate ?? 0) / 1000)) rtt=\(Int((stats.roundTrip ?? 0) * 1000))ms path=\(stats.path.rawValue) audioBytes=\(stats.audioBytesReceived ?? 0) audioLevel=\(String(format: "%.3f", stats.audioLevel ?? 0))")
                 try? await Task.sleep(for: .seconds(2))
             }
         }
@@ -256,8 +260,9 @@ final class CameraConnection: ObservableObject {
         remoteAudio?.isEnabled = isListening && audioFocused
     }
 
+    /// Opens or closes the microphone path by renegotiating the audio direction in-band.
     func setTalking(_ on: Bool) async {
-        guard phase == .connected, let transceiver = audioTransceiver else { return }
+        guard phase == .connected, let transceiver = audioTransceiver, let link, on != isTalking else { return }
         if on {
             guard await AVAudioApplication.requestRecordPermission() else {
                 showToast("Allow microphone access in Settings to talk.")
@@ -274,9 +279,33 @@ final class CameraConnection: ObservableObject {
             micTrack?.isEnabled = false
             transceiver.sender.track = nil
         }
-        isTalking = on
-        send(.talk(on))
+        var directionError: NSError?
+        transceiver.setDirection(on ? .sendRecv : .recvOnly, error: &directionError)
+        do {
+            let offer = try await link.renegotiationOffer()
+            let answer = try await withCheckedThrowingContinuation { (c: CheckedContinuation<String, Error>) in
+                renegotiationWaiter = c
+                send(.renegotiate(sdp: offer))
+                Task {
+                    try? await Task.sleep(for: .seconds(6))
+                    if let waiter = renegotiationWaiter {
+                        renegotiationWaiter = nil
+                        waiter.resume(throwing: TimeoutError())
+                    }
+                }
+            }
+            try await link.accept(answerSDP: answer)
+            isTalking = on
+            send(.talk(on))
+        } catch {
+            transceiver.sender.track = nil
+            transceiver.setDirection(.recvOnly, error: &directionError)
+            isTalking = false
+            showToast("Couldn't start talking. Try again.")
+        }
     }
+
+    private var renegotiationWaiter: CheckedContinuation<String, Error>?
 
     // MARK: Commands
 
@@ -370,6 +399,9 @@ final class CameraConnection: ObservableObject {
             otherTalker = (name == DeviceIdentity.name && isTalking) ? nil : name
         case .pong:
             break
+        case let .renegotiated(sdp):
+            renegotiationWaiter?.resume(returning: sdp)
+            renegotiationWaiter = nil
         }
     }
 

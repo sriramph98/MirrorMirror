@@ -252,9 +252,18 @@ final class CameraHost: ObservableObject {
 
     // MARK: Camera controls
 
-    func setLens(_ factor: Double) { engine.setLens(factor) }
-    func setZoom(_ factor: Double) { engine.setZoom(factor) }
-    func flipCamera() { engine.flipCamera(); motion.reset() }
+    func setLens(_ factor: Double) { engine.setLens(factor); resetMotionAfterViewChange() }
+    func setZoom(_ factor: Double) { engine.setZoom(factor); resetMotionAfterViewChange() }
+    func flipCamera() { engine.flipCamera(); resetMotionAfterViewChange() }
+
+    /// The whole picture changes on a lens/zoom/camera switch; that isn't motion in the room.
+    private func resetMotionAfterViewChange() {
+        motion.reset()
+        Task {
+            try? await Task.sleep(for: .milliseconds(900))
+            motion.reset()
+        }
+    }
     func setTorch(_ on: Bool) { engine.setTorch(on) }
 
     func resetPairing() {
@@ -418,6 +427,7 @@ final class CameraHost: ObservableObject {
             settings = merged
         case let .talk(on):
             session.isTalking = on
+            if !on { session.remoteAudio = nil }
             talkingViewer = on ? session.viewerName : (sessions.first { $0.isTalking }?.viewerName)
             refreshViewers()
             sessions.forEach { send(.talkState(viewerName: talkingViewer), to: $0) }
@@ -452,6 +462,11 @@ final class CameraHost: ObservableObject {
             sendSnapshot(requestID: requestID, to: session)
         case let .ping(date):
             send(.pong(date), to: session)
+        case let .renegotiate(sdp):
+            Task {
+                guard let answer = try? await session.link.answerRenegotiation(offerSDP: sdp) else { return }
+                send(.renegotiated(sdp: answer), to: session)
+            }
         }
     }
 
@@ -542,11 +557,18 @@ final class CameraHost: ObservableObject {
     // MARK: Loops
 
     private func statusLoop() async {
+        var tick = 0
         while !Task.isCancelled {
             motionLevel = motion.activityLevel
             soundLevel = sound.level
             refreshBattery()
             broadcastStatus()
+            tick += 1
+            if tick % 5 == 0 {
+                let e = engineState
+                let audioIn = await viewerStats().map { $0.audioBytesReceived ?? 0 }
+                DebugSupport.log("camera", "status viewers=\(viewers.map(\.name)) rec=\(isRecording) mode=\(settings.recordingMode.rawValue) quality=\(effectiveQuality.rawValue) thermal=\(thermal.rawValue) battery=\(batteryLevel.map { Int($0 * 100) } ?? -1) mic=\(e.hasAudio) front=\(e.usingFrontCamera) lenses=\(e.lenses.map(\.factor)) zoom=\(String(format: "%.2f", e.zoom)) torch=\(e.torchOn) night=\(e.nightActive) motion=\(String(format: "%.2f", motionLevel)) sound=\(String(format: "%.2f", soundLevel)) talker=\(talkingViewer ?? "-") viewerAudioBytes=\(audioIn) segments=\(store.segments.count)")
+            }
             try? await Task.sleep(for: .seconds(2))
         }
     }
