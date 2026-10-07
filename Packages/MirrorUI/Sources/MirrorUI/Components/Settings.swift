@@ -171,6 +171,12 @@ public struct MenuRow<Value: Hashable>: View {
     }
 
     public var body: some View {
+        #if os(watchOS)
+        Picker(title, selection: $selection) {
+            ForEach(options, id: \.self) { Text(label($0)).tag($0) }
+        }
+        .padding(.horizontal, Space.l)
+        #else
         SettingRow(title, symbol: symbol) {
             Menu {
                 Picker(title, selection: $selection) {
@@ -183,6 +189,7 @@ public struct MenuRow<Value: Hashable>: View {
                 }
             }
         }
+        #endif
     }
 }
 

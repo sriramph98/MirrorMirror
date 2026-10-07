@@ -1,7 +1,11 @@
 import Foundation
 import CryptoKit
 import Security
+#if os(watchOS)
+import WatchKit
+#else
 import UIKit
+#endif
 
 // MARK: - Keychain
 
@@ -60,9 +64,13 @@ enum DeviceIdentity {
     }()
 
     static var name: String {
+        #if os(watchOS)
+        return WKInterfaceDevice.current().name
+        #else
         let name = UIDevice.current.name
         // iOS 16+ returns the generic model name without the entitlement; make it a little friendlier.
         return name == UIDevice.current.model ? "\(name) (\(String(id.prefix(4))))" : name
+        #endif
     }
 }
 
@@ -93,6 +101,8 @@ struct PairingKey: Codable, Hashable {
     var eventMailbox: String { String(digest("events").prefix(32)) }
     /// CloudKit record name for the camera's presence heartbeat.
     var presenceRecordName: String { "p-" + String(digest("presence").prefix(32)) }
+    /// CloudKit record name for the latest sealed snapshot (Apple Watch fallback when the iPhone isn't near).
+    var snapshotRecordName: String { "s-" + String(digest("snapshot").prefix(32)) }
 
     func replyMailbox(session: UUID) -> String {
         String(digest("reply-" + session.uuidString).prefix(32))

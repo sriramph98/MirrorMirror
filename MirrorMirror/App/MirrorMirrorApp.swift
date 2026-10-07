@@ -25,18 +25,23 @@ struct MirrorMirrorApp: App {
             if DebugSupport.showGallery {
                 DesignSystemGallery()
             } else {
-                HomeView()
+                RootView()
                 .environmentObject(hub)
-                .tint(Theme.accent)
+                .tint(Palette.accent)
                 .preferredColorScheme(.dark)
                 .onOpenURL { url in
                     if let invite = PairingInvite(string: url.absoluteString) { pendingInvite = invite }
                 }
+                .onAppear {
+                    // `-MMScreen confirm -MMPairURL …`: show the invite confirmation (screenshots).
+                    if ScreenHook.screen == "confirm", let url = DebugSupport.pairURL { pendingInvite = PairingInvite(string: url) }
+                }
                 .sheet(item: $pendingInvite) { invite in
                     AddCameraConfirmation(invite: invite)
                         .environmentObject(hub)
-                        .tint(Theme.accent)
-                        .presentationDetents([.medium])
+                        .tint(Palette.accent)
+                        .presentationDetents([.medium, .large])
+                        .mirrorSheet()
                 }
             }
         }
@@ -51,6 +56,8 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
         if CloudRelay.shared.isConfigured { application.registerForRemoteNotifications() }
+        // Early, so a watch request that launches the app in the background is handled.
+        WatchRelay.shared.activate()
         return true
     }
 

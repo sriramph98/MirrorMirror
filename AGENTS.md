@@ -16,4 +16,10 @@ This is a **personal project** (GitHub: `sriramph98/MirrorMirror`), not a work r
 ## Testing
 
 - `xcodebuild test -project MirrorMirror.xcodeproj -scheme MirrorMirror -destination 'id=<simulator>' -parallel-testing-enabled NO -only-testing:MirrorMirrorTests` runs unit and end-to-end tests (grant the simulator camera, microphone and photos access first).
-- Debug-only launch arguments for driving devices from a Mac: `-MMAutoStartCamera`, `-MMSegmentSeconds N`, `-MMPairURL <invite>`, `-MMAutoWatch`, `-MMDisableLAN`, `-MMTestEventAfter N`. Logs are prefixed `MM `.
+- Debug-only launch arguments for driving devices from a Mac: `-MMAutoStartCamera`, `-MMSegmentSeconds N`, `-MMPairURL <invite>`, `-MMAutoWatch`, `-MMDisableLAN`, `-MMTestEventAfter N`, `-MMGallery` (design system gallery), `-MMScreen <home|add|addlink|settings|gallery|recordings|player|wall|sidebar|confirm>` (open a screen directly). Watch app: `-MMWatchTalkTest`. Logs are prefixed `MM `.
+- Simulator screenshots: use `xcrun simctl io <udid> screenshot <path>` (the simulator panel's screenshot action can return stale frames). Physical devices: `xcrun devicectl device capture screenshot --device <udid> --destination <path>`.
+
+## Design system
+
+- All UI comes from the local package `Packages/MirrorUI` (tokens, components, `DESIGN.md`). App code never uses raw colours, fonts or magic numbers; add or extend a component in the package instead. Dark only. Fonts are Space Grotesk and JetBrains Mono (OFL), bundled in the package.
+- Targets: `MirrorMirror` (iPhone + iPad, split view on iPad), `MirrorMirrorNotifications` (decrypts event pushes), `MirrorMirrorWatch` (viewer only: live picture and voice relayed by the paired iPhone over WatchConnectivity, sealed iCloud snapshots as fallback). Code shared by all targets lives in `Shared/`.

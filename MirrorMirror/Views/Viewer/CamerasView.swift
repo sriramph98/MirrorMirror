@@ -1,74 +1,40 @@
 import SwiftUI
+import MirrorUI
 
+/// The paired cameras as instrument cards, with rename / mute / remove in each card's context
+/// menu. Used by the iPhone home screen.
 struct CamerasView: View {
     @EnvironmentObject private var hub: ViewerHub
-    @State private var showAdd = false
-    @State private var showSettings = false
-    @State private var openCamera: PairedCamera?
-    @State private var showGrid = false
+    let onOpen: (PairedCamera) -> Void
+
     @State private var renaming: PairedCamera?
     @State private var newName = ""
+    @State private var removing: PairedCamera?
 
     var body: some View {
-        Group {
-            if hub.cameras.isEmpty {
-                emptyState
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(hub.cameras) { camera in
-                            Button { openCamera = camera } label: {
-                                CameraRow(camera: camera, reachability: hub.reachability(of: camera), presence: hub.presence[camera.id])
-                            }
-                            .buttonStyle(.plain)
-                            .contextMenu { menu(for: camera) }
-                        }
-                    }
-                    .padding(16)
+        LazyVStack(spacing: Space.m) {
+            ForEach(hub.cameras) { camera in
+                Button { onOpen(camera) } label: {
+                    CameraCard(camera: camera, connection: hub.connection(for: camera),
+                               reachability: hub.reachability(of: camera), presence: hub.presence[camera.id])
                 }
-                .refreshable { await hub.refreshPresence() }
+                .buttonStyle(CardPressStyle())
+                .contextMenu { CameraMenu(camera: camera, renaming: $renaming, newName: $newName, removing: $removing) }
             }
         }
-        .navigationTitle("Cameras")
-        .toolbar {
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                if hub.cameras.count > 1 {
-                    Button { showGrid = true } label: { Image(systemName: "square.grid.2x2") }
-                        .accessibilityLabel("Watch all")
-                }
-                Button { showAdd = true } label: { Image(systemName: "plus") }
-                    .accessibilityLabel("Add camera")
-                Button { showSettings = true } label: { Image(systemName: "gearshape") }
-                    .accessibilityLabel("Viewer settings")
-            }
-        }
-        .sheet(isPresented: $showAdd) { AddCameraView() }
-        .sheet(isPresented: $showSettings) { ViewerSettingsView() }
-        .fullScreenCover(item: $openCamera) { camera in
-            LiveView(connection: hub.connection(for: camera))
-        }
-        .fullScreenCover(isPresented: $showGrid) { GridView() }
-        .alert("Rename Camera", isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
-            TextField("Name", text: $newName)
-            Button("Save") { if let renaming { hub.rename(renaming, to: newName) } }
-            Button("Cancel", role: .cancel) {}
-        }
-        .onAppear {
-            hub.activate()
-            Notifications.requestAuthorization()
-            openPending()
-        }
-        .onChange(of: hub.pendingOpenCameraID) { _, _ in openPending() }
+        .cameraMenuAlerts(renaming: $renaming, newName: $newName, removing: $removing)
     }
+}
 
-    private func openPending() {
-        guard let id = hub.pendingOpenCameraID, let camera = hub.camera(id: id) else { return }
-        hub.pendingOpenCameraID = nil
-        openCamera = camera
-    }
+/// Rename / mute / remove, shared by home cards and iPad sidebar rows.
+struct CameraMenu: View {
+    @EnvironmentObject private var hub: ViewerHub
+    let camera: PairedCamera
+    @Binding var renaming: PairedCamera?
+    @Binding var newName: String
+    @Binding var removing: PairedCamera?
 
-    @ViewBuilder
-    private func menu(for camera: PairedCamera) -> some View {
+    var body: some View {
         Button { newName = camera.name; renaming = camera } label: { Label("Rename", systemImage: "pencil") }
         Button {
             hub.setNotifications(camera, enabled: !camera.notificationsEnabled)
@@ -76,83 +42,46 @@ struct CamerasView: View {
             Label(camera.notificationsEnabled ? "Mute Alerts" : "Unmute Alerts",
                   systemImage: camera.notificationsEnabled ? "bell.slash" : "bell")
         }
-        Button(role: .destructive) { hub.remove(camera) } label: { Label("Remove", systemImage: "trash") }
-    }
-
-    private var emptyState: some View {
-        VStack(spacing: 20) {
-            Spacer()
-            Image(systemName: "video.badge.plus").font(.system(size: 56)).foregroundStyle(Theme.accent)
-            Text("No cameras yet").font(.title2.bold())
-            Text("On your spare iPhone or iPad, open MirrorMirror and tap Use as Camera. Devices on your Apple Account show up here automatically; for anyone else's camera, scan its pairing code.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
-            Button { showAdd = true } label: {
-                Label("Add Camera", systemImage: "qrcode.viewfinder").font(.headline).padding(.horizontal, 12).padding(.vertical, 6)
-            }
-            .buttonStyle(.borderedProminent)
-            .foregroundStyle(.black)
-            Spacer()
-            Spacer()
-        }
+        Button(role: .destructive) { removing = camera } label: { Label("Remove", systemImage: "trash") }
     }
 }
 
-private struct CameraRow: View {
-    let camera: PairedCamera
-    let reachability: ViewerHub.Reachability
-    let presence: PresenceInfo?
-
-    var body: some View {
-        HStack(spacing: 16) {
-            ZStack(alignment: .bottomTrailing) {
-                Image(systemName: "video.fill")
-                    .font(.title2)
-                    .frame(width: 52, height: 52)
-                    .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
-                Circle().fill(dotColor).frame(width: 12, height: 12).overlay(Circle().stroke(.black, lineWidth: 2))
-            }
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    Text(camera.name).font(.headline)
-                    if !camera.notificationsEnabled { Image(systemName: "bell.slash.fill").font(.caption).foregroundStyle(.secondary) }
-                }
-                Text(statusText).font(.subheadline).foregroundStyle(.secondary)
-            }
-            Spacer()
-            if let presence {
-                VStack(alignment: .trailing, spacing: 4) {
-                    Image(systemName: batterySymbol(presence.batteryLevel, charging: presence.isCharging))
-                    if presence.isRecording { Text("REC").font(.caption2.bold()).foregroundStyle(.red) }
-                }
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            }
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .card()
-        .contentShape(Rectangle())
+extension View {
+    /// The rename prompt and remove confirmation that go with `CameraMenu`.
+    func cameraMenuAlerts(renaming: Binding<PairedCamera?>, newName: Binding<String>, removing: Binding<PairedCamera?>) -> some View {
+        modifier(CameraMenuAlerts(renaming: renaming, newName: newName, removing: removing))
     }
+}
 
-    private var dotColor: Color {
-        switch reachability {
-        case .localNetwork, .online: .green
-        case .offline: .gray
-        case .unknown: .orange
-        }
+private struct CameraMenuAlerts: ViewModifier {
+    @EnvironmentObject private var hub: ViewerHub
+    @Binding var renaming: PairedCamera?
+    @Binding var newName: String
+    @Binding var removing: PairedCamera?
+
+    func body(content: Content) -> some View {
+        content
+            .alert("Rename Camera", isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
+                TextField("Name", text: $newName)
+                Button("Save") { if let renaming, !newName.isEmpty { hub.rename(renaming, to: newName) } }
+                Button("Cancel", role: .cancel) {}
+            }
+            .confirmationDialog(removing.map { "Remove “\($0.name)”?" } ?? "",
+                                isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }),
+                                titleVisibility: .visible) {
+                Button("Remove Camera", role: .destructive) { if let removing { hub.remove(removing) } }
+            } message: {
+                Text("You can add it again later with its pairing code.")
+            }
     }
+}
 
-    private var statusText: String {
-        switch reachability {
-        case .localNetwork: return "On this network"
-        case .online: return "Online"
-        case let .offline(date):
-            if let date { return "Last seen \(date.formatted(.relative(presentation: .named)))" }
-            return "Not on this network"
-        case .unknown: return "Not on this network · iCloud off"
-        }
+/// Cards dip slightly when pressed, like a physical key.
+struct CardPressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+            .opacity(configuration.isPressed ? 0.85 : 1)
+            .animation(Motion.snappy, value: configuration.isPressed)
     }
 }

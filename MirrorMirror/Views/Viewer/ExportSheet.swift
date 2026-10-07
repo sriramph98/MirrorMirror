@@ -1,6 +1,7 @@
 import SwiftUI
 import AVFoundation
 import Photos
+import MirrorUI
 
 /// Pick a range of the camera's recordings, have the camera cut it, and receive the clip.
 struct ExportSheet: View {
@@ -14,99 +15,139 @@ struct ExportSheet: View {
     @State private var clipDuration: Double?
 
     var body: some View {
-        NavigationStack {
-            Form {
-                if let jobID, let job = connection.exports[jobID] {
-                    progressSection(job)
-                } else {
-                    Section {
-                        DatePicker("Ends at", selection: $end, in: ...Date(), displayedComponents: [.date, .hourAndMinute])
-                        HStack {
-                            Button("−10 s") { end = end.addingTimeInterval(-10) }.buttonStyle(.bordered)
-                            Spacer()
-                            Text(end.formatted(date: .omitted, time: .standard)).monospacedDigit()
-                            Spacer()
-                            Button("+10 s") { end = min(Date(), end.addingTimeInterval(10)) }.buttonStyle(.bordered)
-                        }
-                        Picker("Length", selection: $duration) {
-                            Text("10 seconds").tag(TimeInterval(10))
-                            Text("30 seconds").tag(TimeInterval(30))
-                            Text("1 minute").tag(TimeInterval(60))
-                            Text("2 minutes").tag(TimeInterval(120))
-                            Text("5 minutes").tag(TimeInterval(300))
-                        }
-                    } header: {
-                        Text("Clip")
-                    } footer: {
-                        Text("\(start.formatted(date: .omitted, time: .standard)) – \(end.formatted(date: .omitted, time: .standard)). Footage from the last minute may still be recording; pick a slightly earlier end if the clip comes up short.")
-                    }
-
-                    Section {
-                        Picker("Quality", selection: $quality) {
-                            Text("Original").tag(ExportQuality.original)
-                            Text("720p").tag(ExportQuality.hd720)
-                            Text("540p (smallest)").tag(ExportQuality.sd540)
-                        }
-                    } footer: {
-                        Text("The camera trims the clip and sends it straight to this device. Smaller is faster away from home.")
-                    }
-
-                    Section {
-                        Button("Export Clip") {
-                            jobID = connection.exportClip(from: start, to: end, quality: quality)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .disabled(connection.phase != .connected)
+        VStack(spacing: 0) {
+            SheetHeader("Export clip", leadingAction: close)
+            ScrollView {
+                VStack(alignment: .leading, spacing: Space.xl) {
+                    if let jobID, let job = connection.exports[jobID] {
+                        progress(job)
+                    } else {
+                        form
                     }
                 }
+                .padding(.horizontal, Space.l)
+                .padding(.bottom, Space.xl)
+                .readableWidth()
             }
-            .navigationTitle("Export Clip")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") {
-                        if let jobID { connection.dismissExport(jobID) }
-                        dismiss()
-                    }
-                }
-            }
-            .onAppear {
-                // Default: the 30 s around what's on screen.
-                if let date = connection.playback.date, !connection.playback.isLive {
-                    end = min(Date(), date.addingTimeInterval(15))
-                } else {
-                    end = Date().addingTimeInterval(-60)
-                }
+            .scrollIndicators(.hidden)
+        }
+        .canvasBackground()
+        .preferredColorScheme(.dark)
+        .onAppear {
+            // Default: the 30 s around what's on screen.
+            if let date = connection.playback.date, !connection.playback.isLive {
+                end = min(Date(), date.addingTimeInterval(15))
+            } else {
+                end = Date().addingTimeInterval(-60)
             }
         }
     }
 
+    private func close() {
+        if let jobID { connection.dismissExport(jobID) }
+        dismiss()
+    }
+
     private var start: Date { end.addingTimeInterval(-duration) }
 
+    // MARK: Form
+
     @ViewBuilder
-    private func progressSection(_ job: CameraConnection.ExportJob) -> some View {
+    private var form: some View {
+        // End time: the hero readout, nudged in 10 s steps.
+        VStack(spacing: Space.l) {
+            HStack {
+                Text("Clip ends").type(.caps)
+                Spacer()
+                DatePicker("Ends at", selection: $end, in: ...Date(), displayedComponents: [.date, .hourAndMinute])
+                    .labelsHidden()
+                    .tint(Palette.accent)
+            }
+            HStack(spacing: Space.m) {
+                Button { end = end.addingTimeInterval(-10) } label: { Text("−10 s").type(.readout, color: Palette.textPrimary) }
+                    .buttonStyle(.tool(size: ControlSize.toolLarge))
+                    .accessibilityLabel("10 seconds earlier")
+                Spacer(minLength: 0)
+                VStack(spacing: Space.xs) {
+                    Text(end.timelineClock).type(.numeral).lineLimit(1).minimumScaleFactor(0.6)
+                    ReadoutLine([start.timelineClock + " → " + end.timelineClock, lengthLabel(duration)], color: Palette.textTertiary)
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Clip")
+                .accessibilityValue("\(start.formatted(date: .omitted, time: .standard)) to \(end.formatted(date: .omitted, time: .standard))")
+                Spacer(minLength: 0)
+                Button { end = min(Date(), end.addingTimeInterval(10)) } label: { Text("+10 s").type(.readout, color: Palette.textPrimary) }
+                    .buttonStyle(.tool(size: ControlSize.toolLarge))
+                    .accessibilityLabel("10 seconds later")
+            }
+        }
+        .panel()
+
+        SettingsSection("Clip", footer: "Footage from the last minute may still be recording; pick a slightly earlier end if the clip comes up short.") {
+            SettingRow("Length") {
+                SegmentPill([10.0, 30, 60, 120, 300], selection: $duration, label: lengthLabel)
+            }
+            SettingRow("Quality") {
+                SegmentPill(ExportQuality.allCases, selection: $quality, label: \.shortLabel)
+            }
+        }
+
+        VStack(spacing: Space.m) {
+            Button("Export clip") {
+                jobID = connection.exportClip(from: start, to: end, quality: quality)
+            }
+            .buttonStyle(.primary)
+            .disabled(connection.phase != .connected)
+            .opacity(connection.phase == .connected ? 1 : 0.4)
+            Text(connection.phase == .connected
+                 ? "The camera trims the clip and sends it straight to this device. Smaller is faster away from home."
+                 : "Connect to the camera to export.")
+                .type(.footnote, color: Palette.textTertiary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private func lengthLabel(_ seconds: TimeInterval) -> String {
+        seconds >= 60 ? "\(Int(seconds / 60))M" : "\(Int(seconds))S"
+    }
+
+    // MARK: Progress
+
+    @ViewBuilder
+    private func progress(_ job: CameraConnection.ExportJob) -> some View {
         switch job.state {
         case .working:
-            Section {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(job.progress < 0.7 ? "Camera is preparing the clip…" : "Receiving clip…")
-                    ProgressView(value: job.progress)
-                }
-                .padding(.vertical, 8)
+            VStack(alignment: .leading, spacing: Space.l) {
+                LED(Palette.accent, label: job.progress < 0.7 ? "Camera is cutting the clip" : "Receiving clip", pulsing: true)
+                Numeral("\(Int((job.progress * 100).rounded()))", unit: "%",
+                        caption: "\(job.from.timelineClock) → \(job.to.timelineClock)")
+                ProgressBar(value: job.progress)
             }
+            .panel(padding: Space.xl)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Exporting clip")
+            .accessibilityValue("\(Int(job.progress * 100)) percent")
+
         case let .done(url):
-            Section {
-                Label(clipDuration.map { "Clip ready · \(Int($0.rounded())) s" } ?? "Clip ready", systemImage: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
-                    .task {
-                        clipDuration = try? await AVURLAsset(url: url).load(.duration).seconds
-                    }
+            VStack(alignment: .leading, spacing: Space.l) {
+                LED(Palette.ok, label: "Clip ready")
+                Numeral(clipDuration.map { "\(Int($0.rounded()))" } ?? "–", unit: "S",
+                        caption: "\(job.from.timelineClock) → \(job.to.timelineClock)")
+                    .task { clipDuration = try? await AVURLAsset(url: url).load(.duration).seconds }
+                ProgressBar(value: 1)
                 if let clipDuration, clipDuration < job.to.timeIntervalSince(job.from) - 2 {
                     Text("Shorter than requested: the camera wasn't recording for part of that time.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .type(.footnote, color: Palette.textSecondary)
                 }
-                ShareLink(item: url) { Label("Share…", systemImage: "square.and.arrow.up") }
+            }
+            .panel(padding: Space.xl)
+
+            VStack(spacing: Space.m) {
+                ShareLink(item: url) {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                }
+                .buttonStyle(.primary)
+
                 Button {
                     Task {
                         let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
@@ -119,16 +160,48 @@ struct ExportSheet: View {
                 } label: {
                     Label(saved ? "Saved to Photos" : "Save to Photos", systemImage: saved ? "checkmark" : "photo.on.rectangle")
                 }
+                .buttonStyle(.secondary)
                 .disabled(saved)
             }
+
         case let .failed(message):
-            Section {
-                Label(message, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-                Button("Try Again") {
+            EmptyState(symbol: "exclamationmark.triangle", title: "Export failed", message: message) {
+                Button("Try again") {
                     connection.dismissExport(job.id)
                     jobID = nil
                 }
+                .buttonStyle(.primary)
+                .frame(maxWidth: 280)
             }
+            .frame(maxWidth: .infinity)
+        }
+    }
+}
+
+/// Thin accent progress bar.
+private struct ProgressBar: View {
+    let value: Double
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Capsule().fill(Palette.raised)
+                Capsule().fill(Palette.accent)
+                    .frame(width: max(4, geo.size.width * min(1, max(0, value))))
+            }
+        }
+        .frame(height: 4)
+        .animation(Motion.smooth, value: value)
+        .accessibilityHidden(true)
+    }
+}
+
+private extension ExportQuality {
+    var shortLabel: String {
+        switch self {
+        case .original: "Orig"
+        case .hd720: "720"
+        case .sd540: "540"
         }
     }
 }

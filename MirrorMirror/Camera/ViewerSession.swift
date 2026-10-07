@@ -15,6 +15,13 @@ final class ViewerSession {
     var remoteAudio: RTCAudioTrack?
     var helloReceived = false
     var isTalking = false
+    /// Read from the audio capture queue.
+    private let voiceLock = NSLock()
+    private var _wantsVoice = false
+    var wantsVoice: Bool {
+        get { voiceLock.withLock { _wantsVoice } }
+        set { voiceLock.withLock { _wantsVoice = newValue } }
+    }
     let connectedAt = Date()
 
     private let lock = NSLock()

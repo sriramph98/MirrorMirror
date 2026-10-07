@@ -1,4 +1,5 @@
 import SwiftUI
+import MirrorUI
 import AVFoundation
 import CoreImage.CIFilterBuiltins
 
@@ -26,13 +27,59 @@ struct QRCodeView: View {
     }
 }
 
+/// The pairing-code scanner in a viewfinder: live camera, large accent focus brackets, a caps
+/// readout, and a plain message (with a way out) when there is no camera to scan with.
+struct PairingScanner: View {
+    let onCode: (String) -> Void
+    var onUseLink: (() -> Void)? = nil
+    @State private var unavailable: String?
+
+    var body: some View {
+        Viewfinder {
+            QRScannerView(onCode: onCode, onUnavailable: { unavailable = $0 })
+            if let unavailable {
+                VStack(spacing: Space.m) {
+                    Image(systemName: "camera.metering.unknown").font(.title).foregroundStyle(Palette.textTertiary)
+                    Text(unavailable).type(.callout, color: Palette.textSecondary).multilineTextAlignment(.center)
+                    if let onUseLink {
+                        Button("Paste a link instead", action: onUseLink).buttonStyle(.pill())
+                    }
+                }
+                .padding(Space.xl)
+            }
+        } topLeading: {
+            LED(unavailable == nil ? Palette.ok : Palette.textTertiary, label: unavailable == nil ? "Scanning" : "No camera",
+                pulsing: unavailable == nil)
+        } topTrailing: {
+            Badge("QR")
+        } bottomLeading: {
+            ReadoutLine(["Align the pairing code"], color: Palette.textPrimary)
+        }
+        .overlay {
+            GeometryReader { geo in
+                let side = min(geo.size.width, geo.size.height) * 0.62
+                Color.clear
+                    .frame(width: side, height: side)
+                    .focusBrackets(unavailable == nil ? Palette.accent : Palette.textTertiary,
+                                   length: Space.xxxl, lineWidth: Space.xs, inset: 0)
+                    .position(x: geo.size.width / 2, y: geo.size.height / 2)
+            }
+            .allowsHitTesting(false)
+            .opacity(unavailable == nil ? 1 : 0.3)
+        }
+    }
+}
+
 /// Camera-based QR scanner. Reports each distinct code it sees.
 struct QRScannerView: UIViewControllerRepresentable {
     let onCode: (String) -> Void
+    /// When set, problems (no camera, no permission) are reported here instead of drawn by UIKit.
+    var onUnavailable: ((String) -> Void)? = nil
 
     func makeUIViewController(context: Context) -> ScannerController {
         let controller = ScannerController()
         controller.onCode = onCode
+        controller.onUnavailable = onUnavailable
         return controller
     }
 
@@ -40,6 +87,7 @@ struct QRScannerView: UIViewControllerRepresentable {
 
     final class ScannerController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
         var onCode: ((String) -> Void)?
+        var onUnavailable: ((String) -> Void)?
         private let session = AVCaptureSession()
         private var previewLayer: AVCaptureVideoPreviewLayer?
         private var lastCode: String?
@@ -47,8 +95,8 @@ struct QRScannerView: UIViewControllerRepresentable {
 
         override func viewDidLoad() {
             super.viewDidLoad()
-            view.backgroundColor = .black
-            messageLabel.textColor = .lightGray
+            view.backgroundColor = UIColor(Palette.frame)
+            messageLabel.textColor = UIColor(Palette.textSecondary)
             messageLabel.numberOfLines = 0
             messageLabel.textAlignment = .center
             messageLabel.font = .preferredFont(forTextStyle: .subheadline)
@@ -86,7 +134,9 @@ struct QRScannerView: UIViewControllerRepresentable {
             DispatchQueue.global(qos: .userInitiated).async { self.session.startRunning() }
         }
 
-        private func show(_ message: String) { messageLabel.text = message }
+        private func show(_ message: String) {
+            if let onUnavailable { onUnavailable(message) } else { messageLabel.text = message }
+        }
 
         override func viewDidLayoutSubviews() {
             super.viewDidLayoutSubviews()

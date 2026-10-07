@@ -76,6 +76,29 @@ final class CameraConnection: ObservableObject {
     private var pendingSnapshots = Set<UUID>()
     var audioFocused = true { didSet { updateAudio() } }
 
+    // MARK: Apple Watch relay
+    /// While an Apple Watch watches through this iPhone, camera sound goes to the watch instead of the iPhone speaker.
+    var watchRelayActive = false { didSet { updateAudio() } }
+    /// Camera audio as voice packets (only while `relayVoice(true)`).
+    var onRelayVoicePacket: ((Data) -> Void)?
+    private(set) var voiceRelayRequested = false
+
+    func relayVoice(_ on: Bool) {
+        guard phase == .connected else { voiceRelayRequested = false; return }
+        voiceRelayRequested = on
+        send(.relayVoice(on))
+    }
+
+    /// The watch wearer starts/stops talking (their voice arrives via `sendRelayVoice`).
+    func relayTalk(_ on: Bool) {
+        guard phase == .connected else { return }
+        send(.talk(on))
+    }
+
+    func sendRelayVoice(_ packet: Data) {
+        link?.sendVoice(packet)
+    }
+
     init(camera: PairedCamera, hub: ViewerHub) {
         self.camera = camera
         self.hub = hub
@@ -161,6 +184,9 @@ final class CameraConnection: ObservableObject {
             guard let message = try? JSONDecoder().decode(CameraMessage.self, from: data) else { return }
             Task { @MainActor in self?.handle(message) }
         }
+        link.onVoicePacket = { [weak self] packet in
+            Task { @MainActor in self?.onRelayVoicePacket?(packet) }
+        }
         link.onFileMessage = { [weak self] buffer in
             let data = buffer.data, isBinary = buffer.isBinary
             Task { @MainActor in self?.handleFile(data, isBinary: isBinary) }
@@ -221,6 +247,7 @@ final class CameraConnection: ObservableObject {
     }
 
     private func teardown() {
+        voiceRelayRequested = false
         statsTask?.cancel()
         statsTask = nil
         remoteVideo?.remove(renderer)
@@ -257,7 +284,7 @@ final class CameraConnection: ObservableObject {
     // MARK: Audio
 
     private func updateAudio() {
-        remoteAudio?.isEnabled = isListening && audioFocused
+        remoteAudio?.isEnabled = isListening && audioFocused && !watchRelayActive
     }
 
     /// Opens or closes the microphone path by renegotiating the audio direction in-band.

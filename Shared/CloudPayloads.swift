@@ -1,5 +1,22 @@
 import Foundation
 
+/// One step of the WebRTC handshake. Always travels sealed with the camera's `PairingKey`.
+struct SignalMessage: Codable {
+    enum Kind: String, Codable {
+        case offer, answer, reject
+        /// Apple Watch asking for sealed snapshots via iCloud while it can't reach the iPhone.
+        case snapshotRequest
+    }
+
+    var kind: Kind
+    var session: UUID
+    var from: String
+    var fromName: String
+    var sdp: String?
+    var reason: String?
+    var sentAt: Date = Date()
+}
+
 /// Sealed into the CloudKit presence record every couple of minutes.
 struct PresenceInfo: Codable {
     var name: String
@@ -55,4 +72,13 @@ extension EventKind {
         default: false
         }
     }
+}
+
+/// Sealed into the snapshot record the camera refreshes while a watch is looking.
+struct SnapshotInfo: Codable {
+    var jpeg: Data
+    var taken: Date
+    var cameraName: String
+    var batteryLevel: Double?
+    var isRecording: Bool
 }

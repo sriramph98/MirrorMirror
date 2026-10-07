@@ -25,6 +25,8 @@ enum ViewerCommand: Codable {
     /// In-band SDP offer, used to open/close the viewer's microphone for talk-back
     /// without a new signaling round trip.
     case renegotiate(sdp: String)
+    /// Send camera audio as voice packets on the voice channel (Apple Watch listening via iPhone).
+    case relayVoice(Bool)
 }
 
 /// Camera → viewer, JSON over the "control" data channel.

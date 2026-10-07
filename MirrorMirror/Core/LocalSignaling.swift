@@ -1,19 +1,6 @@
 import Foundation
 import Network
 
-/// One step of the WebRTC handshake. Always travels sealed with the camera's `PairingKey`.
-struct SignalMessage: Codable {
-    enum Kind: String, Codable { case offer, answer, reject }
-
-    var kind: Kind
-    var session: UUID
-    var from: String
-    var fromName: String
-    var sdp: String?
-    var reason: String?
-    var sentAt: Date = Date()
-}
-
 private let serviceType = "_mirror-mirror._tcp"
 
 // MARK: - Framing

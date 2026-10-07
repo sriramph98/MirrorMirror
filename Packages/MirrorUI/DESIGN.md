@@ -101,6 +101,14 @@ Header: back tool, camera name (`.navTitle`), path readout (`P2P · 8 MS`), batt
 ### Wall
 Adaptive grid of `Viewfinder` tiles: name (TL), LED (TR), latest event badge (BL), audio focus tool (BR). 1 column on compact portrait, 2 on iPhone landscape, 2–3 on iPad.
 
+### Apple Watch (viewer only)
+The watch can't run WebRTC, so it watches through the paired iPhone (small JPEG stream + voice) or,
+when the iPhone is out of reach, sealed iCloud snapshots. Screens: a carousel list of cameras
+(headline name, LED `VIA IPHONE` / `ICLOUD`), and a full-bleed picture per camera paged with the
+Digital Crown. Over the picture: camera name `.caps`, pulsing LIVE LED or a `STILL · 4s` badge, REC
+badge, battery readout; bottom corners hold a listen tool and a hold-to-talk shutter. Everything on
+the picture sits on a top/bottom gradient so it stays legible on any scene.
+
 ## Accessibility
 - Every icon-only button gets an `accessibilityLabel`; state goes in `accessibilityValue`.
 - LEDs and badges always carry text; never colour alone.

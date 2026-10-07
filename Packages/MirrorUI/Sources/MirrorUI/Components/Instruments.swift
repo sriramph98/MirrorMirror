@@ -117,6 +117,8 @@ public struct TickRuler: View {
     let spacing: CGFloat
 
     @State private var dragStart: Double?
+    /// Decided on the first movement: horizontal drags turn the dial, vertical ones scroll the page.
+    @State private var dragIsHorizontal: Bool?
 
     public init(value: Binding<Double>, in range: ClosedRange<Double>, step: Double, labelEvery: Int = 5,
                 spacing: CGFloat = 9, format: @escaping (Double) -> String = { String(format: "%.1f", $0) }) {
@@ -168,9 +170,13 @@ public struct TickRuler: View {
                                          .init(color: .black, location: 0.85), .init(color: .clear, location: 1)],
                                  startPoint: .leading, endPoint: .trailing))
             .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 1)
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 6)
                     .onChanged { drag in
+                        if dragIsHorizontal == nil {
+                            dragIsHorizontal = abs(drag.translation.width) > abs(drag.translation.height)
+                        }
+                        guard dragIsHorizontal == true else { return }
                         let start = dragStart ?? value
                         dragStart = start
                         let raw = start - Double(drag.translation.width / spacing) * step
@@ -178,7 +184,10 @@ public struct TickRuler: View {
                         let clamped = min(range.upperBound, max(range.lowerBound, snapped))
                         if clamped != value { value = clamped }
                     }
-                    .onEnded { _ in dragStart = nil }
+                    .onEnded { _ in
+                        dragStart = nil
+                        dragIsHorizontal = nil
+                    }
             )
         }
         .frame(height: 56)

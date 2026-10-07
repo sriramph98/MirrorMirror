@@ -94,10 +94,13 @@ final class PeerLink: NSObject {
     let connection: RTCPeerConnection
     let control: RTCDataChannel
     let files: RTCDataChannel
+    /// Voice packets for the Apple Watch relay: unordered, no retransmits, latest wins.
+    let voice: RTCDataChannel
 
     var onControlMessage: ((Data) -> Void)?
     var onControlOpen: (() -> Void)?
     var onFileMessage: ((RTCDataBuffer) -> Void)?
+    var onVoicePacket: ((Data) -> Void)?
     var onConnectionState: ((RTCPeerConnectionState) -> Void)?
     var onRemoteTrack: ((RTCMediaStreamTrack) -> Void)?
 
@@ -117,14 +120,22 @@ final class PeerLink: NSObject {
         filesConfig.isNegotiated = true
         filesConfig.channelId = 1
         filesConfig.isOrdered = true
+        let voiceConfig = RTCDataChannelConfiguration()
+        voiceConfig.isNegotiated = true
+        voiceConfig.channelId = 2
+        voiceConfig.isOrdered = false
+        voiceConfig.maxRetransmits = 0
         guard let control = pc.dataChannel(forLabel: "control", configuration: controlConfig),
-              let files = pc.dataChannel(forLabel: "files", configuration: filesConfig) else { return nil }
+              let files = pc.dataChannel(forLabel: "files", configuration: filesConfig),
+              let voice = pc.dataChannel(forLabel: "voice", configuration: voiceConfig) else { return nil }
         self.control = control
         self.files = files
+        self.voice = voice
         super.init()
         pc.delegate = self
         control.delegate = self
         files.delegate = self
+        voice.delegate = self
     }
 
     // MARK: Handshake
@@ -202,7 +213,14 @@ final class PeerLink: NSObject {
         return files.sendData(RTCDataBuffer(data: foot, isBinary: false))
     }
 
+    @discardableResult
+    func sendVoice(_ packet: Data) -> Bool {
+        guard voice.readyState == .open, voice.bufferedAmount < 64 * 1024 else { return false }
+        return voice.sendData(RTCDataBuffer(data: packet, isBinary: true))
+    }
+
     func close() {
+        voice.close()
         control.close()
         files.close()
         connection.close()
@@ -325,6 +343,8 @@ extension PeerLink: RTCDataChannelDelegate {
     func dataChannel(_ dataChannel: RTCDataChannel, didReceiveMessageWith buffer: RTCDataBuffer) {
         if dataChannel === control {
             onControlMessage?(buffer.data)
+        } else if dataChannel === voice {
+            onVoicePacket?(buffer.data)
         } else {
             onFileMessage?(buffer)
         }

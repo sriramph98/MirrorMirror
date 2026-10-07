@@ -171,9 +171,17 @@ final class CameraHost: ObservableObject {
                 Task { @MainActor in self.orientationChanged(portrait: portrait) }
             }
         }
-        engine.onAudio = { buffer in
+        let voicePacketizer = self.voicePacketizer
+        voicePacketizer.onPacket = { [weak self] packet in
+            guard let self else { return }
+            for session in self.sessionLock.withLock({ self.sessionList }) where session.wantsVoice {
+                session.link.sendVoice(packet)
+            }
+        }
+        engine.onAudio = { [weak self] buffer in
             recorder.append(audio: buffer)
             sound.process(sampleBuffer: buffer)
+            if self?.voiceRelayActive == true { voicePacketizer.append(buffer) }
         }
         engine.onStateChange = { [weak self] state in
             Task { @MainActor in self?.engineState = state }
@@ -191,6 +199,12 @@ final class CameraHost: ObservableObject {
 
     // Read on the capture queue; cheap flags that don't need main-actor isolation.
     nonisolated(unsafe) private var previewOn = true
+    /// True while any viewer relays camera audio to an Apple Watch.
+    nonisolated(unsafe) private var voiceRelayActive = false
+    private let voicePacketizer = VoicePacketizer()
+    /// Plays an Apple Watch wearer's voice (relayed by their iPhone) through the camera's speaker.
+    private lazy var watchVoicePlayer = VoicePlayer()
+    private var watchVoicePackets = 0
     nonisolated(unsafe) private var portraitOnQueue = false
 
     func setPreviewVisible(_ visible: Bool) {
@@ -365,6 +379,14 @@ final class CameraHost: ObservableObject {
                 }
             }
         }
+        link.onVoicePacket = { [weak self] packet in
+            Task { @MainActor in
+                guard let self else { return }
+                self.watchVoicePackets += 1
+                if self.watchVoicePackets % 25 == 1 { DebugSupport.log("camera", "watch voice packets: \(self.watchVoicePackets)") }
+                self.watchVoicePlayer.play(packet)
+            }
+        }
         link.onRemoteTrack = { [weak self, weak session] track in
             guard let audio = track as? RTCAudioTrack else { return }
             DebugSupport.log("camera", "receiving viewer audio track")
@@ -380,6 +402,7 @@ final class CameraHost: ObservableObject {
         sessionLock.withLock { sessionList.removeAll { $0 === session } }
         session.close()
         if talkingViewer == session.viewerName { talkingViewer = nil }
+        voiceRelayActive = sessions.contains { $0.wantsVoice }
         refreshViewers()
     }
 
@@ -474,6 +497,9 @@ final class CameraHost: ObservableObject {
                 guard let answer = try? await session.link.answerRenegotiation(offerSDP: sdp) else { return }
                 send(.renegotiated(sdp: answer), to: session)
             }
+        case let .relayVoice(on):
+            session.wantsVoice = on
+            voiceRelayActive = sessions.contains { $0.wantsVoice }
         }
     }
 
@@ -600,7 +626,12 @@ final class CameraHost: ObservableObject {
                 for message in messages where !processedSignals.contains(message.id.recordName) {
                     processedSignals.insert(message.id.recordName)
                     guard let offer = try? key.open(SignalMessage.self, from: message.payload),
-                          offer.kind == .offer, offer.sentAt > started.addingTimeInterval(-30) else { continue }
+                          offer.sentAt > started.addingTimeInterval(-30) else { continue }
+                    if offer.kind == .snapshotRequest {
+                        serveSnapshots(for: offer.fromName)
+                        continue
+                    }
+                    guard offer.kind == .offer else { continue }
                     DebugSupport.log("camera", "offer via iCloud from \(offer.fromName)")
                     let answer = await handleOffer(offer)
                     if let sealed = try? key.seal(answer),
@@ -614,6 +645,38 @@ final class CameraHost: ObservableObject {
             }
             try? await Task.sleep(for: .seconds(sessions.isEmpty ? 2 : 4))
         }
+    }
+
+    // MARK: Apple Watch snapshots (iCloud fallback)
+
+    private var snapshotsUntil = Date.distantPast
+    private var snapshotTask: Task<Void, Never>?
+
+    /// A watch that can't reach its iPhone asked for pictures: publish a sealed snapshot every
+    /// few seconds for a short while (it re-asks while it's still looking).
+    private func serveSnapshots(for requester: String) {
+        snapshotsUntil = Date().addingTimeInterval(45)
+        guard snapshotTask == nil else { return }
+        DebugSupport.log("camera", "serving iCloud snapshots to \(requester)")
+        snapshotTask = Task { [weak self] in
+            while let self, !Task.isCancelled, Date() < self.snapshotsUntil {
+                await self.publishSnapshot()
+                try? await Task.sleep(for: .seconds(3))
+            }
+            self?.snapshotTask = nil
+        }
+    }
+
+    private func publishSnapshot() async {
+        guard let frame = engine.currentFrame() else { return }
+        let image = CIImage(cvPixelBuffer: frame)
+        let scale = 480 / max(image.extent.width, image.extent.height)
+        let small = image.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
+        guard let jpeg = ciContext.jpegRepresentation(of: small, colorSpace: CGColorSpaceCreateDeviceRGB(),
+                                                      options: [kCGImageDestinationLossyCompressionQuality as CIImageRepresentationOption: 0.55]) else { return }
+        let info = SnapshotInfo(jpeg: jpeg, taken: Date(), cameraName: settings.name, batteryLevel: batteryLevel, isRecording: isRecording)
+        guard let payload = try? key.seal(info) else { return }
+        await relay.publishPresence(payload, recordName: key.snapshotRecordName)
     }
 
     private func presenceLoop() async {
@@ -692,5 +755,41 @@ final class CameraHost: ObservableObject {
     /// Devices on the same Apple Account pick this camera up automatically.
     private func publishToICloud() {
         ICloudPairing.publish(PairingInvite(key: key, name: settings.name))
+    }
+}
+
+// MARK: - Read-only conveniences for the camera-mode UI
+
+extension CameraHost {
+    /// The most recent detection, if any.
+    var latestEvent: CameraEvent? { recentEvents.first }
+
+    /// The small JPEG saved with an event, if there is one on disk.
+    func thumbnailImage(for event: CameraEvent) -> UIImage? {
+        store.thumbnailURL(for: event).flatMap { UIImage(contentsOfFile: $0.path) }
+    }
+
+    /// What is being streamed and recorded right now, as readout items: ["1080", "30", "HEVC"].
+    var streamFormatItems: [String] {
+        let quality = effectiveQuality
+        return ["\(quality.dimensions.short)", "\(quality.fps)", "HEVC"]
+    }
+
+    /// Bytes free on the device for recordings.
+    var storageFreeBytes: Int64 {
+        let values = try? URL(fileURLWithPath: NSHomeDirectory())
+            .resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey])
+        return values?.volumeAvailableCapacityForImportantUsage ?? 0
+    }
+
+    /// Roughly how many hours of footage still fit before the storage cap (or the device) is full,
+    /// at the current quality's recording bitrate (plus audio when it's recorded).
+    var estimatedRecordingHoursLeft: Double {
+        let dims = effectiveQuality.dimensions
+        let videoBits = SegmentRecorder.defaultBitrate(width: dims.long, height: dims.short)
+        let bitsPerSecond = Double(videoBits + (settings.recordAudio ? 64_000 : 0))
+        let capBytes = Int64(settings.storageCapGB * 1_000_000_000)
+        let room = max(0, min(storageFreeBytes, capBytes - store.totalBytes))
+        return Double(room) * 8 / bitsPerSecond / 3600
     }
 }

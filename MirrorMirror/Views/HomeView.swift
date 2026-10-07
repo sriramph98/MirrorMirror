@@ -1,116 +1,226 @@
 import SwiftUI
+import MirrorUI
 
+/// iPhone home: wordmark, camera cards, and a deck with Use as Camera, Recordings and Settings.
 struct HomeView: View {
     @EnvironmentObject private var hub: ViewerHub
     @ObservedObject private var store = RecordingStore.shared
-    @State private var showCamera = false
-    @State private var path: [String] = []
+    @Binding var showCamera: Bool
+    @Environment(\.dynamicTypeSize) private var dynamicType
+
+    @State private var path: [HomeRoute] = []
+    @State private var openCamera: PairedCamera?
+    @State private var showAdd = false
+    @State private var showSettings = false
+    @State private var showWall = false
+
+    enum HomeRoute: Hashable { case recordings }
 
     var body: some View {
         NavigationStack(path: $path) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 40) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("Mirror").font(.largeTitle.bold())
-                        Text("Mirror").font(.largeTitle.bold()).foregroundStyle(Theme.accent)
-                    }
-                    .padding(.top)
-
-                    VStack(spacing: 16) {
-                        Button { showCamera = true } label: {
-                            HomeCard(symbol: "video.fill", title: "Use as Camera",
-                                     detail: "Turn this device into a private home camera with recording, night vision, and motion & sound alerts.")
-                        }
-                        NavigationLink(value: "cameras") {
-                            HomeCard(symbol: "eye.fill", title: "Watch",
-                                     detail: watchDetail)
-                        }
-                    }
-                    .buttonStyle(.plain)
-
-                    NavigationLink(value: "recordings") {
-                        HomeCard(symbol: "film.stack", title: "Recordings on this device",
-                                 detail: store.segments.isEmpty
-                                    ? "Footage this device records as a camera appears here."
-                                    : "\(store.segments.count) clips · \(store.totalBytes.byteString) · \(store.events.count) events")
-                    }
-                    .buttonStyle(.plain)
-
-                    PrivacyNote()
+                VStack(alignment: .leading, spacing: Space.xl) {
+                    header
+                    camerasSection
                 }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 24)
+                .padding(.horizontal, Space.l)
+                .padding(.bottom, Space.xl)
+                .readableWidth()
             }
-            .navigationDestination(for: String.self) { destination in
-                switch destination {
-                case "cameras": CamerasView()
-                case "recordings": RecordingsView()
-                default: EmptyView()
+            .scrollIndicators(.hidden)
+            .refreshable { await hub.refreshPresence() }
+            .safeAreaInset(edge: .bottom, spacing: 0) { deck }
+            .canvasBackground(Palette.frame)
+            .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(for: HomeRoute.self) { route in
+                switch route {
+                case .recordings:
+                    RecordingsView(onClose: { path.removeLast() })
+                        .toolbar(.hidden, for: .navigationBar)
                 }
             }
+        }
+        .sheet(isPresented: $showAdd) { AddCameraView().mirrorSheet() }
+        .sheet(isPresented: $showSettings) { ViewerSettingsView(onClose: { showSettings = false }).mirrorSheet() }
+        .fullScreenCover(isPresented: $showWall) { GridView() }
+        .fullScreenCover(item: $openCamera) { camera in
+            LiveView(connection: hub.connection(for: camera), onClose: { openCamera = nil })
         }
         .onAppear {
-            if DebugSupport.autoStartCamera { showCamera = true }
-            if let url = DebugSupport.pairURL, let invite = PairingInvite(string: url) { hub.add(invite) }
-            if DebugSupport.autoWatch, let camera = hub.cameras.last { hub.pendingOpenCameraID = camera.id }
-        }
-        .fullScreenCover(isPresented: $showCamera) {
-            CameraModeView()
-        }
-        .onChange(of: hub.pendingOpenCameraID) { _, id in
-            // Notification tapped: jump to the camera list, which opens the camera.
-            if id != nil, path.last != "cameras" { path = ["cameras"] }
-        }
-    }
-
-    private var watchDetail: String {
-        switch hub.cameras.count {
-        case 0: "Pair a camera and watch live from anywhere, talk back, and replay recordings."
-        case 1: "1 camera paired."
-        default: "\(hub.cameras.count) cameras paired."
-        }
-    }
-}
-
-private struct HomeCard: View {
-    let symbol: String
-    let title: String
-    let detail: String
-
-    var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: symbol)
-                .font(.title2)
-                .frame(width: 36)
-            VStack(alignment: .leading, spacing: 8) {
-                Text(title).font(.title3.weight(.medium))
-                Text(detail)
-                    .font(.subheadline)
-                    .foregroundStyle(.gray)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
+            openPending()
+            switch ScreenHook.screen {
+            case "add", "addlink": showAdd = true
+            case "settings", "gallery": showSettings = true
+            case "recordings", "player": path = [.recordings]
+            case "wall": showWall = true
+            default: break
             }
-            Spacer(minLength: 0)
-            Image(systemName: "chevron.right").foregroundStyle(.white.opacity(0.3))
         }
-        .padding(.horizontal, 24)
-        .padding(.vertical, 30)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .card()
-        .foregroundStyle(.white)
-        .contentShape(Rectangle())
+        .onChange(of: hub.pendingOpenCameraID) { _, _ in openPending() }
     }
-}
 
-private struct PrivacyNote: View {
-    var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "lock.shield.fill").foregroundStyle(Theme.accent)
-            Text("Video streams directly between your devices, end-to-end encrypted. Recordings stay on the camera device. No accounts, no servers, no analytics.")
-                .font(.footnote)
-                .foregroundStyle(.gray)
+    // MARK: Header
+
+    private var header: some View {
+        HStack(spacing: Space.m) {
+            Wordmark(size: 15)
+            Spacer(minLength: Space.s)
+            Button { showAdd = true } label: { Image(systemName: "plus") }
+                .buttonStyle(.tool())
+                .accessibilityLabel("Add camera")
         }
-        .padding(.horizontal, 8)
+        .padding(.top, Space.s)
+    }
+
+    // MARK: Cameras
+
+    @ViewBuilder
+    private var camerasSection: some View {
+        VStack(alignment: .leading, spacing: Space.m) {
+            HStack(spacing: Space.s) {
+                Text("Cameras").type(.caps)
+                if !hub.cameras.isEmpty {
+                    Text("\(hub.cameras.count)").type(.readout, color: Palette.textTertiary)
+                }
+                Spacer(minLength: Space.s)
+                if hub.cameras.count >= 2 {
+                    Button { showWall = true } label: {
+                        Label("All cameras", systemImage: "square.grid.2x2.fill")
+                    }
+                    .buttonStyle(.pill())
+                }
+            }
+            .padding(.horizontal, Space.xs)
+            .frame(minHeight: ControlSize.tool)
+
+            if hub.cameras.isEmpty {
+                EmptyState(symbol: "video.badge.plus", title: "No cameras yet",
+                           message: "Open MirrorMirror on a spare iPhone or iPad and tap Use as camera. Cameras on your Apple Account appear here on their own; for anyone else's, scan its pairing code.") {
+                    VStack(spacing: Space.s) {
+                        Button { showAdd = true } label: { Label("Add camera", systemImage: "qrcode.viewfinder") }
+                            .buttonStyle(.accent)
+                        Button { showCamera = true } label: { Text("Use this iPhone as a camera") }
+                            .buttonStyle(.pill())
+                    }
+                    .padding(.top, Space.s)
+                }
+                .frame(maxWidth: .infinity)
+                .panel()
+            } else {
+                CamerasView { openCamera = $0 }
+            }
+        }
+    }
+
+    // MARK: Deck
+
+    private var deck: some View {
+        VStack(spacing: Space.m) {
+            if dynamicType.isAccessibilitySize {
+                // Large type: the primary action gets the full width, tools sit under it.
+                useAsCamera
+                HStack(alignment: .top) {
+                    recordingsTool
+                    Spacer()
+                    settingsTool
+                }
+            } else {
+                HStack(alignment: .top, spacing: Space.m) {
+                    recordingsTool
+                    useAsCamera.padding(.top, Space.xxs)
+                    settingsTool
+                }
+            }
+            HStack(spacing: Space.s) {
+                Image(systemName: "lock.fill").font(.caption2.weight(.bold)).foregroundStyle(Palette.textTertiary)
+                ViewThatFits {
+                    ReadoutLine(["P2P", "End-to-end", "No cloud video"], color: Palette.textTertiary)
+                    ReadoutLine(["P2P", "E2E", "No cloud"], color: Palette.textTertiary)
+                }
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Peer to peer, end-to-end encrypted, no cloud video")
+        }
+        .padding(.horizontal, Space.l)
+        .padding(.top, Space.l)
+        .padding(.bottom, Space.s)
+        .readableWidth()
+        .background {
+            UnevenRoundedRectangle(topLeadingRadius: Radius.deck, topTrailingRadius: Radius.deck, style: .continuous)
+                .fill(Palette.surface)
+                .overlay(alignment: .top) {
+                    UnevenRoundedRectangle(topLeadingRadius: Radius.deck, topTrailingRadius: Radius.deck, style: .continuous)
+                        .strokeBorder(Palette.stroke, lineWidth: 1)
+                        .mask(LinearGradient(colors: [Palette.textPrimary, .clear], startPoint: .top, endPoint: .center))
+                }
+                .ignoresSafeArea(edges: .bottom)
+        }
+    }
+
+    private var useAsCamera: some View {
+        Button { showCamera = true } label: {
+            Label("Use as camera", systemImage: "video.fill")
+        }
+        .buttonStyle(.primary)
+    }
+
+    private var recordingsTool: some View {
+        deckTool(symbol: "film.stack", caption: recordingsCaption, label: "Recordings", value: recordingsValue) {
+            path.append(.recordings)
+        }
+    }
+
+    private var settingsTool: some View {
+        deckTool(symbol: "gearshape", caption: "Settings", label: "Settings", value: nil) { showSettings = true }
+    }
+
+    private func deckTool(symbol: String, caption: String, label: String, value: String?, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: Space.xs) {
+                Image(systemName: symbol)
+                    .font(.system(.body, weight: .semibold))
+                    .foregroundStyle(Palette.textPrimary)
+                    .frame(width: ControlSize.toolLarge, height: ControlSize.toolLarge)
+                    .background(Palette.raised, in: Circle())
+                    .overlay(Circle().strokeBorder(Palette.hairline, lineWidth: 1))
+                Text(caption).type(.readout, color: Palette.textSecondary).lineLimit(1).fixedSize()
+            }
+            .frame(minWidth: ControlSize.toolLarge + Space.m)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(CardPressStyle())
+        .accessibilityLabel(label)
+        .accessibilityValue(value ?? "")
+    }
+
+    private var recordingsCaption: String {
+        store.segments.isEmpty ? "Clips" : "\(store.segments.count) · \(store.totalBytes.byteString)"
+    }
+
+    private var recordingsValue: String {
+        store.segments.isEmpty ? "None on this device"
+            : "\(store.segments.count) clips, \(store.totalBytes.byteString)"
+    }
+
+    // MARK: Deep links
+
+    private func openPending() {
+        guard let id = hub.pendingOpenCameraID, let camera = hub.camera(id: id) else { return }
+        hub.pendingOpenCameraID = nil
+        let covered = showAdd || showSettings || showWall || openCamera != nil
+        showAdd = false
+        showSettings = false
+        showWall = false
+        if covered {
+            openCamera = nil
+            // Let the current sheet or cover finish dismissing before presenting the camera.
+            Task {
+                try? await Task.sleep(for: .milliseconds(600))
+                openCamera = camera
+            }
+        } else {
+            openCamera = camera
+        }
     }
 }
 
@@ -121,24 +231,30 @@ struct AddCameraConfirmation: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "video.badge.plus").font(.system(size: 44)).foregroundStyle(Theme.accent)
-            Text("Add “\(invite.name)”?").font(.title2.bold())
-            Text("You'll be able to watch this camera live, talk through it, and replay its recordings. The camera's owner can remove your access at any time.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-            Button {
-                let camera = hub.add(invite)
-                hub.pendingOpenCameraID = camera.id
-                dismiss()
-            } label: {
-                Text("Add Camera").font(.headline).frame(maxWidth: .infinity).padding(.vertical, 6)
+        VStack(spacing: 0) {
+            SheetHeader("Add camera", leadingAction: { dismiss() })
+            Spacer(minLength: 0)
+            EmptyState(symbol: "video.badge.plus", title: "Add “\(invite.name)”?",
+                       message: "You'll be able to watch this camera live, talk through it and replay its recordings. Its owner can remove your access at any time.") {
+                VStack(spacing: Space.s) {
+                    Button {
+                        let camera = hub.add(invite)
+                        dismiss()
+                        // Open it once this sheet has gone, so the live view can present.
+                        Task { @MainActor [hub] in
+                            try? await Task.sleep(for: .milliseconds(600))
+                            hub.pendingOpenCameraID = camera.id
+                        }
+                    } label: { Text("Add camera") }
+                    .buttonStyle(.primary)
+                    Button("Not now") { dismiss() }
+                        .buttonStyle(.pill())
+                }
+                .padding(.top, Space.s)
             }
-            .buttonStyle(.borderedProminent)
-            .foregroundStyle(.black)
-            Button("Not Now", role: .cancel) { dismiss() }
+            Spacer(minLength: 0)
         }
-        .padding(24)
+        .readableWidth()
+        .canvasBackground()
     }
 }
