@@ -2,11 +2,6 @@ import AVFoundation
 import CoreMedia
 import UIKit
 
-enum ExportQuality: String, Codable, CaseIterable {
-    case original
-    case hd720
-    case sd540
-}
 
 enum ClipExportError: LocalizedError {
     case invalidRange

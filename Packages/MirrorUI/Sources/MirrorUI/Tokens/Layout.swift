@@ -52,3 +52,36 @@ public enum Motion {
     /// LEDs and REC dots.
     public static let pulse = Animation.easeInOut(duration: 0.9).repeatForever(autoreverses: true)
 }
+
+/// Haptic vocabulary. Maps to SensoryFeedback where the platform has it; a no-op on Apple TV
+/// and on visionOS before 26 (whose SDK lacks the type entirely).
+public enum Haptic {
+    case selection, impact, start, success
+}
+
+public extension View {
+    @ViewBuilder
+    func haptic<T: Equatable>(_ haptic: Haptic, trigger: T) -> some View {
+        #if os(tvOS)
+        self
+        #elseif os(visionOS)
+        if #available(visionOS 26, *) { self.sensoryFeedback(haptic.feedback, trigger: trigger) } else { self }
+        #else
+        self.sensoryFeedback(haptic.feedback, trigger: trigger)
+        #endif
+    }
+}
+
+#if !os(tvOS)
+@available(visionOS 26, *)
+extension Haptic {
+    var feedback: SensoryFeedback {
+        switch self {
+        case .selection: .selection
+        case .impact: .impact(weight: .medium)
+        case .start: .start
+        case .success: .success
+        }
+    }
+}
+#endif

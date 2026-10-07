@@ -170,28 +170,11 @@ public struct TickRuler: View {
                                          .init(color: .black, location: 0.85), .init(color: .clear, location: 1)],
                                  startPoint: .leading, endPoint: .trailing))
             .contentShape(Rectangle())
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 6)
-                    .onChanged { drag in
-                        if dragIsHorizontal == nil {
-                            dragIsHorizontal = abs(drag.translation.width) > abs(drag.translation.height)
-                        }
-                        guard dragIsHorizontal == true else { return }
-                        let start = dragStart ?? value
-                        dragStart = start
-                        let raw = start - Double(drag.translation.width / spacing) * step
-                        let snapped = (raw / step).rounded() * step
-                        let clamped = min(range.upperBound, max(range.lowerBound, snapped))
-                        if clamped != value { value = clamped }
-                    }
-                    .onEnded { _ in
-                        dragStart = nil
-                        dragIsHorizontal = nil
-                    }
-            )
+            .modifier(RulerInput(value: $value, range: range, step: step, spacing: spacing,
+                                 dragStart: $dragStart, dragIsHorizontal: $dragIsHorizontal))
         }
         .frame(height: 56)
-        .sensoryFeedback(.selection, trigger: value)
+        .haptic(.selection, trigger: value)
         .accessibilityElement()
         .accessibilityValue(format(value))
         .accessibilityAdjustableAction { direction in
@@ -272,5 +255,55 @@ public struct Viewfinder<Content: View, TL: View, TR: View, BL: View, BR: View>:
         .overlay(alignment: .topTrailing) { topTrailing.padding(Space.m) }
         .overlay(alignment: .bottomLeading) { bottomLeading.padding(Space.m) }
         .overlay(alignment: .bottomTrailing) { bottomTrailing.padding(Space.m) }
+    }
+}
+
+/// How the ruler is moved: drag on touch platforms; focus and left/right (Siri Remote swipes) on tvOS.
+private struct RulerInput: ViewModifier {
+    @Binding var value: Double
+    let range: ClosedRange<Double>
+    let step: Double
+    let spacing: CGFloat
+    @Binding var dragStart: Double?
+    @Binding var dragIsHorizontal: Bool?
+    #if os(tvOS)
+    @FocusState private var focused: Bool
+    #endif
+
+    func body(content: Content) -> some View {
+        #if os(tvOS)
+        content
+            .focusable()
+            .focused($focused)
+            .onMoveCommand { direction in
+                switch direction {
+                case .left: value = max(range.lowerBound, value - step)
+                case .right: value = min(range.upperBound, value + step)
+                default: break
+                }
+            }
+            .overlay(RoundedRectangle(cornerRadius: Radius.control, style: .continuous)
+                .strokeBorder(focused ? Palette.accent : Color.clear, lineWidth: 2))
+        #else
+        content.simultaneousGesture(
+            DragGesture(minimumDistance: 6)
+                .onChanged { drag in
+                    if dragIsHorizontal == nil {
+                        dragIsHorizontal = abs(drag.translation.width) > abs(drag.translation.height)
+                    }
+                    guard dragIsHorizontal == true else { return }
+                    let start = dragStart ?? value
+                    dragStart = start
+                    let raw = start - Double(drag.translation.width / spacing) * step
+                    let snapped = (raw / step).rounded() * step
+                    let clamped = min(range.upperBound, max(range.lowerBound, snapped))
+                    if clamped != value { value = clamped }
+                }
+                .onEnded { _ in
+                    dragStart = nil
+                    dragIsHorizontal = nil
+                }
+        )
+        #endif
     }
 }

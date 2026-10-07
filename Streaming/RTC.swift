@@ -1,26 +1,30 @@
 import Foundation
 import AVFoundation
-import WebRTC
+import LiveKitWebRTC
 
 /// Process-wide WebRTC setup: one factory, one audio session policy, ICE servers.
 final class RTCEnvironment {
     static let shared = RTCEnvironment()
 
-    let factory: RTCPeerConnectionFactory
+    let factory: LKRTCPeerConnectionFactory
 
     private init() {
-        RTCInitializeSSL()
-        factory = RTCPeerConnectionFactory(encoderFactory: RTCDefaultVideoEncoderFactory(),
-                                           decoderFactory: RTCDefaultVideoDecoderFactory())
-        let audio = RTCAudioSessionConfiguration.webRTC()
+        LKRTCInitializeSSL()
+        factory = LKRTCPeerConnectionFactory(encoderFactory: LKRTCDefaultVideoEncoderFactory(),
+                                           decoderFactory: LKRTCDefaultVideoDecoderFactory())
+        let audio = LKRTCAudioSessionConfiguration.webRTC()
         audio.category = AVAudioSession.Category.playAndRecord.rawValue
         audio.mode = AVAudioSession.Mode.videoChat.rawValue
+        #if os(tvOS)
+        audio.categoryOptions = [.allowAirPlay, .mixWithOthers]
+        #else
         audio.categoryOptions = [.defaultToSpeaker, .allowBluetoothHFP, .allowAirPlay, .mixWithOthers]
-        RTCAudioSessionConfiguration.setWebRTC(audio)
+        #endif
+        LKRTCAudioSessionConfiguration.setWebRTC(audio)
     }
 
-    func makeConfiguration() -> RTCConfiguration {
-        let config = RTCConfiguration()
+    func makeConfiguration() -> LKRTCConfiguration {
+        let config = LKRTCConfiguration()
         config.iceServers = ConnectionPreferences.iceServers
         config.sdpSemantics = .unifiedPlan
         config.bundlePolicy = .maxBundle
@@ -51,11 +55,11 @@ enum ConnectionPreferences {
         set { defaults.set(newValue, forKey: "ice.turn.credential") }
     }
 
-    static var iceServers: [RTCIceServer] {
-        var servers = [RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302", "stun:stun.cloudflare.com:3478"])]
+    static var iceServers: [LKRTCIceServer] {
+        var servers = [LKRTCIceServer(urlStrings: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302", "stun:stun.cloudflare.com:3478"])]
         let turn = turnURL.trimmingCharacters(in: .whitespaces)
         if !turn.isEmpty {
-            servers.append(RTCIceServer(urlStrings: [turn], username: turnUsername, credential: turnCredential))
+            servers.append(LKRTCIceServer(urlStrings: [turn], username: turnUsername, credential: turnCredential))
         }
         return servers
     }
@@ -91,36 +95,36 @@ struct LinkStats: Equatable {
 /// A WebRTC peer connection plus the two data channels the app uses:
 /// "control" for JSON messages and "files" for thumbnails, snapshots and exported clips.
 final class PeerLink: NSObject {
-    let connection: RTCPeerConnection
-    let control: RTCDataChannel
-    let files: RTCDataChannel
+    let connection: LKRTCPeerConnection
+    let control: LKRTCDataChannel
+    let files: LKRTCDataChannel
     /// Voice packets for the Apple Watch relay: unordered, no retransmits, latest wins.
-    let voice: RTCDataChannel
+    let voice: LKRTCDataChannel
 
     var onControlMessage: ((Data) -> Void)?
     var onControlOpen: (() -> Void)?
-    var onFileMessage: ((RTCDataBuffer) -> Void)?
+    var onFileMessage: ((LKRTCDataBuffer) -> Void)?
     var onVoicePacket: ((Data) -> Void)?
-    var onConnectionState: ((RTCPeerConnectionState) -> Void)?
-    var onRemoteTrack: ((RTCMediaStreamTrack) -> Void)?
+    var onConnectionState: ((LKRTCPeerConnectionState) -> Void)?
+    var onRemoteTrack: ((LKRTCMediaStreamTrack) -> Void)?
 
     private var lastBytes: (bytes: Double, time: TimeInterval)?
 
     init?(environment: RTCEnvironment = .shared) {
-        let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement": "true"])
+        let constraints = LKRTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: ["DtlsSrtpKeyAgreement": "true"])
         guard let pc = environment.factory.peerConnection(with: environment.makeConfiguration(), constraints: constraints, delegate: nil) else { return nil }
         connection = pc
 
         // Pre-negotiated channels: both ends create them with the same IDs, no extra round trip.
-        let controlConfig = RTCDataChannelConfiguration()
+        let controlConfig = LKRTCDataChannelConfiguration()
         controlConfig.isNegotiated = true
         controlConfig.channelId = 0
         controlConfig.isOrdered = true
-        let filesConfig = RTCDataChannelConfiguration()
+        let filesConfig = LKRTCDataChannelConfiguration()
         filesConfig.isNegotiated = true
         filesConfig.channelId = 1
         filesConfig.isOrdered = true
-        let voiceConfig = RTCDataChannelConfiguration()
+        let voiceConfig = LKRTCDataChannelConfiguration()
         voiceConfig.isNegotiated = true
         voiceConfig.channelId = 2
         voiceConfig.isOrdered = false
@@ -141,7 +145,7 @@ final class PeerLink: NSObject {
     // MARK: Handshake
 
     func makeOffer() async throws -> String {
-        let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)
+        let constraints = LKRTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)
         let offer = try await connection.offer(for: constraints)
         try await connection.setLocalDescription(offer)
         await waitForGathering()
@@ -151,9 +155,9 @@ final class PeerLink: NSObject {
     /// `attachTracks` runs between applying the offer and creating the answer, so tracks added
     /// there bind to the offerer's transceivers instead of creating new ones.
     func answer(offerSDP: String, attachTracks: () -> Void) async throws -> String {
-        try await connection.setRemoteDescription(RTCSessionDescription(type: .offer, sdp: offerSDP))
+        try await connection.setRemoteDescription(LKRTCSessionDescription(type: .offer, sdp: offerSDP))
         attachTracks()
-        let answer = try await connection.answer(for: RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil))
+        let answer = try await connection.answer(for: LKRTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil))
         try await connection.setLocalDescription(answer)
         await waitForGathering()
         return connection.localDescription?.sdp ?? answer.sdp
@@ -161,20 +165,20 @@ final class PeerLink: NSObject {
 
     /// Offer for a change on an already-connected link (ICE is up, so no gathering wait).
     func renegotiationOffer() async throws -> String {
-        let offer = try await connection.offer(for: RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil))
+        let offer = try await connection.offer(for: LKRTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil))
         try await connection.setLocalDescription(offer)
         return offer.sdp
     }
 
     func answerRenegotiation(offerSDP: String) async throws -> String {
-        try await connection.setRemoteDescription(RTCSessionDescription(type: .offer, sdp: offerSDP))
-        let answer = try await connection.answer(for: RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil))
+        try await connection.setRemoteDescription(LKRTCSessionDescription(type: .offer, sdp: offerSDP))
+        let answer = try await connection.answer(for: LKRTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil))
         try await connection.setLocalDescription(answer)
         return answer.sdp
     }
 
     func accept(answerSDP: String) async throws {
-        try await connection.setRemoteDescription(RTCSessionDescription(type: .answer, sdp: answerSDP))
+        try await connection.setRemoteDescription(LKRTCSessionDescription(type: .answer, sdp: answerSDP))
     }
 
     /// Waits until ICE gathering completes (or 3 s, whichever is first) so the SDP carries every
@@ -191,13 +195,13 @@ final class PeerLink: NSObject {
     @discardableResult
     func sendControl(_ data: Data) -> Bool {
         guard control.readyState == .open else { return false }
-        return control.sendData(RTCDataBuffer(data: data, isBinary: false))
+        return control.sendData(LKRTCDataBuffer(data: data, isBinary: false))
     }
 
     /// Sends a whole file on the files channel with back-pressure. Call from a background task.
     func sendFile(_ data: Data, header: FileTransferHeader) async -> Bool {
         guard files.readyState == .open, let head = try? JSONEncoder().encode(header) else { return false }
-        files.sendData(RTCDataBuffer(data: head, isBinary: false))
+        files.sendData(LKRTCDataBuffer(data: head, isBinary: false))
         let chunk = 16 * 1024
         var offset = 0
         while offset < data.count {
@@ -206,17 +210,17 @@ final class PeerLink: NSObject {
                 try? await Task.sleep(for: .milliseconds(15))
             }
             let end = min(offset + chunk, data.count)
-            guard files.sendData(RTCDataBuffer(data: data.subdata(in: offset..<end), isBinary: true)) else { return false }
+            guard files.sendData(LKRTCDataBuffer(data: data.subdata(in: offset..<end), isBinary: true)) else { return false }
             offset = end
         }
         guard let foot = try? JSONEncoder().encode(FileTransferFooter(id: header.id)) else { return false }
-        return files.sendData(RTCDataBuffer(data: foot, isBinary: false))
+        return files.sendData(LKRTCDataBuffer(data: foot, isBinary: false))
     }
 
     @discardableResult
     func sendVoice(_ packet: Data) -> Bool {
         guard voice.readyState == .open, voice.bufferedAmount < 64 * 1024 else { return false }
-        return voice.sendData(RTCDataBuffer(data: packet, isBinary: true))
+        return voice.sendData(LKRTCDataBuffer(data: packet, isBinary: true))
     }
 
     func close() {
@@ -314,33 +318,33 @@ final class PeerLink: NSObject {
     }
 }
 
-extension PeerLink: RTCPeerConnectionDelegate {
-    func peerConnection(_ peerConnection: RTCPeerConnection, didChange stateChanged: RTCSignalingState) {}
-    func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {}
-    func peerConnection(_ peerConnection: RTCPeerConnection, didRemove stream: RTCMediaStream) {}
-    func peerConnectionShouldNegotiate(_ peerConnection: RTCPeerConnection) {}
-    func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {}
-    func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {}
-    func peerConnection(_ peerConnection: RTCPeerConnection, didRemove candidates: [RTCIceCandidate]) {}
-    func peerConnection(_ peerConnection: RTCPeerConnection, didOpen dataChannel: RTCDataChannel) {}
+extension PeerLink: LKRTCPeerConnectionDelegate {
+    func peerConnection(_ peerConnection: LKRTCPeerConnection, didChange stateChanged: LKRTCSignalingState) {}
+    func peerConnection(_ peerConnection: LKRTCPeerConnection, didAdd stream: LKRTCMediaStream) {}
+    func peerConnection(_ peerConnection: LKRTCPeerConnection, didRemove stream: LKRTCMediaStream) {}
+    func peerConnectionShouldNegotiate(_ peerConnection: LKRTCPeerConnection) {}
+    func peerConnection(_ peerConnection: LKRTCPeerConnection, didChange newState: LKRTCIceConnectionState) {}
+    func peerConnection(_ peerConnection: LKRTCPeerConnection, didGenerate candidate: LKRTCIceCandidate) {}
+    func peerConnection(_ peerConnection: LKRTCPeerConnection, didRemove candidates: [LKRTCIceCandidate]) {}
+    func peerConnection(_ peerConnection: LKRTCPeerConnection, didOpen dataChannel: LKRTCDataChannel) {}
 
-    func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceGatheringState) {}
+    func peerConnection(_ peerConnection: LKRTCPeerConnection, didChange newState: LKRTCIceGatheringState) {}
 
-    func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCPeerConnectionState) {
+    func peerConnection(_ peerConnection: LKRTCPeerConnection, didChange newState: LKRTCPeerConnectionState) {
         onConnectionState?(newState)
     }
 
-    func peerConnection(_ peerConnection: RTCPeerConnection, didAdd rtpReceiver: RTCRtpReceiver, streams mediaStreams: [RTCMediaStream]) {
+    func peerConnection(_ peerConnection: LKRTCPeerConnection, didAdd rtpReceiver: LKRTCRtpReceiver, streams mediaStreams: [LKRTCMediaStream]) {
         if let track = rtpReceiver.track { onRemoteTrack?(track) }
     }
 }
 
-extension PeerLink: RTCDataChannelDelegate {
-    func dataChannelDidChangeState(_ dataChannel: RTCDataChannel) {
+extension PeerLink: LKRTCDataChannelDelegate {
+    func dataChannelDidChangeState(_ dataChannel: LKRTCDataChannel) {
         if dataChannel === control, dataChannel.readyState == .open { onControlOpen?() }
     }
 
-    func dataChannel(_ dataChannel: RTCDataChannel, didReceiveMessageWith buffer: RTCDataBuffer) {
+    func dataChannel(_ dataChannel: LKRTCDataChannel, didReceiveMessageWith buffer: LKRTCDataBuffer) {
         if dataChannel === control {
             onControlMessage?(buffer.data)
         } else if dataChannel === voice {
@@ -353,18 +357,18 @@ extension PeerLink: RTCDataChannelDelegate {
 
 /// Feeds CVPixelBuffers into a WebRTC video source (one per connected viewer).
 final class FrameInjector {
-    let source: RTCVideoSource
-    let track: RTCVideoTrack
-    private let capturer: RTCVideoCapturer
+    let source: LKRTCVideoSource
+    let track: LKRTCVideoTrack
+    private let capturer: LKRTCVideoCapturer
 
     init(environment: RTCEnvironment = .shared, trackID: String) {
         source = environment.factory.videoSource()
-        capturer = RTCVideoCapturer(delegate: source)
+        capturer = LKRTCVideoCapturer(delegate: source)
         track = environment.factory.videoTrack(with: source, trackId: trackID)
     }
 
     func push(_ pixelBuffer: CVPixelBuffer, time: CMTime) {
-        let frame = RTCVideoFrame(buffer: RTCCVPixelBuffer(pixelBuffer: pixelBuffer),
+        let frame = LKRTCVideoFrame(buffer: LKRTCCVPixelBuffer(pixelBuffer: pixelBuffer),
                                   rotation: ._0,
                                   timeStampNs: Int64(CMTimeGetSeconds(time) * 1_000_000_000))
         source.capturer(capturer, didCapture: frame)

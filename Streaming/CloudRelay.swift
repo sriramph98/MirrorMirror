@@ -128,15 +128,17 @@ final class CloudRelay {
                                                subscriptionID: subscriptionID,
                                                options: [.firesOnRecordCreation])
         let info = CKSubscription.NotificationInfo()
+        #if !os(tvOS)
         info.title = cameraName
         info.alertBody = "New activity detected. Tap to watch live."
         info.soundName = "default"
+        info.category = "camera-event"
+        #endif
         info.shouldSendContentAvailable = true
         // Lets the notification extension decrypt the sealed event (carried in the push) and
         // rewrite the alert; without it the generic text above is shown.
         info.shouldSendMutableContent = true
         info.desiredKeys = [sealedEventField]
-        info.category = "camera-event"
         subscription.notificationInfo = info
         do {
             // CloudKit keeps an existing subscription's settings when one is re-saved under the

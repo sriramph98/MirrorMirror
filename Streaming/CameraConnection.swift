@@ -3,7 +3,7 @@ import AVFoundation
 import Photos
 import UIKit
 import UserNotifications
-import WebRTC
+import LiveKitWebRTC
 
 /// The viewer's live link to one camera: video, audio both ways, remote control, the
 /// recordings timeline, playback and clip export. Reconnects on its own when the network blips.
@@ -63,10 +63,10 @@ final class CameraConnection: ObservableObject {
     private weak var hub: ViewerHub?
 
     private var link: PeerLink?
-    private var remoteVideo: RTCVideoTrack?
-    private var remoteAudio: RTCAudioTrack?
-    private var audioTransceiver: RTCRtpTransceiver?
-    private var micTrack: RTCAudioTrack?
+    private var remoteVideo: LKRTCVideoTrack?
+    private var remoteAudio: LKRTCAudioTrack?
+    private var audioTransceiver: LKRTCRtpTransceiver?
+    private var micTrack: LKRTCAudioTrack?
     private var connectTask: Task<Void, Never>?
     private var statsTask: Task<Void, Never>?
     private var reconnectAttempt = 0
@@ -140,11 +140,11 @@ final class CameraConnection: ObservableObject {
         self.link = link
         wire(link)
 
-        let videoInit = RTCRtpTransceiverInit()
+        let videoInit = LKRTCRtpTransceiverInit()
         videoInit.direction = .recvOnly
         link.connection.addTransceiver(of: .video, init: videoInit)
         // Receive-only until the user taps Talk, so the viewer's microphone is never open otherwise.
-        let audioInit = RTCRtpTransceiverInit()
+        let audioInit = LKRTCRtpTransceiverInit()
         audioInit.direction = .recvOnly
         audioTransceiver = link.connection.addTransceiver(of: .audio, init: audioInit)
 
@@ -218,12 +218,12 @@ final class CameraConnection: ObservableObject {
         }
     }
 
-    private func attach(_ track: RTCMediaStreamTrack) {
-        if let video = track as? RTCVideoTrack {
+    private func attach(_ track: LKRTCMediaStreamTrack) {
+        if let video = track as? LKRTCVideoTrack {
             remoteVideo?.remove(renderer)
             remoteVideo = video
             video.add(renderer)
-        } else if let audio = track as? RTCAudioTrack {
+        } else if let audio = track as? LKRTCAudioTrack {
             remoteAudio = audio
             updateAudio()
         }
@@ -297,7 +297,7 @@ final class CameraConnection: ObservableObject {
             }
             if micTrack == nil {
                 let factory = RTCEnvironment.shared.factory
-                micTrack = factory.audioTrack(with: factory.audioSource(with: RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)),
+                micTrack = factory.audioTrack(with: factory.audioSource(with: LKRTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)),
                                               trackId: "viewer-mic")
             }
             micTrack?.isEnabled = true
@@ -500,6 +500,7 @@ final class CameraConnection: ObservableObject {
     }
 
     private func notifyIfBackground(_ event: CameraEvent) {
+        #if !os(tvOS)
         // With iCloud push active the camera's push already alerts; don't double up.
         guard UIApplication.shared.applicationState == .background, camera.notificationsEnabled,
               hub?.cloudAvailable != true else { return }
@@ -509,5 +510,6 @@ final class CameraConnection: ObservableObject {
         content.sound = .default
         content.userInfo = ["cameraID": camera.id]
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: event.id.uuidString, content: content, trigger: nil))
+        #endif
     }
 }

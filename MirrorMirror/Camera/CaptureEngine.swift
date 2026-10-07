@@ -3,7 +3,7 @@ import CoreImage
 import CoreText
 import UIKit
 import VideoToolbox
-import WebRTC
+import LiveKitWebRTC
 
 /// Owns the camera + microphone and produces the processed frames everything else consumes
 /// (live streams, recorder, motion detection, local preview). On devices without a camera

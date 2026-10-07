@@ -7,11 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1B2C3D4E5F60718293A4B03 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F60718293A4B02 /* WebRTC */; };
+		A1B2C3D4E5F60718293A4B03 /* LiveKitWebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F60718293A4B02 /* LiveKitWebRTC */; };
 		B10000000000000000000002 /* MirrorMirrorNotifications.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* MirrorMirrorNotifications.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C10000000000000000000003 /* MirrorUI in Frameworks */ = {isa = PBXBuildFile; productRef = C10000000000000000000002 /* MirrorUI */; };
 		D1000000000000000000000C /* MirrorUI in Frameworks */ = {isa = PBXBuildFile; productRef = D1000000000000000000000B /* MirrorUI */; };
-		D1000000000000000000000D /* MirrorMirrorWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = D10000000000000000000001 /* MirrorMirrorWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D1000000000000000000000D /* MirrorMirrorWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = D10000000000000000000001 /* MirrorMirrorWatch.app */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F10000000000000000000B /* MirrorUI in Frameworks */ = {isa = PBXBuildFile; productRef = F10000000000000000000A /* MirrorUI */; };
+		F10000000000000000000D /* LiveKitWebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = F10000000000000000000C /* LiveKitWebRTC */; };
+		F20000000000000000000B /* MirrorUI in Frameworks */ = {isa = PBXBuildFile; productRef = F20000000000000000000A /* MirrorUI */; };
+		F20000000000000000000D /* LiveKitWebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = F20000000000000000000C /* LiveKitWebRTC */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -76,6 +80,8 @@
 		805B95252D3322590073A444 /* MirrorMirrorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MirrorMirrorUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B10000000000000000000001 /* MirrorMirrorNotifications.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MirrorMirrorNotifications.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		D10000000000000000000001 /* MirrorMirrorWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MirrorMirrorWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F100000000000000000000 /* MirrorMirrorTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MirrorMirrorTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F200000000000000000000 /* MirrorMirrorVision.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MirrorMirrorVision.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -100,6 +106,20 @@
 				MirrorMirrorWatch.entitlements,
 			);
 			target = D10000000000000000000007 /* MirrorMirrorWatch */;
+		};
+		F100000000000000000002 /* Exceptions for "MirrorMirrorTV" folder in "MirrorMirrorTV" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				MirrorMirrorTV.entitlements,
+			);
+			target = F100000000000000000006 /* MirrorMirrorTV */;
+		};
+		F200000000000000000002 /* Exceptions for "MirrorMirrorVision" folder in "MirrorMirrorVision" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				MirrorMirrorVision.entitlements,
+			);
+			target = F200000000000000000006 /* MirrorMirrorVision */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -143,6 +163,27 @@
 			path = MirrorMirrorWatch;
 			sourceTree = "<group>";
 		};
+		E10000000000000000000001 /* Streaming */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Streaming;
+			sourceTree = "<group>";
+		};
+		F100000000000000000001 /* MirrorMirrorTV */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F100000000000000000002 /* Exceptions for "MirrorMirrorTV" folder in "MirrorMirrorTV" target */,
+			);
+			path = MirrorMirrorTV;
+			sourceTree = "<group>";
+		};
+		F200000000000000000001 /* MirrorMirrorVision */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F200000000000000000002 /* Exceptions for "MirrorMirrorVision" folder in "MirrorMirrorVision" target */,
+			);
+			path = MirrorMirrorVision;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -150,7 +191,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1B2C3D4E5F60718293A4B03 /* WebRTC in Frameworks */,
+				A1B2C3D4E5F60718293A4B03 /* LiveKitWebRTC in Frameworks */,
 				C10000000000000000000003 /* MirrorUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -184,6 +225,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F100000000000000000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F10000000000000000000B /* MirrorUI in Frameworks */,
+				F10000000000000000000D /* LiveKitWebRTC in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F200000000000000000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F20000000000000000000B /* MirrorUI in Frameworks */,
+				F20000000000000000000D /* LiveKitWebRTC in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -194,8 +253,11 @@
 				805B951E2D3322590073A444 /* MirrorMirrorTests */,
 				805B95282D3322590073A444 /* MirrorMirrorUITests */,
 				B10000000000000000000006 /* Shared */,
+				E10000000000000000000001 /* Streaming */,
 				B10000000000000000000007 /* MirrorMirrorNotifications */,
 				D10000000000000000000002 /* MirrorMirrorWatch */,
+				F100000000000000000001 /* MirrorMirrorTV */,
+				F200000000000000000001 /* MirrorMirrorVision */,
 				805B950C2D3322570073A444 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -208,6 +270,8 @@
 				805B95252D3322590073A444 /* MirrorMirrorUITests.xctest */,
 				B10000000000000000000001 /* MirrorMirrorNotifications.appex */,
 				D10000000000000000000001 /* MirrorMirrorWatch.app */,
+				F100000000000000000000 /* MirrorMirrorTV.app */,
+				F200000000000000000000 /* MirrorMirrorVision.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -234,10 +298,11 @@
 			fileSystemSynchronizedGroups = (
 				805B950D2D3322570073A444 /* MirrorMirror */,
 				B10000000000000000000006 /* Shared */,
+				E10000000000000000000001 /* Streaming */,
 			);
 			name = MirrorMirror;
 			packageProductDependencies = (
-				A1B2C3D4E5F60718293A4B02 /* WebRTC */,
+				A1B2C3D4E5F60718293A4B02 /* LiveKitWebRTC */,
 				C10000000000000000000002 /* MirrorUI */,
 			);
 			productName = MirrorMirror;
@@ -337,6 +402,58 @@
 			productReference = D10000000000000000000001 /* MirrorMirrorWatch.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F100000000000000000006 /* MirrorMirrorTV */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F100000000000000000009 /* Build configuration list for PBXNativeTarget "MirrorMirrorTV" */;
+			buildPhases = (
+				F100000000000000000003 /* Sources */,
+				F100000000000000000004 /* Frameworks */,
+				F100000000000000000005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F100000000000000000001 /* MirrorMirrorTV */,
+				B10000000000000000000006 /* Shared */,
+				E10000000000000000000001 /* Streaming */,
+			);
+			name = MirrorMirrorTV;
+			packageProductDependencies = (
+				F10000000000000000000A /* MirrorUI */,
+				F10000000000000000000C /* LiveKitWebRTC */,
+			);
+			productName = MirrorMirrorTV;
+			productReference = F100000000000000000000 /* MirrorMirrorTV.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F200000000000000000006 /* MirrorMirrorVision */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F200000000000000000009 /* Build configuration list for PBXNativeTarget "MirrorMirrorVision" */;
+			buildPhases = (
+				F200000000000000000003 /* Sources */,
+				F200000000000000000004 /* Frameworks */,
+				F200000000000000000005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F200000000000000000001 /* MirrorMirrorVision */,
+				B10000000000000000000006 /* Shared */,
+				E10000000000000000000001 /* Streaming */,
+			);
+			name = MirrorMirrorVision;
+			packageProductDependencies = (
+				F20000000000000000000A /* MirrorUI */,
+				F20000000000000000000C /* LiveKitWebRTC */,
+			);
+			productName = MirrorMirrorVision;
+			productReference = F200000000000000000000 /* MirrorMirrorVision.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -373,7 +490,7 @@
 			mainGroup = 805B95022D3322570073A444;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "WebRTC" */,
+				A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "webrtc-xcframework" */,
 				C10000000000000000000001 /* XCLocalSwiftPackageReference "Packages/MirrorUI" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -386,6 +503,8 @@
 				805B95242D3322590073A444 /* MirrorMirrorUITests */,
 				B1000000000000000000000C /* MirrorMirrorNotifications */,
 				D10000000000000000000007 /* MirrorMirrorWatch */,
+				F100000000000000000006 /* MirrorMirrorTV */,
+				F200000000000000000006 /* MirrorMirrorVision */,
 			);
 		};
 /* End PBXProject section */
@@ -420,6 +539,20 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		D10000000000000000000006 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F100000000000000000005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F200000000000000000005 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -464,6 +597,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F100000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F200000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -484,6 +631,9 @@
 		};
 		D10000000000000000000010 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilters = (
+				ios,
+			);
 			target = D10000000000000000000007 /* MirrorMirrorWatch */;
 			targetProxy = D1000000000000000000000F /* PBXContainerItemProxy */;
 		};
@@ -625,8 +775,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirror/Info.plist;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
-				INFOPLIST_KEY_NSCameraUsageDescription = "MirrorMirror uses the camera to stream video to your paired devices and to scan pairing QR codes.";
+								INFOPLIST_KEY_NSCameraUsageDescription = "MirrorMirror uses the camera to stream video to your paired devices and to scan pairing QR codes.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your other devices on this network for the fastest, private stream.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "MirrorMirror streams audio, lets you talk back, and listens for sounds like crying or barking on the camera device.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror saves snapshots and exported clips to your photo library.";
@@ -646,7 +795,11 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
+				SUPPORTS_MACCATALYST = YES;
+				DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 			};
 			name = Debug;
 		};
@@ -664,8 +817,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirror/Info.plist;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
-				INFOPLIST_KEY_NSCameraUsageDescription = "MirrorMirror uses the camera to stream video to your paired devices and to scan pairing QR codes.";
+								INFOPLIST_KEY_NSCameraUsageDescription = "MirrorMirror uses the camera to stream video to your paired devices and to scan pairing QR codes.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your other devices on this network for the fastest, private stream.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "MirrorMirror streams audio, lets you talk back, and listens for sounds like crying or barking on the camera device.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror saves snapshots and exported clips to your photo library.";
@@ -685,7 +837,11 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
+				SUPPORTS_MACCATALYST = YES;
+				DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 			};
 			name = Release;
 		};
@@ -780,6 +936,8 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.notifications;
+				SUPPORTS_MACCATALYST = YES;
+				DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -807,6 +965,8 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.notifications;
+				SUPPORTS_MACCATALYST = YES;
+				DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -877,6 +1037,134 @@
 			};
 			name = Release;
 		};
+		F100000000000000000007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorTV/MirrorMirrorTV.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = MirrorMirror;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your cameras on this network.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Talk through your camera.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror saves snapshots and exported clips to your photo library.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.tv;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 18.0;
+			};
+			name = Debug;
+		};
+		F100000000000000000008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorTV/MirrorMirrorTV.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = MirrorMirror;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your cameras on this network.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Talk through your camera.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror saves snapshots and exported clips to your photo library.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.tv;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 18.0;
+			};
+			name = Release;
+		};
+		F200000000000000000007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorVision/MirrorMirrorVision.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = MirrorMirror;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your cameras on this network.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Talk through your camera.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror saves snapshots and exported clips to your photo library.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIApplicationPreferredDefaultSceneSessionRole = UIWindowSceneSessionRoleApplication;
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.vision;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = xros;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 7;
+				XROS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Debug;
+		};
+		F200000000000000000008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorVision/MirrorMirrorVision.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = MirrorMirror;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your cameras on this network.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Talk through your camera.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror saves snapshots and exported clips to your photo library.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIApplicationPreferredDefaultSceneSessionRole = UIWindowSceneSessionRoleApplication;
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.vision;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = xros;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 7;
+				XROS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -934,6 +1222,24 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		F100000000000000000009 /* Build configuration list for PBXNativeTarget "MirrorMirrorTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F100000000000000000007 /* Debug */,
+				F100000000000000000008 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F200000000000000000009 /* Build configuration list for PBXNativeTarget "MirrorMirrorVision" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F200000000000000000007 /* Debug */,
+				F200000000000000000008 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -944,21 +1250,21 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "WebRTC" */ = {
+		A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "webrtc-xcframework" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/stasel/WebRTC.git";
+			repositoryURL = "https://github.com/livekit/webrtc-xcframework.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 154.0.0;
+				kind = exactVersion;
+				version = 150.7871.03;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A1B2C3D4E5F60718293A4B02 /* WebRTC */ = {
+		A1B2C3D4E5F60718293A4B02 /* LiveKitWebRTC */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "WebRTC" */;
-			productName = WebRTC;
+			package = A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "webrtc-xcframework" */;
+			productName = LiveKitWebRTC;
 		};
 		C10000000000000000000002 /* MirrorUI */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -967,6 +1273,24 @@
 		D1000000000000000000000B /* MirrorUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MirrorUI;
+		};
+		F10000000000000000000A /* MirrorUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MirrorUI;
+		};
+		F10000000000000000000C /* LiveKitWebRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "webrtc-xcframework" */;
+			productName = LiveKitWebRTC;
+		};
+		F20000000000000000000A /* MirrorUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MirrorUI;
+		};
+		F20000000000000000000C /* LiveKitWebRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "webrtc-xcframework" */;
+			productName = LiveKitWebRTC;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

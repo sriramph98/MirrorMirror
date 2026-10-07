@@ -145,7 +145,9 @@ public struct DesignSystemGallery: View {
                 VStack(spacing: Space.m) {
                     LevelMeter(level: level)
                     LevelMeter(level: level * 0.8)
+                    #if !os(tvOS)
                     Slider(value: $level).tint(Palette.accent).frame(width: 120)
+                    #endif
                 }
             }
             TickRuler(value: $zoom, in: 0.5...10, step: 0.1, labelEvery: 10) { String(format: "%.1f×", $0) }

@@ -2,7 +2,7 @@ import Foundation
 import AVFoundation
 import CoreImage
 import UIKit
-import WebRTC
+import LiveKitWebRTC
 
 /// Runs "camera mode": capture, detection, recording, and serving any number of viewers
 /// over WebRTC, reachable on the local network (Bonjour) and remotely (CloudKit mailbox).
@@ -44,9 +44,9 @@ final class CameraHost: ObservableObject {
     private let recorder: SegmentRecorder
     private let server: LocalSignalServer
     private let relay = CloudRelay.shared
-    private lazy var micTrack: RTCAudioTrack = {
+    private lazy var micTrack: LKRTCAudioTrack = {
         let factory = RTCEnvironment.shared.factory
-        let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)
+        let constraints = LKRTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)
         return factory.audioTrack(with: factory.audioSource(with: constraints), trackId: "camera-mic")
     }()
 
@@ -144,7 +144,7 @@ final class CameraHost: ObservableObject {
     }
 
     private func activateAudioSession() {
-        let session = RTCAudioSession.sharedInstance()
+        let session = LKRTCAudioSession.sharedInstance()
         session.lockForConfiguration()
         do {
             try session.setCategory(.playAndRecord, mode: .videoChat, options: [.defaultToSpeaker, .allowBluetoothHFP, .mixWithOthers])
@@ -388,7 +388,7 @@ final class CameraHost: ObservableObject {
             }
         }
         link.onRemoteTrack = { [weak self, weak session] track in
-            guard let audio = track as? RTCAudioTrack else { return }
+            guard let audio = track as? LKRTCAudioTrack else { return }
             DebugSupport.log("camera", "receiving viewer audio track")
             Task { @MainActor in
                 audio.source.volume = (self?.settings.speakerVolume ?? 1) * 10

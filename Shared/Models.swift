@@ -104,6 +104,14 @@ struct RecordingSegment: Codable, Identifiable, Hashable {
 
 // MARK: - Quality
 
+/// Export size for clips a viewer asks the camera to cut.
+enum ExportQuality: String, Codable, CaseIterable {
+    case original
+    case hd720
+    case sd540
+}
+
+
 enum QualityPreset: String, Codable, CaseIterable, Identifiable {
     case saver
     case standard

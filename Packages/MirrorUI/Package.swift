@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "MirrorUI",
-    platforms: [.iOS(.v18), .watchOS(.v11)],
+    platforms: [.iOS(.v18), .watchOS(.v11), .tvOS(.v18), .visionOS(.v2), .macCatalyst(.v18)],
     products: [
         .library(name: "MirrorUI", targets: ["MirrorUI"]),
     ],

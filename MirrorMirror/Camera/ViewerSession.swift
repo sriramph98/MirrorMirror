@@ -1,6 +1,6 @@
 import Foundation
 import AVFoundation
-import WebRTC
+import LiveKitWebRTC
 
 /// One connected viewer as seen from the camera: its peer connection, its own video source
 /// (so it can watch live or replay recordings independently of other viewers), and an
@@ -11,8 +11,8 @@ final class ViewerSession {
     private(set) var viewerName: String
     let link: PeerLink
     let injector: FrameInjector
-    var videoSender: RTCRtpSender?
-    var remoteAudio: RTCAudioTrack?
+    var videoSender: LKRTCRtpSender?
+    var remoteAudio: LKRTCAudioTrack?
     var helloReceived = false
     var isTalking = false
     /// Read from the audio capture queue.
@@ -53,7 +53,7 @@ final class ViewerSession {
             encoding.maxBitrateBps = NSNumber(value: quality.maxBitrate)
             encoding.maxFramerate = NSNumber(value: quality.fps)
         }
-        parameters.degradationPreference = NSNumber(value: RTCDegradationPreference.balanced.rawValue)
+        parameters.degradationPreference = NSNumber(value: LKRTCDegradationPreference.balanced.rawValue)
         sender.parameters = parameters
     }
 

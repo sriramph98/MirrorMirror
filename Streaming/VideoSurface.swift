@@ -1,7 +1,7 @@
 import AVFoundation
 import AVKit
 import SwiftUI
-import WebRTC
+import LiveKitWebRTC
 
 /// A UIView backed by AVSampleBufferDisplayLayer. Used for the camera's own preview and for
 /// remote streams; the same layer drives Picture in Picture on the viewer.
@@ -101,7 +101,7 @@ final class FrameSink: NSObject {
 }
 
 /// Converts incoming WebRTC frames to CVPixelBuffers for a FrameSink.
-final class RemoteVideoRenderer: NSObject, RTCVideoRenderer {
+final class RemoteVideoRenderer: NSObject, LKRTCVideoRenderer {
     let sink: FrameSink
     private var nv12Pool: CVPixelBufferPool?
     private var poolSize: (Int32, Int32) = (0, 0)
@@ -110,9 +110,9 @@ final class RemoteVideoRenderer: NSObject, RTCVideoRenderer {
 
     func setSize(_ size: CGSize) {}
 
-    func renderFrame(_ frame: RTCVideoFrame?) {
+    func renderFrame(_ frame: LKRTCVideoFrame?) {
         guard let frame else { return }
-        if let buffer = frame.buffer as? RTCCVPixelBuffer {
+        if let buffer = frame.buffer as? LKRTCCVPixelBuffer {
             sink.push(buffer.pixelBuffer)
         } else if let converted = convertToNV12(frame.buffer.toI420()) {
             sink.push(converted)
@@ -120,7 +120,7 @@ final class RemoteVideoRenderer: NSObject, RTCVideoRenderer {
     }
 
     /// Software decoders hand us I420; the display layer wants a CVPixelBuffer.
-    private func convertToNV12(_ i420: RTCI420BufferProtocol) -> CVPixelBuffer? {
+    private func convertToNV12(_ i420: LKRTCI420BufferProtocol) -> CVPixelBuffer? {
         let w = i420.width, h = i420.height
         if poolSize != (w, h) {
             let attributes: [String: Any] = [

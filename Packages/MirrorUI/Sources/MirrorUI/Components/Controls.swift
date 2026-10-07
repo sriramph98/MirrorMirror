@@ -127,7 +127,7 @@ public struct RecordButton: View {
             .animation(Motion.snappy, value: isRecording)
         }
         .buttonStyle(.plain)
-        .sensoryFeedback(.impact(weight: .medium), trigger: isRecording)
+        .haptic(.impact, trigger: isRecording)
         .accessibilityLabel(isRecording ? "Stop recording" : "Start recording")
     }
 }
@@ -159,7 +159,7 @@ public struct ShutterButton<Label: View>: View {
             .animation(Motion.snappy, value: isActive)
         }
         .buttonStyle(ShutterPressStyle())
-        .sensoryFeedback(.impact(weight: .medium), trigger: isActive)
+        .haptic(.impact, trigger: isActive)
     }
 }
 
@@ -206,7 +206,7 @@ public struct SegmentPill<Value: Hashable>: View {
         .padding(Space.xs)
         .background(Palette.raised, in: Capsule())
         .overlay(Capsule().strokeBorder(Palette.hairline, lineWidth: 1))
-        .sensoryFeedback(.selection, trigger: selection)
+        .haptic(.selection, trigger: selection)
     }
 }
 
@@ -232,7 +232,7 @@ public struct AccentToggleStyle: ToggleStyle {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .sensoryFeedback(.selection, trigger: configuration.isOn)
+        .haptic(.selection, trigger: configuration.isOn)
         .accessibilityValue(configuration.isOn ? "On" : "Off")
         .accessibilityAddTraits(.isToggle)
     }
