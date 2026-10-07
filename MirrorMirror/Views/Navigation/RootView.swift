@@ -6,20 +6,38 @@ import MirrorUI
 struct RootView: View {
     @EnvironmentObject private var hub: ViewerHub
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @StateObject private var router = CommandRouter(hub: ViewerHub.shared)
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showCamera = false
+    @State private var showPairDevices = false
 
     var body: some View {
         Group {
-            if sizeClass == .regular {
+            // The Mac window is always the split view, however narrow it is dragged.
+            if sizeClass == .regular || Platform.isMac {
                 SplitRootView(showCamera: $showCamera)
             } else {
                 HomeView(showCamera: $showCamera)
             }
         }
+        .environment(\.commandRouter, router)
+        .focusedSceneObject(router)
+        // Mac: the window itself is canvas-coloured, so nothing white shows while columns resize.
+        .background(Platform.isMac ? Palette.canvas.ignoresSafeArea() : nil)
+        .background(WindowSceneConfigurator(minimumSize: Platform.isMac ? CGSize(width: 880, height: 600) : nil))
         .fullScreenCover(isPresented: $showCamera) { CameraModeView() }
+        .sheet(isPresented: $showPairDevices) {
+            // Presented at the window's root, where the hub isn't inherited (it is injected a level up).
+            PairDeviceSheet().environmentObject(hub).mirrorSheet().presentationSizing(.form)
+        }
+        .onChange(of: scenePhase) { _, phase in if phase == .active { router.becomeActive() } }
         .onAppear {
             hub.activate()
+            router.becomeActive()
+            router.useAsCamera = { showCamera = true }
+            router.pairDevice = { showPairDevices = true }
             if ScreenHook.screen == nil { Notifications.requestAuthorization() }
+            if ScreenHook.screen == "pairdevice" { showPairDevices = true }
             if DebugSupport.autoStartCamera { showCamera = true }
             if let url = DebugSupport.pairURL, let invite = PairingInvite(string: url) { hub.add(invite) }
             if DebugSupport.autoWatch, let camera = hub.cameras.last { hub.pendingOpenCameraID = camera.id }
@@ -41,6 +59,8 @@ enum SidebarItem: Hashable {
 struct SplitRootView: View {
     @EnvironmentObject private var hub: ViewerHub
     @ObservedObject private var store = RecordingStore.shared
+    @Environment(\.commandRouter) private var router
+    @Environment(\.openWindow) private var openWindow
     @Binding var showCamera: Bool
 
     @State private var selection: SidebarItem?
@@ -54,13 +74,17 @@ struct SplitRootView: View {
     var body: some View {
         NavigationSplitView(columnVisibility: $visibility) {
             sidebar
-                .navigationSplitViewColumnWidth(ControlSize.readableWidth / 2)
+                .navigationSplitViewColumnWidth(min: Platform.isMac ? 220 : nil,
+                                                ideal: Platform.isMac ? 240 : ControlSize.readableWidth / 2,
+                                                max: Platform.isMac ? 300 : nil)
         } detail: {
             detail
-                // The bar only exists to hold the sidebar button when the sidebar is tucked away.
+                // The bar only exists to hold the sidebar button when the sidebar is tucked away;
+                // on the Mac it is the title bar and always carries Add Camera and Use as Camera.
                 .toolbar(detailBarVisible ? .visible : .hidden, for: .navigationBar)
                 .toolbarBackground(detailBackground, for: .navigationBar)
                 .toolbarBackground(.visible, for: .navigationBar)
+                .toolbar { if Platform.isMac { macToolbar } }
         }
         .onGeometryChange(for: Bool.self) { $0.size.width < $0.size.height } action: { isPortrait = $0 }
         .sheet(isPresented: $showAdd) { AddCameraView().mirrorSheet().presentationSizing(.page) }
@@ -73,10 +97,18 @@ struct SplitRootView: View {
             case "recordings", "player": selection = .recordings
             case "wall": selection = .wall
             case "sidebar": visibility = .all
+            case "window":
+                // Mac: the first camera in its own window too, for checking multi-window from a terminal.
+                if Platform.isMac, let first = hub.cameras.first { openWindow(value: first.id) }
             default: break
             }
             openPending()
+            registerCommands()
+            publishSelection()
         }
+        .onChange(of: selection) { _, _ in publishSelection() }
+        .onChange(of: visibility) { _, _ in publishSidebar() }
+        .onChange(of: isPortrait) { _, _ in publishSidebar() }
         .onChange(of: hub.pendingOpenCameraID) { _, _ in openPending() }
         .onChange(of: hub.cameras) { _, cameras in
             if selection == nil, let first = cameras.first {
@@ -88,12 +120,72 @@ struct SplitRootView: View {
             } else if selection == .wall, cameras.count < 2 {
                 selection = cameras.first.map { .camera($0.id) }
             }
+            publishSelection()
         }
     }
 
     /// The sidebar is tucked away: collapsed by the user, or hidden by default in portrait.
     private var detailBarVisible: Bool {
-        visibility == .detailOnly || (isPortrait && visibility == .automatic)
+        Platform.isMac || visibility == .detailOnly || (isPortrait && visibility == .automatic)
+    }
+
+    // MARK: Mac
+
+    /// Title-bar buttons, in addition to the sidebar rows.
+    @ToolbarContentBuilder
+    private var macToolbar: some ToolbarContent {
+        ToolbarItemGroup(placement: .primaryAction) {
+            Button { showAdd = true } label: { Label("Add Camera", systemImage: "plus") }
+                .help("Add a camera (⌘N)")
+            Button { showCamera = true } label: { Label("Use as Camera", systemImage: "video.fill") }
+                .help("Use this Mac as a camera (⇧⌘C)")
+        }
+    }
+
+    /// Whether the sidebar column is on screen, for the View menu's Show/Hide Sidebar title.
+    private var sidebarShowing: Bool {
+        switch visibility {
+        case .detailOnly: false
+        case .automatic: !isPortrait
+        default: true
+        }
+    }
+
+    private func publishSidebar() {
+        router?.sidebarVisible = sidebarShowing
+    }
+
+    /// The camera shown in the detail, if the selection is one.
+    private var selectedCameraID: String? {
+        if case let .camera(id) = selection { return id }
+        return nil
+    }
+
+    /// What the menu bar acts on in this window.
+    private func registerCommands() {
+        guard let router else { return }
+        router.addCamera = { showAdd = true }
+        router.showSettings = { select(.settings) }
+        router.selectCamera = { index in
+            guard hub.cameras.indices.contains(index) else { return }
+            select(.camera(hub.cameras[index].id))
+        }
+        router.toggleSidebar = {
+            withAnimation(Motion.smooth) { visibility = sidebarShowing ? .detailOnly : .all }
+        }
+        publishSidebar()
+    }
+
+    /// Keeps the menu's checkmark and "Open in New Window" in step with the detail column.
+    private func publishSelection() {
+        CameraWindows.primaryShowing = selectedCameraID
+        guard let router else { return }
+        router.selectedCameraIndex = selectedCameraID.flatMap { id in hub.cameras.firstIndex { $0.id == id } }
+        if Platform.isMac, let id = selectedCameraID {
+            router.openInNewWindow = { openWindow(value: id) }
+        } else {
+            router.openInNewWindow = nil
+        }
     }
 
     /// Pictures sit on the black frame; lists and forms on the canvas.
@@ -128,6 +220,7 @@ struct SplitRootView: View {
                     sidebarHeading("Cameras") {
                         Button { showAdd = true } label: { Image(systemName: "plus") }
                             .buttonStyle(.tool(size: ControlSize.tool))
+                            .toolHover()
                             .accessibilityLabel("Add camera")
                     }
                     if hub.cameras.isEmpty {
@@ -142,6 +235,8 @@ struct SplitRootView: View {
                             select(.camera(camera.id))
                         }
                         .contextMenu { CameraMenu(camera: camera, renaming: $renaming, newName: $newName, removing: $removing) }
+                        // Mac: double-click opens the camera in its own window.
+                        .simultaneousGesture(Platform.isMac ? TapGesture(count: 2).onEnded { openWindow(value: camera.id) } : nil)
                     }
                     if hub.cameras.count >= 2 {
                         SidebarRow(symbol: "square.grid.2x2.fill", title: "All cameras",
@@ -221,7 +316,7 @@ struct SplitRootView: View {
             VStack(spacing: Space.s) {
                 Button { showAdd = true } label: { Label("Add camera", systemImage: "qrcode.viewfinder") }
                     .buttonStyle(.accent)
-                Button { showCamera = true } label: { Text("Use this iPad as a camera") }
+                Button { showCamera = true } label: { Text("Use this \(Platform.deviceNoun) as a camera") }
                     .buttonStyle(.pill())
             }
             .padding(.top, Space.s)
@@ -271,6 +366,7 @@ private struct SidebarRow: View {
             .sidebarRowChrome(isSelected: isSelected)
         }
         .buttonStyle(CardPressStyle())
+        .hoverHighlight()
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
@@ -303,6 +399,7 @@ private struct SidebarCameraRow: View {
             .sidebarRowChrome(isSelected: isSelected)
         }
         .buttonStyle(CardPressStyle())
+        .hoverHighlight()
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }

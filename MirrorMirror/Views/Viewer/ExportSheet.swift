@@ -162,6 +162,7 @@ struct ExportSheet: View {
                 }
                 .buttonStyle(.secondary)
                 .disabled(saved)
+                .macSaveAs(url, suggestedName: "\(connection.camera.name) \(job.from.formatted(.dateTime.year().month().day().hour().minute()))")
             }
 
         case let .failed(message):

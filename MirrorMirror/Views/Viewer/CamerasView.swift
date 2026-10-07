@@ -19,6 +19,7 @@ struct CamerasView: View {
                                reachability: hub.reachability(of: camera), presence: hub.presence[camera.id])
                 }
                 .buttonStyle(CardPressStyle())
+                .hoverHighlight(radius: Radius.panel, opaque: true)
                 .contextMenu { CameraMenu(camera: camera, renaming: $renaming, newName: $newName, removing: $removing) }
             }
         }
@@ -29,12 +30,17 @@ struct CamerasView: View {
 /// Rename / mute / remove, shared by home cards and iPad sidebar rows.
 struct CameraMenu: View {
     @EnvironmentObject private var hub: ViewerHub
+    @Environment(\.openWindow) private var openWindow
     let camera: PairedCamera
     @Binding var renaming: PairedCamera?
     @Binding var newName: String
     @Binding var removing: PairedCamera?
 
     var body: some View {
+        if Platform.isMac {
+            Button { openWindow(value: camera.id) } label: { Label("Open in New Window", systemImage: "macwindow.badge.plus") }
+            Divider()
+        }
         Button { newName = camera.name; renaming = camera } label: { Label("Rename", systemImage: "pencil") }
         Button {
             hub.setNotifications(camera, enabled: !camera.notificationsEnabled)

@@ -70,7 +70,8 @@ struct CameraModeView: View {
         .sheet(isPresented: $showSettings) {
             VStack(spacing: 0) {
                 SheetHeader("Camera settings", leadingAction: { showSettings = false })
-                CameraSettingsForm(settings: $host.settings, storageUsed: host.store.totalBytes, storageFree: host.storageFreeBytes)
+                CameraSettingsForm(settings: $host.settings, storageUsed: host.store.totalBytes, storageFree: host.storageFreeBytes,
+                                   dimsScreen: !Platform.isMac)
             }
             .canvasBackground()
             .presentationBackground(Palette.canvas)
@@ -169,6 +170,7 @@ struct CameraModeView: View {
     private var closeButton: some View {
         Button { confirmStop = true } label: { Image(systemName: "xmark") }
             .buttonStyle(.tool())
+            .toolHover()
             .accessibilityLabel("Stop camera")
     }
 
@@ -235,7 +237,8 @@ struct CameraModeView: View {
         GeometryReader { geo in
             let picture = pictureAspect(landscape: landscape)
             let space = geo.size.width / max(geo.size.height, 1)
-            let fill = max(picture, space) / min(picture, space) < Self.maxFillCrop
+            // A Mac window is any shape the user drags it to; the picture always fits inside it.
+            let fill = !Platform.isMac && max(picture, space) / min(picture, space) < Self.maxFillCrop
             viewfinder(fill: fill)
                 .aspectRatio(fill ? nil : picture, contentMode: .fit)
                 .frame(width: geo.size.width, height: geo.size.height)
@@ -253,11 +256,11 @@ struct CameraModeView: View {
     private static let maxFillCrop: CGFloat = 1.3
 
     /// Frames are upright: portrait on a portrait device, landscape otherwise. The simulator's
-    /// test pattern is always landscape.
+    /// test pattern and a Mac's camera are always landscape.
     private func pictureAspect(landscape: Bool) -> CGFloat {
         let dims = host.effectiveQuality.dimensions
         let ratio = CGFloat(dims.long) / CGFloat(dims.short)
-        return host.engineState.isSynthetic || landscape ? ratio : 1 / ratio
+        return host.engineState.isSynthetic || landscape || Platform.isMac ? ratio : 1 / ratio
     }
 
     private func viewfinder(fill: Bool) -> some View {
@@ -330,30 +333,44 @@ struct CameraModeView: View {
     private var toolButtons: some View {
         Button { showPairing = true } label: { Image(systemName: "qrcode") }
             .buttonStyle(.tool())
+            .toolHover()
             .accessibilityLabel("Pair a viewer")
+            .help("Pair a viewer")
 
-        Button { host.flipCamera() } label: { Image(systemName: "arrow.triangle.2.circlepath.camera") }
-            .buttonStyle(.tool())
-            .accessibilityLabel("Switch camera")
-
-        let torch = host.engineState
-        Button { host.setTorch(!torch.torchOn) } label: {
-            Image(systemName: torch.torchOn ? "flashlight.on.fill" : "flashlight.off.fill")
+        // A Mac has no front and back; the button only appears when there is another camera to switch to.
+        if !Platform.isMac || host.engineState.cameraCount > 1 {
+            Button { host.flipCamera() } label: { Image(systemName: "arrow.triangle.2.circlepath.camera") }
+                .buttonStyle(.tool())
+                .toolHover()
+                .accessibilityLabel("Switch camera")
+                .help("Switch camera")
         }
-        .buttonStyle(.tool(isOn: torch.torchOn, tint: torch.torchAvailable ? Palette.textPrimary : Palette.textDisabled))
-        .disabled(!torch.torchAvailable)
-        .accessibilityLabel("Torch")
-        .accessibilityValue(torch.torchAvailable ? (torch.torchOn ? "On" : "Off") : "Unavailable")
+
+        // Macs have no torch, so the control isn't shown there at all.
+        if !Platform.isMac {
+            let torch = host.engineState
+            Button { host.setTorch(!torch.torchOn) } label: {
+                Image(systemName: torch.torchOn ? "flashlight.on.fill" : "flashlight.off.fill")
+            }
+            .buttonStyle(.tool(isOn: torch.torchOn, tint: torch.torchAvailable ? Palette.textPrimary : Palette.textDisabled))
+            .disabled(!torch.torchAvailable)
+            .accessibilityLabel("Torch")
+            .accessibilityValue(torch.torchAvailable ? (torch.torchOn ? "On" : "Off") : "Unavailable")
+        }
 
         Button { cycleNightMode() } label: { Image(systemName: nightSymbol) }
             .buttonStyle(.tool(isOn: host.engineState.nightActive))
+            .toolHover()
             .accessibilityLabel("Night vision")
             .accessibilityValue(host.settings.nightMode.title + (host.engineState.nightActive ? ", active" : ""))
             .accessibilityHint("Cycles Auto, On and Off")
+            .help("Night vision: \(host.settings.nightMode.title)")
 
         Button { showSettings = true } label: { Image(systemName: "gearshape") }
             .buttonStyle(.tool())
+            .toolHover()
             .accessibilityLabel("Camera settings")
+            .help("Camera settings")
     }
 
     private var nightSymbol: String {
@@ -394,11 +411,29 @@ struct CameraModeView: View {
         RecordButton(isRecording: host.isRecording) { host.setRecording(!host.isRecording) }
     }
 
+    /// iPhone and iPad dim the screen; a Mac can't, so the same slot hides the app (⌘H) instead.
+    @ViewBuilder
     private var dimButton: some View {
-        Button { dim() } label: { Image(systemName: "moon.zzz") }
-            .buttonStyle(.tool(size: ControlSize.toolLarge))
-            .accessibilityLabel("Dim screen")
-            .accessibilityHint("Turns the screen dark to save battery. The camera keeps running.")
+        if Platform.isMac {
+            VStack(spacing: Space.xs) {
+                Button { MacApp.hide() } label: { Image(systemName: "eye.slash") }
+                    .buttonStyle(.tool(size: ControlSize.toolLarge))
+                    .toolHover()
+                    .accessibilityLabel("Hide MirrorMirror")
+                    .accessibilityHint("Hides the window, like Command-H. The camera keeps running.")
+                    .help("Hide MirrorMirror (⌘H). The camera keeps running.")
+                Text("⌘H hides")
+                    .type(.caps, color: Palette.textTertiary)
+                    .lineLimit(1)
+                    .fixedSize()
+                    .accessibilityHidden(true)
+            }
+        } else {
+            Button { dim() } label: { Image(systemName: "moon.zzz") }
+                .buttonStyle(.tool(size: ControlSize.toolLarge))
+                .accessibilityLabel("Dim screen")
+                .accessibilityHint("Turns the screen dark to save battery. The camera keeps running.")
+        }
     }
 
     private var thumbnail: some View {
@@ -458,6 +493,8 @@ struct CameraModeView: View {
     // MARK: - Dimming
 
     private func dimLoop() async {
+        // A Mac window never dims itself; ⌘H hides the app instead.
+        guard !Platform.isMac else { return }
         while !Task.isCancelled {
             try? await Task.sleep(for: .seconds(2))
             let after = host.settings.autoDimAfter
@@ -470,6 +507,8 @@ struct CameraModeView: View {
     private func dim() {
         withAnimation(Motion.fade) { isDimmed = true }
         host.setPreviewVisible(false)
+        // `UIScreen.brightness` is a no-op on the Mac; leave it alone so nothing is "restored" later.
+        guard !Platform.isMac else { return }
         if savedBrightness == nil { savedBrightness = UIScreen.main.brightness }
         UIScreen.main.brightness = 0
     }

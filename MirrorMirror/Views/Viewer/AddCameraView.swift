@@ -9,7 +9,8 @@ struct AddCameraView: View {
 
     enum Method: String, Hashable { case scan = "Scan", link = "Link" }
 
-    @State private var method: Method = .scan
+    // A Mac's camera points at the person, not at another device's screen: start on the link.
+    @State private var method: Method = Platform.isMac ? .link : .scan
     @State private var link = ""
     @State private var found: PairingInvite?
     @State private var error: String?

@@ -18,10 +18,17 @@ struct MirrorMirrorApp: App {
 
     init() {
         Fonts.register()
+        DebugSnapshots.startIfRequested()
     }
 
     var body: some Scene {
-        WindowGroup {
+        mainWindow
+        cameraWindows
+    }
+
+    /// The app: a stack on iPhone, a split view on iPad and the Mac.
+    private var mainWindow: some Scene {
+        let group = WindowGroup {
             if DebugSupport.showGallery {
                 DesignSystemGallery()
             } else {
@@ -45,6 +52,44 @@ struct MirrorMirrorApp: App {
                 }
             }
         }
+        #if targetEnvironment(macCatalyst)
+        return group
+            .defaultSize(width: 1180, height: 760)
+            .commands { MirrorCommands() }
+        #else
+        return group
+        #endif
+    }
+
+    /// One camera per window (Mac; iPad when multiple windows are allowed). Opened with
+    /// `openWindow(value: camera.id)`; the hub keeps the connection alive.
+    private var cameraWindows: some Scene {
+        let group = WindowGroup("Camera", for: PairedCamera.ID.self) { $cameraID in
+            CameraWindowRoot(cameraID: cameraID)
+                .environmentObject(hub)
+                .tint(Palette.accent)
+                .preferredColorScheme(.dark)
+        }
+        #if targetEnvironment(macCatalyst)
+        return group.defaultSize(width: 960, height: 620)
+        #else
+        return group
+        #endif
+    }
+}
+
+/// Gives a camera window its own command router, so the menus act on it while it is key.
+private struct CameraWindowRoot: View {
+    let cameraID: String?
+    @StateObject private var router = CommandRouter(hub: ViewerHub.shared)
+    @Environment(\.scenePhase) private var scenePhase
+
+    var body: some View {
+        CameraWindowView(cameraID: cameraID)
+            .environment(\.commandRouter, router)
+            .focusedSceneObject(router)
+            .onAppear { router.becomeActive() }
+            .onChange(of: scenePhase) { _, phase in if phase == .active { router.becomeActive() } }
     }
 }
 
@@ -52,7 +97,34 @@ extension PairingInvite: Identifiable {
     var id: String { key.cameraID }
 }
 
-final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    #if targetEnvironment(macCatalyst)
+    /// Mac menu bar: drop UIKit's stock File › New Window so ⌘N can be Add Camera (cameras open
+    /// their own windows from the View menu), and the Format menu, which nothing here uses.
+    override func buildMenu(with builder: UIMenuBuilder) {
+        super.buildMenu(with: builder)
+        guard builder.system == .main else { return }
+        builder.remove(menu: .newScene)
+        builder.remove(menu: .format)
+        MacCameraMenu.install(in: builder)
+    }
+
+    /// Camera menu items are enabled only while the key window can act on them.
+    override func validate(_ command: UICommand) {
+        if let can = MacCameraMenu.canPerform(command.action) {
+            command.attributes = can ? [] : .disabled
+        } else {
+            super.validate(command)
+        }
+    }
+
+    /// Menu actions arrive here from the responder chain; the delegate must claim them.
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        if MacCameraMenu.canPerform(action) != nil { return true }
+        return super.canPerformAction(action, withSender: sender)
+    }
+    #endif
+
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
         if CloudRelay.shared.isConfigured { application.registerForRemoteNotifications() }

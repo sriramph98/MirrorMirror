@@ -113,6 +113,7 @@ struct TimelinePanel: View {
             Image(systemName: connection.playback.isPlaying ? "pause.fill" : "play.fill")
         }
         .buttonStyle(.tool())
+        .toolHover()
         .accessibilityLabel(connection.playback.isPlaying ? "Pause" : "Play")
     }
 
@@ -133,6 +134,7 @@ struct TimelinePanel: View {
     private var exportTool: some View {
         Button(action: onExport) { Image(systemName: "scissors") }
             .buttonStyle(.tool())
+            .toolHover()
             .disabled(connection.segments.isEmpty)
             .opacity(connection.segments.isEmpty ? 0.4 : 1)
             .accessibilityLabel("Export clip")

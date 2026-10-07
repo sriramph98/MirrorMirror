@@ -66,6 +66,10 @@ enum DeviceIdentity {
     static var name: String {
         #if os(watchOS)
         return WKInterfaceDevice.current().name
+        #elseif targetEnvironment(macCatalyst)
+        // UIDevice reports the iPad idiom's model name on Mac; use the computer's host name instead.
+        let host = ProcessInfo.processInfo.hostName.replacingOccurrences(of: ".local", with: "").replacingOccurrences(of: "-", with: " ")
+        return host.isEmpty ? "Mac (\(String(id.prefix(4))))" : host
         #else
         let name = UIDevice.current.name
         // iOS 16+ returns the generic model name without the entitlement; make it a little friendlier.

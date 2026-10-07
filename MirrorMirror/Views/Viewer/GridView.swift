@@ -123,11 +123,13 @@ private struct WallTile: View {
             .aspectRatio(16 / 9, contentMode: .fit)
         }
         .buttonStyle(CardPressStyle())
+        .hoverHighlight(radius: Radius.panel, opaque: true)
         .overlay(alignment: .bottomTrailing) {
             Button(action: onToggleAudio) {
                 Image(systemName: audioOn ? "speaker.wave.2.fill" : "speaker.slash.fill")
             }
             .buttonStyle(.tool(isOn: audioOn))
+            .toolHover()
             .padding(Space.s)
             .accessibilityLabel("Audio from \(connection.camera.name)")
             .accessibilityValue(audioOn ? "On" : "Muted")

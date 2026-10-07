@@ -20,6 +20,8 @@ final class CaptureEngine: NSObject {
         var isSynthetic = false
         var hasAudio = false
         var isRunning = false
+        /// Cameras this device can switch between (a Mac: built-in, Continuity Camera, USB).
+        var cameraCount = 1
     }
 
     /// Processed, upright frames. Called on the video queue.
@@ -122,8 +124,16 @@ final class CaptureEngine: NSObject {
     func flipCamera() {
         sessionQueue.async { [self] in
             guard synthetic == nil else { return }
+            #if targetEnvironment(macCatalyst)
+            // No front and back on a Mac: step to the next camera that is plugged in or nearby.
+            let cameras = Self.macCameras()
+            guard cameras.count > 1, let current = device,
+                  let index = cameras.firstIndex(where: { $0.uniqueID == current.uniqueID }) else { return }
+            let newDevice = cameras[(index + 1) % cameras.count]
+            #else
             let front = !state.usingFrontCamera
             guard let newDevice = Self.bestDevice(front: front) else { return }
+            #endif
             setTorchLocked(false)
             session.beginConfiguration()
             if let videoInput { session.removeInput(videoInput) }
@@ -193,6 +203,7 @@ final class CaptureEngine: NSObject {
         session.commitConfiguration()
 
         if let device { didSelect(device) }
+        updateState { $0.cameraCount = Self.cameraCount() }
 
         NotificationCenter.default.addObserver(forName: AVCaptureSession.runtimeErrorNotification, object: session, queue: nil) { [weak self] _ in
             // Media services reset or similar: restart after a beat.
@@ -201,7 +212,34 @@ final class CaptureEngine: NSObject {
                 self.session.startRunning()
             }
         }
+
+        #if targetEnvironment(macCatalyst)
+        // Cameras come and go on a Mac (a USB camera, an iPhone within reach): keep the count current.
+        for name in [AVCaptureDevice.wasConnectedNotification, AVCaptureDevice.wasDisconnectedNotification] {
+            NotificationCenter.default.addObserver(forName: name, object: nil, queue: nil) { [weak self] _ in
+                self?.sessionQueue.async { self?.updateState { $0.cameraCount = Self.cameraCount() } }
+            }
+        }
+        #endif
     }
+
+    #if targetEnvironment(macCatalyst)
+    /// Every camera a Mac can use, built-in first: the FaceTime camera, then Continuity Camera
+    /// iPhones and USB cameras. None of them is "front" or "back".
+    private static func macCameras() -> [AVCaptureDevice] {
+        let types: [AVCaptureDevice.DeviceType] = [.builtInWideAngleCamera, .continuityCamera, .external]
+        let devices = AVCaptureDevice.DiscoverySession(deviceTypes: types, mediaType: .video, position: .unspecified).devices
+        return devices.sorted { a, b in
+            let rank = { (d: AVCaptureDevice) in types.firstIndex(of: d.deviceType) ?? types.count }
+            return rank(a) < rank(b)
+        }
+    }
+
+    private static func cameraCount() -> Int { max(1, macCameras().count) }
+
+    private static func bestDevice(front: Bool) -> AVCaptureDevice? { macCameras().first }
+    #else
+    private static func cameraCount() -> Int { 1 }
 
     /// Prefer the multi-lens virtual devices so lens changes are seamless zoom changes.
     private static func bestDevice(front: Bool) -> AVCaptureDevice? {
@@ -214,6 +252,7 @@ final class CaptureEngine: NSObject {
         }
         return nil
     }
+    #endif
 
     private func didSelect(_ device: AVCaptureDevice) {
         let constituents = device.isVirtualDevice ? device.constituentDevices.map(\.deviceType) : [device.deviceType]

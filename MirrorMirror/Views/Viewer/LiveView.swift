@@ -20,6 +20,8 @@ struct LiveView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.commandRouter) private var router
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var pip = PiPController()
     @State private var previousAudioFocus: String??
     @State private var showControls = false
@@ -27,6 +29,8 @@ struct LiveView: View {
     @State private var showChrome = true
     @State private var banner: CameraEvent?
     @State private var bracketFlash = false
+    /// Identifies this live view to the window's command router.
+    @State private var commandToken = UUID()
 
     init(connection: CameraConnection, ownsConnection: Bool = true, onClose: (() -> Void)? = nil) {
         _connection = ObservedObject(wrappedValue: connection)
@@ -63,13 +67,24 @@ struct LiveView: View {
             connection.connect()
             // A grid-owned connection may already be up, so the phase change below never fires.
             if connection.phase == .connected { handlePendingReplay() }
+            registerCommands()
         }
         .onDisappear {
-            if ownsConnection, !pip.isActive { connection.disconnect() }
+            // A camera window may still be showing this connection; leave it up for it.
+            if ownsConnection, !pip.isActive, !CameraWindows.isOpen(connection.id) { connection.disconnect() }
             hub.audioFocus = previousAudioFocus ?? nil
+            if let router, router.liveOwner == commandToken {
+                router.live = nil
+                router.liveOwner = nil
+            }
         }
         .onChange(of: connection.phase) { _, phase in
             if phase == .connected { handlePendingReplay() }
+        }
+        .onChange(of: commandState) { _, _ in registerCommands() }
+        .onChange(of: scenePhase) { _, phase in
+            // Mac: the key window's camera is the one heard.
+            if Platform.isMac, phase == .active { hub.audioFocus = connection.id }
         }
         .onChange(of: connection.latestEvent) { _, event in
             guard let event else { return }
@@ -92,6 +107,51 @@ struct LiveView: View {
                 .presentationBackground(Palette.canvas)
                 .presentationCornerRadius(Radius.deck)
         }
+    }
+
+    // MARK: Menu bar commands
+
+    /// The state the menu titles and enabled states depend on; registering again when it changes.
+    private struct CommandState: Equatable {
+        var connected: Bool
+        var playback: CameraConnection.PlaybackState
+        var hasSegments: Bool
+        var listening: Bool
+        var talking: Bool
+        var pipActive: Bool
+        var name: String
+    }
+
+    private var commandState: CommandState {
+        CommandState(connected: connection.phase == .connected, playback: connection.playback,
+                     hasSegments: !connection.segments.isEmpty, listening: connection.isListening,
+                     talking: connection.isTalking, pipActive: pip.isActive, name: connection.camera.name)
+    }
+
+    /// Tells the window's command router what this live view can do right now.
+    private func registerCommands() {
+        guard let router else { return }
+        let connected = connection.phase == .connected
+        router.liveOwner = commandToken
+        router.live = LiveCommands(
+            cameraName: connection.camera.name,
+            isConnected: connected,
+            isLive: connection.playback.isLive,
+            isPlaying: connection.playback.isPlaying,
+            canRewind: connected && !connection.segments.isEmpty,
+            isMuted: !connection.isListening,
+            isTalking: connection.isTalking,
+            pipSupported: AVPictureInPictureController.isPictureInPictureSupported(),
+            pipActive: pip.isActive,
+            goLive: { connection.goLive() },
+            rewind60: { connection.play(from: Date().addingTimeInterval(-60)) },
+            togglePause: { connection.togglePause() },
+            toggleMute: { connection.isListening.toggle() },
+            toggleTalk: { Task { await connection.setTalking(!connection.isTalking) } },
+            togglePiP: { pip.toggle() },
+            snapshot: { connection.takeSnapshot() },
+            export: { showExport = true }
+        )
     }
 
     /// Opened from an event notification: jump to a few seconds before it.
@@ -179,6 +239,7 @@ struct LiveView: View {
             if let onClose {
                 Button(action: onClose) { Image(systemName: "chevron.down") }
                     .buttonStyle(.tool())
+                    .toolHover()
                     .accessibilityLabel("Close")
             }
             VStack(alignment: .leading, spacing: Space.xxs) {
@@ -234,7 +295,8 @@ struct LiveView: View {
     // MARK: Viewfinder
 
     private func viewfinder(radius: CGFloat, insets: EdgeInsets = EdgeInsets(), overlayChrome: Bool = false) -> some View {
-        let chrome = overlayChrome && showChrome
+        // Tap-to-hide is a touch idea; with a pointer the controls stay put.
+        let chrome = overlayChrome && (showChrome || Platform.isMac)
         return Viewfinder(radius: radius) {
             ZStack {
                 VideoSurface(sink: connection.sink) { view in pip.attach(to: view.displayLayer) }
@@ -246,7 +308,7 @@ struct LiveView: View {
             }
             .contentShape(Rectangle())
             .onTapGesture {
-                guard overlayChrome else { return }
+                guard overlayChrome, !Platform.isMac else { return }
                 withAnimation(Motion.fade) { showChrome.toggle() }
             }
         } topLeading: {
@@ -307,7 +369,7 @@ struct LiveView: View {
             }
         }
         .accessibilityAction(named: showChrome ? "Hide controls" : "Show controls") {
-            if overlayChrome { showChrome.toggle() }
+            if overlayChrome, !Platform.isMac { showChrome.toggle() }
         }
     }
 
@@ -390,6 +452,7 @@ struct LiveView: View {
                 Text("Replay")
             }
             .buttonStyle(.pill(isOn: true))
+            .pillHover()
             .accessibilityLabel("Replay \(event.label)")
         }
     }
@@ -434,17 +497,24 @@ struct LiveView: View {
             if spacing == nil { Spacer(minLength: Space.s) }
             Button { connection.takeSnapshot() } label: { Image(systemName: "camera") }
                 .buttonStyle(.tool())
+                .toolHover()
                 .accessibilityLabel("Save snapshot")
+                .help("Snapshot (⌘S)")
             if AVPictureInPictureController.isPictureInPictureSupported() {
                 if spacing == nil { Spacer(minLength: Space.s) }
-                Button { pip.start() } label: { Image(systemName: "pip.enter") }
+                Button { pip.toggle() } label: { Image(systemName: pip.isActive ? "pip.exit" : "pip.enter") }
                     .buttonStyle(.tool(isOn: pip.isActive))
+                    .toolHover()
                     .accessibilityLabel("Picture in picture")
+                    .accessibilityValue(pip.isActive ? "On" : "Off")
+                    .help("Picture in Picture (⌃⌘P)")
             }
             if spacing == nil { Spacer(minLength: Space.s) }
             Button { showControls = true } label: { Image(systemName: "slider.horizontal.3") }
                 .buttonStyle(.tool())
+                .toolHover()
                 .accessibilityLabel("Camera controls")
+                .help("Camera controls")
         }
     }
 
@@ -454,6 +524,8 @@ struct LiveView: View {
             Image(systemName: connection.isListening ? "speaker.wave.2.fill" : "speaker.slash.fill")
         }
         .buttonStyle(.tool(isOn: !connection.isListening))
+        .toolHover()
+        .help(connection.isListening ? "Mute camera sound (⇧⌘M)" : "Unmute camera sound (⇧⌘M)")
         .accessibilityLabel("Camera sound")
         .accessibilityValue(connection.isListening ? "On" : "Muted")
         .accessibilityHint(connection.isListening ? "Mutes the camera's microphone on this device" : "Plays the camera's microphone")
@@ -532,9 +604,11 @@ struct LiveView: View {
                 Image(systemName: "gobackward.60")
             }
             .buttonStyle(.tool(size: ControlSize.toolLarge))
+            .toolHover()
             .disabled(connection.segments.isEmpty || connection.phase != .connected)
             .opacity(connection.segments.isEmpty || connection.phase != .connected ? 0.4 : 1)
             .accessibilityLabel("Back 60 seconds")
+            .help("Back 60 seconds (⌘←)")
         } else {
             Button { connection.goLive() } label: {
                 HStack(spacing: Space.xs) {
@@ -543,7 +617,9 @@ struct LiveView: View {
                 }
             }
             .buttonStyle(.pill(isOn: true))
+            .pillHover()
             .accessibilityLabel("Back to live")
+            .help("Back to live (⌘L)")
         }
     }
 
@@ -662,6 +738,10 @@ final class PiPController: NSObject, ObservableObject, AVPictureInPictureControl
     private var activeObserver: NSObjectProtocol?
 
     func start() { controller?.startPictureInPicture() }
+
+    func toggle() {
+        if isActive { controller?.stopPictureInPicture() } else { start() }
+    }
 
     nonisolated func pictureInPictureControllerDidStartPictureInPicture(_ controller: AVPictureInPictureController) {
         DebugSupport.log("viewer", "picture in picture started")

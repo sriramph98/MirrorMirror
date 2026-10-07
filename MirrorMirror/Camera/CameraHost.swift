@@ -144,6 +144,9 @@ final class CameraHost: ObservableObject {
     }
 
     private func activateAudioSession() {
+        #if targetEnvironment(simulator)
+        return   // no audio hardware; see RTCEnvironment
+        #endif
         let session = LKRTCAudioSession.sharedInstance()
         session.lockForConfiguration()
         do {

@@ -79,6 +79,10 @@ struct RecordingsView: View {
                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                         Button(role: .destructive) { store.delete(segment) } label: { Label("Delete", systemImage: "trash") }
                     }
+                    // Right-click on the Mac, long press elsewhere: the same delete as the swipe.
+                    .contextMenu {
+                        Button(role: .destructive) { store.delete(segment) } label: { Label("Delete Clip", systemImage: "trash") }
+                    }
                 }
             }
 
@@ -349,6 +353,7 @@ private struct RecordingPlayer: View {
                     .buttonStyle(.primary)
                 Button { saveToPhotos(exported) } label: { Label("Save to Photos", systemImage: "photo.on.rectangle") }
                     .buttonStyle(.secondary)
+                    .macSaveAs(exported, suggestedName: "MirrorMirror \(segment.start.formatted(.dateTime.year().month().day().hour().minute()))")
             }
         } else {
             Button { export() } label: { Label("Export clip", systemImage: "scissors") }

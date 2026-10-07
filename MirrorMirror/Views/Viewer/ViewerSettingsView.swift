@@ -11,6 +11,7 @@ struct ViewerSettingsView: View {
     @State private var turnUsername = ConnectionPreferences.turnUsername
     @State private var turnCredential = ConnectionPreferences.turnCredential
     @State private var showGallery = false
+    @State private var showPairDevice = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -18,6 +19,7 @@ struct ViewerSettingsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Space.xl) {
                     thisDevice
+                    otherDevices
                     alerts
                     relay
                     about
@@ -38,6 +40,9 @@ struct ViewerSettingsView: View {
         .fullScreenCover(isPresented: $showGallery) {
             DesignSystemGallery(onClose: { showGallery = false })
         }
+        .sheet(isPresented: $showPairDevice) {
+            PairDeviceSheet().environmentObject(hub).mirrorSheet().presentationSizing(.form)
+        }
     }
 
     private func save() {
@@ -48,8 +53,15 @@ struct ViewerSettingsView: View {
 
     // MARK: Sections
 
+    private var otherDevices: some View {
+        SettingsSection("Other devices", symbol: "appletv.fill",
+                        footer: "Apple TV and Vision Pro can't scan a code, so they show one. Enter it here and this device's cameras travel to them sealed through your iCloud.") {
+            ActionRow("Pair Apple TV or Vision Pro…", symbol: "qrcode") { showPairDevice = true }
+        }
+    }
+
     private var thisDevice: some View {
-        SettingsSection("This device", symbol: "iphone", footer: cloudFooter) {
+        SettingsSection("This device", symbol: Platform.deviceSymbol, footer: cloudFooter) {
             ValueRow("Name", value: DeviceIdentity.name)
             ValueRow("Watch away from home", value: hub.cloudAvailable ? "On · iCloud" : "Off",
                      valueColor: hub.cloudAvailable ? Palette.ok : Palette.textSecondary)

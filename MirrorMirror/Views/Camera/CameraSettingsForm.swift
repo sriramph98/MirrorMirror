@@ -7,6 +7,8 @@ struct CameraSettingsForm: View {
     @Binding var settings: CameraSettings
     var storageUsed: Int64?
     var storageFree: Int64?
+    /// False for a Mac's own camera: its window can't dim, so the row explains ⌘H instead.
+    var dimsScreen = true
 
     var body: some View {
         ScrollView {
@@ -95,8 +97,13 @@ struct CameraSettingsForm: View {
     }
 
     private var deviceSection: some View {
-        SettingsSection("Camera device", symbol: "iphone") {
-            MenuRow("Dim screen after", options: Self.dimOptions, selection: $settings.autoDimAfter) { Self.dimLabel($0) }
+        SettingsSection("Camera device", symbol: dimsScreen ? "iphone" : Platform.deviceSymbol,
+                        footer: dimsScreen ? nil : "Press ⌘H to hide MirrorMirror while the camera keeps streaming and recording.") {
+            if dimsScreen {
+                MenuRow("Dim screen after", options: Self.dimOptions, selection: $settings.autoDimAfter) { Self.dimLabel($0) }
+            } else {
+                ValueRow("Hide window", value: "⌘H", symbol: "eye.slash")
+            }
             RulerRow("Talk-back volume", value: percent($settings.speakerVolume), in: 0...100, step: 5, labelEvery: 4) {
                 "\(Int($0))%"
             }

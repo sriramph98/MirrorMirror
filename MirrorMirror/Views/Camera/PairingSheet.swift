@@ -59,6 +59,21 @@ struct PairingSheet: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            // Mac: the link itself, selectable, for people who'd rather copy a part of it or
+            // drag it into a message.
+            if Platform.isMac {
+                Text(host.invite.url.absoluteString)
+                    .font(.custom(Fonts.monoMedium, size: 12, relativeTo: .caption))
+                    .foregroundStyle(Palette.textSecondary)
+                    .textSelection(.enabled)
+                    .multilineTextAlignment(.center)
+                    .padding(Space.m)
+                    .frame(maxWidth: .infinity)
+                    .background(Palette.frame, in: .continuous(Radius.control))
+                    .overlay(RoundedRectangle(cornerRadius: Radius.control, style: .continuous).strokeBorder(Palette.hairline, lineWidth: 1))
+                    .accessibilityLabel("Pairing link")
+            }
+
             VStack(spacing: Space.s) {
                 ShareLink(item: host.invite.url, subject: Text("Watch \(host.settings.name)"),
                           message: Text("Tap to add my MirrorMirror camera “\(host.settings.name)”.")) {
