@@ -94,6 +94,8 @@ final class LocalSignalServer {
 
     private func handle(_ connection: NWConnection) {
         connection.start(queue: queue)
+        // Never let a silent client hold a connection open.
+        queue.asyncAfter(deadline: .now() + 30) { connection.cancel() }
         let key = self.key
         Task {
             defer { connection.cancel() }
@@ -164,12 +166,24 @@ final class LocalSignalBrowser: ObservableObject {
         let parameters = NWParameters.tcp
         parameters.includePeerToPeer = true
         let connection = NWConnection(to: endpoint, using: parameters)
+        // A dead endpoint (camera app restarted) parks in .waiting forever; treat that as failure.
+        connection.stateUpdateHandler = { state in
+            switch state {
+            case .failed, .waiting: connection.cancel()
+            default: break
+            }
+        }
         connection.start(queue: DispatchQueue(label: "mm.local-signal-client"))
         defer { connection.cancel() }
         return try await withTimeout(timeout) {
-            try await Framing.send(try key.seal(offer), on: connection)
-            let reply = try await Framing.receive(on: connection)
-            return try key.open(SignalMessage.self, from: reply)
+            // Cancelling the connection completes any pending send/receive, so the timeout can't hang.
+            try await withTaskCancellationHandler {
+                try await Framing.send(try key.seal(offer), on: connection)
+                let reply = try await Framing.receive(on: connection)
+                return try key.open(SignalMessage.self, from: reply)
+            } onCancel: {
+                connection.cancel()
+            }
         }
     }
 }

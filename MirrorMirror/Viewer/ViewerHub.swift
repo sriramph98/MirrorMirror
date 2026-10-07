@@ -172,27 +172,20 @@ final class ViewerHub: ObservableObject {
                 : "Camera isn't on this network.")
         }
 
-        return try await withThrowingTaskGroup(of: SignalMessage.self) { group in
+        // First answer wins and the slower path is cancelled without waiting for it.
+        let race = AnswerRace(expected: (useLAN ? 1 : 0) + (useCloud ? 1 : 0))
+        return try await withCheckedThrowingContinuation { continuation in
+            race.start(continuation)
             if useLAN {
-                group.addTask { try await self.lan.exchange(offer, key: key) }
+                race.add(Task { [lan] in
+                    do { race.succeed(try await lan.exchange(offer, key: key)) } catch { race.fail(error) }
+                })
             }
             if useCloud {
-                group.addTask { try await self.cloudExchange(offer, key: key) }
+                race.add(Task {
+                    do { race.succeed(try await self.cloudExchange(offer, key: key)) } catch { race.fail(error) }
+                })
             }
-            var lastError: Error = SignalingError(message: "Camera is offline or the app isn't open on it.")
-            while let result = await group.nextResult() {
-                switch result {
-                case let .success(answer):
-                    group.cancelAll()
-                    return answer
-                case let .failure(error):
-                    if !(error is TimeoutError) { lastError = error }
-                }
-            }
-            if lastError is TimeoutError || (lastError as? URLError) != nil {
-                throw SignalingError(message: "Camera is offline or the app isn't open on it.")
-            }
-            throw lastError
         }
     }
 
@@ -231,5 +224,44 @@ final class ViewerHub: ObservableObject {
 
     func camera(id: String) -> PairedCamera? {
         cameras.first { $0.id == id }
+    }
+}
+
+/// Resolves with the first successful signaling answer; fails only when every path failed.
+private final class AnswerRace: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<SignalMessage, Error>?
+    private var tasks: [Task<Void, Never>] = []
+    private var remaining: Int
+    private var lastError: Error = SignalingError(message: "Camera is offline or the app isn't open on it.")
+
+    init(expected: Int) { remaining = expected }
+
+    func start(_ continuation: CheckedContinuation<SignalMessage, Error>) {
+        lock.withLock { self.continuation = continuation }
+    }
+
+    func add(_ task: Task<Void, Never>) {
+        lock.withLock { tasks.append(task) }
+    }
+
+    func succeed(_ answer: SignalMessage) {
+        let (continuation, tasks) = lock.withLock { () -> (CheckedContinuation<SignalMessage, Error>?, [Task<Void, Never>]) in
+            defer { self.continuation = nil }
+            return (self.continuation, self.tasks)
+        }
+        continuation?.resume(returning: answer)
+        tasks.forEach { $0.cancel() }
+    }
+
+    func fail(_ error: Error) {
+        let continuation = lock.withLock { () -> CheckedContinuation<SignalMessage, Error>? in
+            if error is SignalingError { lastError = error }
+            remaining -= 1
+            guard remaining <= 0 else { return nil }
+            defer { self.continuation = nil }
+            return self.continuation
+        }
+        continuation?.resume(throwing: lastError)
     }
 }

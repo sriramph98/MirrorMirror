@@ -123,7 +123,6 @@ struct LiveView: View {
     private var connectionDetail: String {
         var parts = [connection.stats.pathLabel]
         if let rtt = connection.stats.roundTrip { parts.append(rtt < 0.001 ? "<1 ms" : "\(Int(rtt * 1000)) ms") }
-        if let h = connection.stats.height { parts.append("\(h)p") }
         return parts.joined(separator: " · ")
     }
 

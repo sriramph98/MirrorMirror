@@ -95,8 +95,6 @@ final class PeerLink: NSObject {
     var onConnectionState: ((RTCPeerConnectionState) -> Void)?
     var onRemoteTrack: ((RTCMediaStreamTrack) -> Void)?
 
-    private var gatheringWaiters: [CheckedContinuation<Void, Never>] = []
-    private let lock = NSLock()
     private var lastBytes: (bytes: Double, time: TimeInterval)?
 
     init?(environment: RTCEnvironment = .shared) {
@@ -148,36 +146,13 @@ final class PeerLink: NSObject {
         try await connection.setRemoteDescription(RTCSessionDescription(type: .answer, sdp: answerSDP))
     }
 
-    /// Waits until ICE gathering completes (or 3 s, whichever is first) so the SDP carries every candidate.
+    /// Waits until ICE gathering completes (or 3 s, whichever is first) so the SDP carries every
+    /// candidate. Polling keeps this cancellable and can't strand a continuation.
     private func waitForGathering() async {
-        if connection.iceGatheringState == .complete { return }
-        await withTaskGroup(of: Void.self) { group in
-            group.addTask {
-                await withCheckedContinuation { c in
-                    self.lock.lock()
-                    if self.connection.iceGatheringState == .complete {
-                        self.lock.unlock()
-                        c.resume()
-                    } else {
-                        self.gatheringWaiters.append(c)
-                        self.lock.unlock()
-                    }
-                }
-            }
-            group.addTask { try? await Task.sleep(for: .seconds(3)) }
-            await group.next()
-            group.cancelAll()
+        let deadline = Date().addingTimeInterval(3)
+        while connection.iceGatheringState != .complete, Date() < deadline, !Task.isCancelled {
+            try? await Task.sleep(for: .milliseconds(50))
         }
-        // If the timeout won, resume the waiter so it doesn't leak.
-        flushGatheringWaiters()
-    }
-
-    private func flushGatheringWaiters() {
-        lock.lock()
-        let waiters = gatheringWaiters
-        gatheringWaiters = []
-        lock.unlock()
-        waiters.forEach { $0.resume() }
     }
 
     // MARK: Messaging
@@ -208,7 +183,6 @@ final class PeerLink: NSObject {
     }
 
     func close() {
-        flushGatheringWaiters()
         control.close()
         files.close()
         connection.close()
@@ -276,9 +250,7 @@ extension PeerLink: RTCPeerConnectionDelegate {
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove candidates: [RTCIceCandidate]) {}
     func peerConnection(_ peerConnection: RTCPeerConnection, didOpen dataChannel: RTCDataChannel) {}
 
-    func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceGatheringState) {
-        if newState == .complete { flushGatheringWaiters() }
-    }
+    func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceGatheringState) {}
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCPeerConnectionState) {
         onConnectionState?(newState)
