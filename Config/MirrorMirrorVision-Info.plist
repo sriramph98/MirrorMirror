@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.sriramph.mirrormirror.pair</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>mirrormirror</string>
+			</array>
+		</dict>
+	</array>
+	<key>MMKeychainGroup</key>
+	<string>$(AppIdentifierPrefix)com.sriramph.mirrormirror.shared</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_mirror-mirror._tcp</string>
+	</array>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationPreferredDefaultSceneSessionRole</key>
+		<string>UIWindowSceneSessionRoleApplication</string>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<true/>
+	</dict>
+</dict>
+</plist>
