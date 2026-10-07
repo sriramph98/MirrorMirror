@@ -22,4 +22,10 @@ This is a **personal project** (GitHub: `sriramph98/MirrorMirror`), not a work r
 ## Design system
 
 - All UI comes from the local package `Packages/MirrorUI` (tokens, components, `DESIGN.md`). App code never uses raw colours, fonts or magic numbers; add or extend a component in the package instead. Dark only. Fonts are Space Grotesk and JetBrains Mono (OFL), bundled in the package.
-- Targets: `MirrorMirror` (iPhone + iPad, split view on iPad), `MirrorMirrorNotifications` (decrypts event pushes), `MirrorMirrorWatch` (viewer only: live picture and voice relayed by the paired iPhone over WatchConnectivity, sealed iCloud snapshots as fallback). Code shared by all targets lives in `Shared/`.
+- Targets: `MirrorMirror` (iPhone, iPad, and Mac via Mac Catalyst with the Mac idiom; camera + viewer), `MirrorMirrorNotifications` (decrypts event pushes), `MirrorMirrorWatch` (viewer only: live picture and voice relayed by the paired iPhone over WatchConnectivity, sealed iCloud snapshots as fallback), `MirrorMirrorTV` (tvOS viewer, focus-driven, device-code pairing), `MirrorMirrorVision` (visionOS viewer, one window per camera). Folders: `Shared/` is compiled into every target (no UI, no WebRTC); `Streaming/` is the WebRTC viewer stack shared by iOS/Catalyst, TV and Vision; each app's UI lives in its own folder.
+- WebRTC comes from `livekit/webrtc-xcframework` (module `LiveKitWebRTC`, classes prefixed `LKRTC…`), chosen because it ships tvOS, visionOS, macOS and Catalyst slices. Don't switch back to `stasel/WebRTC`.
+- Build the TV and Vision targets with `-sdk appletvsimulator` / `-sdk xrsimulator` and `ARCHS=arm64` (the library has no Intel simulator slices). Catalyst: `-destination 'platform=macOS,variant=Mac Catalyst' -allowProvisioningUpdates`.
+
+## Working in parallel
+
+- When several agents or background commands run at once, use absolute paths and never `cd`: the shell's working directory is shared and changes under you.

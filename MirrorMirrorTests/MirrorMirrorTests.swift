@@ -82,6 +82,24 @@ struct PairingTests {
         #expect(!EventKind.motion.isUrgent)
     }
 
+    @Test func devicePairingCodes() throws {
+        let code = DevicePairing.makeCode()
+        #expect(code.count == DevicePairing.codeLength)
+        #expect(DevicePairing.isValid(code))
+        #expect(!code.contains(where: { "01IO".contains($0) }), "codes avoid look-alike symbols")
+        #expect(DevicePairing.formatted("ABCD2345") == "ABCD-2345")
+        // Typing is forgiving: case, separators and look-alikes are normalised.
+        #expect(DevicePairing.normalize("abcd-2345") == "ABCD2345")
+        #expect(DevicePairing.normalize("abc0 1234") == "ABCOL234")
+        #expect(!DevicePairing.isValid("ABC"))
+        // Two devices typing the same code derive the same sealed mailbox.
+        let payload = DevicePairing.Payload(cameras: [], fromDevice: "Phone")
+        let sent = try DevicePairing.sealForTesting(payload, code: "abcd-2345")
+        let opened = try DevicePairing.openForTesting(sent, code: "ABCD2345")
+        #expect(opened.fromDevice == "Phone")
+        #expect(throws: (any Error).self) { try DevicePairing.openForTesting(sent, code: "ABCD2346") }
+    }
+
     @Test func base64URLRoundTrips() {
         for length in 0..<40 {
             let data = Data((0..<length).map { UInt8(($0 * 37 + 250) % 256) })
