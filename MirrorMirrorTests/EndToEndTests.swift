@@ -27,6 +27,9 @@ struct EndToEndTests {
         await host.start()
         defer { host.stop() }
         #expect(await wait("synthetic camera running") { host.engineState.isSynthetic && host.engineState.isRunning })
+        // This simulator may have been a camera for other simulators (TV, Vision Pro) that are still
+        // running and paired. A fresh code keeps them out, so the test's viewer is the only one.
+        host.resetPairing()
 
         let hub = ViewerHub.shared
         hub.activate()

@@ -56,7 +56,7 @@ struct VisionTimelinePanel: View {
             HStack(spacing: Space.s) {
                 Text("Window").type(.caps).padding(.leading, Space.xs)
                 Spacer(minLength: Space.s)
-                SegmentPill(Self.windows, selection: $window, label: Self.windowLabel)
+                SegmentPill(Self.windows, selection: $window, label: FootageSummary.windowLabel)
                     .pillHover()
                     .accessibilityLabel("Time window")
             }
@@ -74,9 +74,6 @@ struct VisionTimelinePanel: View {
         .panel(padding: nil)
     }
 
-    private static func windowLabel(_ window: TimeInterval) -> String {
-        window >= 7 * 24 * 3600 ? "7D" : "\(Int(window / 3600))H"
-    }
 
     @ViewBuilder
     private var playbackRow: some View {
@@ -85,7 +82,9 @@ struct VisionTimelinePanel: View {
                 if connection.phase != .connected && connection.segments.isEmpty {
                     Readout("Offline", caption: "Recordings load once connected")
                 } else {
-                    Readout(footageSummary, caption: connection.segments.isEmpty ? "Nothing recorded yet" : "Drag the strip to rewind")
+                    let summary = FootageSummary.describe(segments: connection.segments, window: window,
+                                                          isRecording: connection.status?.isRecording ?? false)
+                    Readout(summary.title, caption: summary.caption)
                 }
                 Spacer(minLength: Space.s)
                 exportTool
@@ -103,16 +102,6 @@ struct VisionTimelinePanel: View {
         }
     }
 
-    private var footageSummary: String {
-        let cutoff = Date().addingTimeInterval(-window)
-        let seconds = connection.segments.filter { $0.end > cutoff }.reduce(0.0) { total, segment in
-            total + segment.end.timeIntervalSince(max(segment.start, cutoff))
-        }
-        guard seconds > 0 else { return "No footage" }
-        let minutes = Int(seconds / 60)
-        let text = minutes >= 60 ? "\(minutes / 60) H \(minutes % 60) M" : minutes > 0 ? "\(minutes) M" : "\(Int(seconds)) S"
-        return "\(text) recorded"
-    }
 
     private var pauseTool: some View {
         Button { connection.togglePause() } label: {

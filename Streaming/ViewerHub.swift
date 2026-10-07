@@ -44,6 +44,22 @@ final class ViewerHub: ObservableObject {
         cameras = Keychain.codable([PairedCamera].self, for: "viewer-cameras") ?? []
         mirrorKeysForNotifications()
         lan.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }.store(in: &cancellables)
+        lan.$visibleMailboxes
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] visible in MainActor.assumeIsolated { self?.localNetworkChanged(visible) } }
+            .store(in: &cancellables)
+    }
+
+    private var lastVisibleMailboxes: Set<String> = []
+
+    /// A camera that just appeared on this network shouldn't wait out a retry delay.
+    private func localNetworkChanged(_ visible: Set<String>) {
+        let appeared = visible.subtracting(lastVisibleMailboxes)
+        lastVisibleMailboxes = visible
+        guard !appeared.isEmpty, !DebugSupport.disableLAN else { return }
+        for camera in cameras where appeared.contains(camera.key.mailbox) {
+            connections[camera.id]?.cameraAppearedOnNetwork()
+        }
     }
 
     /// Called when the viewer UI appears.
@@ -187,18 +203,34 @@ final class ViewerHub: ObservableObject {
 
         // First answer wins and the slower path is cancelled without waiting for it.
         let race = AnswerRace(expected: (useLAN ? 1 : 0) + (useCloud ? 1 : 0))
-        return try await withCheckedThrowingContinuation { continuation in
-            race.start(continuation)
-            if useLAN {
-                race.add(Task { [lan] in
-                    do { race.succeed(try await lan.exchange(offer, key: key)) } catch { race.fail(error) }
-                })
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                race.start(continuation)
+                if useLAN {
+                    race.add(Task { [lan] in
+                        do { race.succeed(try await lan.exchange(offer, key: key)) } catch { race.fail(error) }
+                    })
+                }
+                if useCloud {
+                    race.add(Task {
+                        do { race.succeed(try await self.cloudExchange(offer, key: key)) } catch { race.fail(error) }
+                    })
+                }
+                if !useLAN && !DebugSupport.disableLAN {
+                    // The camera may come home (or its app may open) while we wait on iCloud:
+                    // join the race over the local network as soon as it shows up.
+                    race.add(Task { [lan] in
+                        while !Task.isCancelled, !lan.isVisible(key) {
+                            try? await Task.sleep(for: .milliseconds(400))
+                        }
+                        guard !Task.isCancelled, race.addPath() else { return }
+                        DebugSupport.log("viewer", "camera appeared on this network; signaling there too")
+                        do { race.succeed(try await lan.exchange(offer, key: key)) } catch { race.fail(error) }
+                    })
+                }
             }
-            if useCloud {
-                race.add(Task {
-                    do { race.succeed(try await self.cloudExchange(offer, key: key)) } catch { race.fail(error) }
-                })
-            }
+        } onCancel: {
+            race.cancel()
         }
     }
 
@@ -248,33 +280,62 @@ private final class AnswerRace: @unchecked Sendable {
     private var remaining: Int
     private var lastError: Error = SignalingError(message: "Camera is offline or the app isn't open on it.")
 
+    private var finished = false
+
     init(expected: Int) { remaining = expected }
 
     func start(_ continuation: CheckedContinuation<SignalMessage, Error>) {
-        lock.withLock { self.continuation = continuation }
+        let alreadyCancelled = lock.withLock { () -> Bool in
+            if finished { return true }
+            self.continuation = continuation
+            return false
+        }
+        if alreadyCancelled { continuation.resume(throwing: CancellationError()) }
     }
 
     func add(_ task: Task<Void, Never>) {
-        lock.withLock { tasks.append(task) }
+        let finished = lock.withLock { () -> Bool in
+            if !self.finished { tasks.append(task) }
+            return self.finished
+        }
+        if finished { task.cancel() }
+    }
+
+    /// Registers a path that joins after the race started. Returns false if the race is already over.
+    func addPath() -> Bool {
+        lock.withLock {
+            guard !finished else { return false }
+            remaining += 1
+            return true
+        }
     }
 
     func succeed(_ answer: SignalMessage) {
-        let (continuation, tasks) = lock.withLock { () -> (CheckedContinuation<SignalMessage, Error>?, [Task<Void, Never>]) in
-            defer { self.continuation = nil }
-            return (self.continuation, self.tasks)
-        }
-        continuation?.resume(returning: answer)
-        tasks.forEach { $0.cancel() }
+        finish { $0.resume(returning: answer) }
     }
 
     func fail(_ error: Error) {
-        let continuation = lock.withLock { () -> CheckedContinuation<SignalMessage, Error>? in
+        let finalError = lock.withLock { () -> Error? in
             if error is SignalingError { lastError = error }
             remaining -= 1
-            guard remaining <= 0 else { return nil }
-            defer { self.continuation = nil }
-            return self.continuation
+            return remaining <= 0 ? lastError : nil
         }
-        continuation?.resume(throwing: lastError)
+        if let finalError { finish { $0.resume(throwing: finalError) } }
+    }
+
+    func cancel() {
+        finish { $0.resume(throwing: CancellationError()) }
+    }
+
+    /// Resolves once, then stops every path still running (including any watcher waiting to join).
+    private func finish(_ resolve: (CheckedContinuation<SignalMessage, Error>) -> Void) {
+        let (continuation, tasks) = lock.withLock { () -> (CheckedContinuation<SignalMessage, Error>?, [Task<Void, Never>]) in
+            guard !finished else { return (nil, []) }
+            finished = true
+            defer { self.continuation = nil; self.tasks = [] }
+            return (self.continuation, self.tasks)
+        }
+        continuation.map(resolve)
+        tasks.forEach { $0.cancel() }
     }
 }

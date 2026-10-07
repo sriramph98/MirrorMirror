@@ -68,13 +68,26 @@ enum DeviceIdentity {
         return WKInterfaceDevice.current().name
         #elseif targetEnvironment(macCatalyst)
         // UIDevice reports the iPad idiom's model name on Mac; use the computer's host name instead.
-        let host = ProcessInfo.processInfo.hostName.replacingOccurrences(of: ".local", with: "").replacingOccurrences(of: "-", with: " ")
+        let host = friendlyHostName(ProcessInfo.processInfo.hostName)
         return host.isEmpty ? "Mac (\(String(id.prefix(4))))" : host
         #else
         let name = UIDevice.current.name
         // iOS 16+ returns the generic model name without the entitlement; make it a little friendlier.
         return name == UIDevice.current.model ? "\(name) (\(String(id.prefix(4))))" : name
         #endif
+    }
+
+    /// "srirams-macbook-pro.local" → "Srirams MacBook Pro". Host names lose the capitals and
+    /// apostrophe of the computer's real name, so restore what we reliably can.
+    static func friendlyHostName(_ host: String) -> String {
+        let bare = host.components(separatedBy: ".").first ?? host
+        let known = ["macbook": "MacBook", "imac": "iMac", "mac": "Mac", "ipad": "iPad", "iphone": "iPhone"]
+        return bare.split(whereSeparator: { $0 == "-" || $0 == "_" || $0 == " " })
+            .map { word in
+                let lower = word.lowercased()
+                return known[lower] ?? (lower.prefix(1).uppercased() + lower.dropFirst())
+            }
+            .joined(separator: " ")
     }
 }
 

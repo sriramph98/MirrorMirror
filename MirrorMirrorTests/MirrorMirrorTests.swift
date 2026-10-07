@@ -100,6 +100,13 @@ struct PairingTests {
         #expect(throws: (any Error).self) { try DevicePairing.openForTesting(sent, code: "ABCD2346") }
     }
 
+    @Test func macHostNamesReadLikeComputerNames() {
+        #expect(DeviceIdentity.friendlyHostName("srirams-macbook-pro.local") == "Srirams MacBook Pro")
+        #expect(DeviceIdentity.friendlyHostName("Office-iMac") == "Office iMac")
+        #expect(DeviceIdentity.friendlyHostName("mac-mini.lan") == "Mac Mini")
+        #expect(DeviceIdentity.friendlyHostName("").isEmpty)
+    }
+
     @Test func base64URLRoundTrips() {
         for length in 0..<40 {
             let data = Data((0..<length).map { UInt8(($0 * 37 + 250) % 256) })
@@ -210,5 +217,34 @@ struct ModelTests {
         #expect(LensOption(factor: 0.5).label == "0.5×")
         #expect(LensOption(factor: 1).label == "1×")
         #expect(LensOption(factor: 5).label == "5×")
+    }
+}
+
+@Suite("Timeline copy")
+struct FootageSummaryTests {
+    private let now = Date(timeIntervalSince1970: 1_800_000_000)
+    private func segment(minutesAgo: Double, length: TimeInterval = 60) -> RecordingSegment {
+        RecordingSegment(start: now.addingTimeInterval(-minutesAgo * 60), duration: length, fileName: "s.mp4",
+                         byteSize: 1, width: 1, height: 1)
+    }
+
+    @Test func countsFootageInsideTheWindow() {
+        let summary = FootageSummary.describe(segments: [segment(minutesAgo: 10), segment(minutesAgo: 5)],
+                                              window: 3600, isRecording: true, now: now)
+        #expect(summary.title == "2 M recorded")
+        #expect(summary.caption == "Drag the strip to rewind")
+    }
+
+    @Test func olderFootageDoesNotInviteDraggingAnEmptyStrip() {
+        let summary = FootageSummary.describe(segments: [segment(minutesAgo: 300)], window: 3600, isRecording: false, now: now)
+        #expect(summary.title == "No footage")
+        #expect(summary.caption.contains("longer window") && !summary.caption.contains("Drag"))
+    }
+
+    @Test func recordingWithNothingClosedYet() {
+        let summary = FootageSummary.describe(segments: [], window: 3600, isRecording: true, now: now)
+        #expect(summary.title == "Recording")
+        #expect(FootageSummary.describe(segments: [], window: 3600, isRecording: false, now: now).caption == "Nothing recorded yet")
+        #expect(FootageSummary.windowLabel(7 * 24 * 3600) == "7D" && FootageSummary.windowLabel(6 * 3600) == "6H")
     }
 }

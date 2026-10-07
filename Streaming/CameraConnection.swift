@@ -121,6 +121,16 @@ final class CameraConnection: ObservableObject {
         connectTask = Task { await runConnect() }
     }
 
+    /// The camera just showed up on the local network. If we're sitting out a retry delay, go now.
+    /// (An attempt already in flight joins the local network itself; see `ViewerHub.exchange`.)
+    func cameraAppearedOnNetwork() {
+        guard wantsConnection, case .failed = phase else { return }
+        DebugSupport.log("viewer", "\(camera.name) appeared on this network; reconnecting now")
+        reconnectAttempt = 0
+        connectTask?.cancel()
+        connectTask = Task { await runConnect() }
+    }
+
     func disconnect() {
         wantsConnection = false
         connectTask?.cancel()
