@@ -16,6 +16,7 @@
 		F10000000000000000000D /* LiveKitWebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = F10000000000000000000C /* LiveKitWebRTC */; };
 		F20000000000000000000B /* MirrorUI in Frameworks */ = {isa = PBXBuildFile; productRef = F20000000000000000000A /* MirrorUI */; };
 		F20000000000000000000D /* LiveKitWebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = F20000000000000000000C /* LiveKitWebRTC */; };
+		F30000000000000000000002 /* MirrorMirrorTopShelf.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F30000000000000000000001 /* MirrorMirrorTopShelf.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,13 @@
 			remoteGlobalIDString = D10000000000000000000007;
 			remoteInfo = MirrorMirrorWatch;
 		};
+		F30000000000000000000004 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 805B95032D3322570073A444 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F3000000000000000000000B;
+			remoteInfo = MirrorMirrorTopShelf;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -72,6 +80,17 @@
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F30000000000000000000003 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				F30000000000000000000002 /* MirrorMirrorTopShelf.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -82,6 +101,7 @@
 		D10000000000000000000001 /* MirrorMirrorWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MirrorMirrorWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F100000000000000000000 /* MirrorMirrorTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MirrorMirrorTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F200000000000000000000 /* MirrorMirrorVision.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MirrorMirrorVision.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F30000000000000000000001 /* MirrorMirrorTopShelf.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MirrorMirrorTopShelf.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -110,6 +130,7 @@
 		F100000000000000000002 /* Exceptions for "MirrorMirrorTV" folder in "MirrorMirrorTV" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Info.plist,
 				MirrorMirrorTV.entitlements,
 			);
 			target = F100000000000000000006 /* MirrorMirrorTV */;
@@ -120,6 +141,14 @@
 				MirrorMirrorVision.entitlements,
 			);
 			target = F200000000000000000006 /* MirrorMirrorVision */;
+		};
+		F30000000000000000000007 /* Exceptions for "MirrorMirrorTopShelf" folder in "MirrorMirrorTopShelf" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				MirrorMirrorTopShelf.entitlements,
+			);
+			target = F3000000000000000000000B /* MirrorMirrorTopShelf */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -184,6 +213,14 @@
 			path = MirrorMirrorVision;
 			sourceTree = "<group>";
 		};
+		F30000000000000000000006 /* MirrorMirrorTopShelf */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F30000000000000000000007 /* Exceptions for "MirrorMirrorTopShelf" folder in "MirrorMirrorTopShelf" target */,
+			);
+			path = MirrorMirrorTopShelf;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -243,6 +280,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F30000000000000000000009 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -258,6 +302,7 @@
 				D10000000000000000000002 /* MirrorMirrorWatch */,
 				F100000000000000000001 /* MirrorMirrorTV */,
 				F200000000000000000001 /* MirrorMirrorVision */,
+				F30000000000000000000006 /* MirrorMirrorTopShelf */,
 				805B950C2D3322570073A444 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -272,6 +317,7 @@
 				D10000000000000000000001 /* MirrorMirrorWatch.app */,
 				F100000000000000000000 /* MirrorMirrorTV.app */,
 				F200000000000000000000 /* MirrorMirrorVision.app */,
+				F30000000000000000000001 /* MirrorMirrorTopShelf.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -409,10 +455,12 @@
 				F100000000000000000003 /* Sources */,
 				F100000000000000000004 /* Frameworks */,
 				F100000000000000000005 /* Resources */,
+				F30000000000000000000003 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				F30000000000000000000005 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				F100000000000000000001 /* MirrorMirrorTV */,
@@ -453,6 +501,28 @@
 			productName = MirrorMirrorVision;
 			productReference = F200000000000000000000 /* MirrorMirrorVision.app */;
 			productType = "com.apple.product-type.application";
+		};
+		F3000000000000000000000B /* MirrorMirrorTopShelf */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F3000000000000000000000E /* Build configuration list for PBXNativeTarget "MirrorMirrorTopShelf" */;
+			buildPhases = (
+				F30000000000000000000008 /* Sources */,
+				F30000000000000000000009 /* Frameworks */,
+				F3000000000000000000000A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F30000000000000000000006 /* MirrorMirrorTopShelf */,
+			);
+			name = MirrorMirrorTopShelf;
+			packageProductDependencies = (
+			);
+			productName = MirrorMirrorTopShelf;
+			productReference = F30000000000000000000001 /* MirrorMirrorTopShelf.appex */;
+			productType = "com.apple.product-type.tv-app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -505,6 +575,7 @@
 				D10000000000000000000007 /* MirrorMirrorWatch */,
 				F100000000000000000006 /* MirrorMirrorTV */,
 				F200000000000000000006 /* MirrorMirrorVision */,
+				F3000000000000000000000B /* MirrorMirrorTopShelf */,
 			);
 		};
 /* End PBXProject section */
@@ -553,6 +624,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F200000000000000000005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3000000000000000000000A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -611,6 +689,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F30000000000000000000008 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -636,6 +721,11 @@
 			);
 			target = D10000000000000000000007 /* MirrorMirrorWatch */;
 			targetProxy = D1000000000000000000000F /* PBXContainerItemProxy */;
+		};
+		F30000000000000000000005 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F3000000000000000000000B /* MirrorMirrorTopShelf */;
+			targetProxy = F30000000000000000000004 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1047,6 +1137,7 @@
 				DEVELOPMENT_TEAM = 3YPL755X3M;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MirrorMirrorTV/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MirrorMirror;
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your cameras on this network.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Talk through your camera.";
@@ -1078,6 +1169,7 @@
 				DEVELOPMENT_TEAM = 3YPL755X3M;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MirrorMirrorTV/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MirrorMirror;
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your cameras on this network.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Talk through your camera.";
@@ -1109,6 +1201,7 @@
 				DEVELOPMENT_TEAM = 3YPL755X3M;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/MirrorMirrorVision-Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MirrorMirror;
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your cameras on this network.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Talk through your camera.";
@@ -1142,6 +1235,7 @@
 				DEVELOPMENT_TEAM = 3YPL755X3M;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/MirrorMirrorVision-Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MirrorMirror;
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your cameras on this network.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Talk through your camera.";
@@ -1162,6 +1256,62 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 7;
 				XROS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Release;
+		};
+		F3000000000000000000000C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorTopShelf/MirrorMirrorTopShelf.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MirrorMirrorTopShelf/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "MirrorMirror Top Shelf";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.tv.topshelf;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 18.0;
+			};
+			name = Debug;
+		};
+		F3000000000000000000000D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorTopShelf/MirrorMirrorTopShelf.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MirrorMirrorTopShelf/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "MirrorMirror Top Shelf";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.tv.topshelf;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 18.0;
 			};
 			name = Release;
 		};
@@ -1236,6 +1386,15 @@
 			buildConfigurations = (
 				F200000000000000000007 /* Debug */,
 				F200000000000000000008 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F3000000000000000000000E /* Build configuration list for PBXNativeTarget "MirrorMirrorTopShelf" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F3000000000000000000000C /* Debug */,
+				F3000000000000000000000D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

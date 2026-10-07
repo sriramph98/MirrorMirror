@@ -10,8 +10,20 @@ final class RTCEnvironment {
 
     private init() {
         LKRTCInitializeSSL()
-        factory = LKRTCPeerConnectionFactory(encoderFactory: LKRTCDefaultVideoEncoderFactory(),
-                                           decoderFactory: LKRTCDefaultVideoDecoderFactory())
+        // The AVAudioEngine device module. LiveKit's default module brings up a remote-IO audio
+        // unit as soon as the factory exists; the Simulator's audio server routinely stalls that
+        // call and CoreAudio aborts the whole process (SIGABRT in AURemoteIO::Initialize).
+        factory = LKRTCPeerConnectionFactory(audioDeviceModuleType: .audioEngine,
+                                           bypassVoiceProcessing: false,
+                                           encoderFactory: LKRTCDefaultVideoEncoderFactory(),
+                                           decoderFactory: LKRTCDefaultVideoDecoderFactory(),
+                                           audioProcessingModule: nil)
+        #if targetEnvironment(simulator)
+        // The Simulator has no audio hardware worth the name: opening its input/output units
+        // stalls the audio server and CoreAudio aborts the process. Render audio manually there
+        // so no hardware unit is ever opened. Real devices are unaffected.
+        factory.audioDeviceModule.setManualRenderingMode(true)
+        #endif
         let audio = LKRTCAudioSessionConfiguration.webRTC()
         audio.category = AVAudioSession.Category.playAndRecord.rawValue
         audio.mode = AVAudioSession.Mode.videoChat.rawValue
