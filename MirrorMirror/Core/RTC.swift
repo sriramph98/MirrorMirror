@@ -74,6 +74,7 @@ struct LinkStats: Equatable {
     /// Loudness of the incoming audio, 0...1.
     var audioLevel: Double?
     var path: Path = .unknown
+    var remoteAddress: String?
 
     enum Path: String { case unknown, local, direct, relay }
 
@@ -209,6 +210,34 @@ final class PeerLink: NSObject {
 
     // MARK: Stats
 
+    /// True when two host candidates are on the same network: a private address, or IPv6
+    /// addresses sharing a /64 prefix (home networks hand every device a global IPv6 address).
+    static func isSameNetwork(_ local: String, _ remote: String) -> Bool {
+        if isPrivate(remote) { return true }
+        guard local.contains(":"), remote.contains(":") else { return false }
+        func prefix(_ a: String) -> [String] {
+            let expanded = a.lowercased().replacingOccurrences(of: "::", with: ":0:")
+            return Array(expanded.split(separator: ":", omittingEmptySubsequences: false).prefix(4).map(String.init))
+        }
+        return prefix(local) == prefix(remote)
+    }
+
+    /// RFC 1918 / link-local / unique-local addresses, i.e. not routable on the internet.
+    static func isPrivate(_ address: String) -> Bool {
+        let a = address.lowercased()
+        if a.contains(":") {
+            return a.hasPrefix("fe80") || a.hasPrefix("fc") || a.hasPrefix("fd")
+        }
+        let parts = a.split(separator: ".").compactMap { Int($0) }
+        guard parts.count == 4 else { return a.hasSuffix(".local") }
+        switch (parts[0], parts[1]) {
+        case (10, _), (192, 168), (169, 254), (127, _): return true
+        case (172, 16...31): return true
+        case (100, 64...127): return false   // carrier-grade NAT: not the same home network
+        default: return false
+        }
+    }
+
     /// - Parameter inbound: true on the viewer (measure received video), false on the camera.
     func stats(inbound: Bool) async -> LinkStats {
         let report = await withCheckedContinuation { c in connection.statistics { c.resume(returning: $0) } }
@@ -240,13 +269,17 @@ final class PeerLink: NSObject {
             }
         }
 
-        func candidateType(_ id: String?) -> String? {
-            id.flatMap { report.statistics[$0]?.values["candidateType"] as? String }
-        }
-        let types = [candidateType(localCandidateID), candidateType(remoteCandidateID)]
+        func candidate(_ id: String?) -> [String: NSObject]? { id.flatMap { report.statistics[$0]?.values } }
+        let local = candidate(localCandidateID), remote = candidate(remoteCandidateID)
+        let types = [local?["candidateType"] as? String, remote?["candidateType"] as? String]
+        let remoteAddress = (remote?["address"] as? String) ?? (remote?["ip"] as? String) ?? ""
+        let localAddress = (local?["address"] as? String) ?? (local?["ip"] as? String) ?? ""
+        stats.remoteAddress = remoteAddress
         if types.contains("relay") {
             stats.path = .relay
-        } else if types.allSatisfy({ $0 == "host" }) {
+        } else if types.allSatisfy({ $0 == "host" }) && Self.isSameNetwork(localAddress, remoteAddress) {
+            // Host-to-host only means "same network" when the address is private; public IPv6
+            // host candidates connect phones on cellular directly across the internet.
             stats.path = .local
         } else if types.contains(where: { $0 != nil }) {
             stats.path = .direct

@@ -156,6 +156,22 @@ struct ModelTests {
         #expect(!segment.contains(start.addingTimeInterval(-0.1)))
     }
 
+    @Test func privateAddressClassification() {
+        for local in ["192.168.1.20", "10.0.0.5", "172.20.1.1", "169.254.3.4", "fe80::1", "fd12:3456::1", "abc.local"] {
+            #expect(PeerLink.isPrivate(local), "\(local) should be private")
+        }
+        for remote in ["2600:380:1234::1", "8.8.8.8", "100.72.1.1", "172.32.0.1", "2a01:4f8::1"] {
+            #expect(!PeerLink.isPrivate(remote), "\(remote) should be public")
+        }
+    }
+
+    @Test func sameNetworkClassification() {
+        #expect(PeerLink.isSameNetwork("192.168.1.2", "192.168.1.9"))
+        #expect(PeerLink.isSameNetwork("2600:4040:aa:bb:1::1", "2600:4040:aa:bb:9::2"))     // same home /64
+        #expect(!PeerLink.isSameNetwork("2600:4040:aa:bb::1", "2600:1015:b13e:d112::5"))    // phone on cellular
+        #expect(!PeerLink.isSameNetwork("192.168.1.2", "8.8.8.8"))
+    }
+
     @Test func lensLabels() {
         #expect(LensOption(factor: 0.5).label == "0.5×")
         #expect(LensOption(factor: 1).label == "1×")

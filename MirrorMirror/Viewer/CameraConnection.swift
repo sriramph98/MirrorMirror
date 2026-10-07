@@ -248,7 +248,7 @@ final class CameraConnection: ObservableObject {
                 guard let link = self?.link else { return }
                 let stats = await link.stats(inbound: true)
                 self?.stats = stats
-                DebugSupport.log("viewer", "stats \(stats.width ?? 0)x\(stats.height ?? 0) fps=\(Int(stats.fps ?? 0)) kbps=\(Int((stats.bitrate ?? 0) / 1000)) rtt=\(Int((stats.roundTrip ?? 0) * 1000))ms path=\(stats.path.rawValue) audioBytes=\(stats.audioBytesReceived ?? 0) audioLevel=\(String(format: "%.3f", stats.audioLevel ?? 0))")
+                DebugSupport.log("viewer", "stats \(stats.width ?? 0)x\(stats.height ?? 0) fps=\(Int(stats.fps ?? 0)) kbps=\(Int((stats.bitrate ?? 0) / 1000)) rtt=\(Int((stats.roundTrip ?? 0) * 1000))ms path=\(stats.path.rawValue) remote=\(stats.remoteAddress ?? "?") audioBytes=\(stats.audioBytesReceived ?? 0) audioLevel=\(String(format: "%.3f", stats.audioLevel ?? 0))")
                 try? await Task.sleep(for: .seconds(2))
             }
         }
