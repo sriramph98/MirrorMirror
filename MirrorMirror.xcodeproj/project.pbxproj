@@ -6,6 +6,21 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A1B2C3D4E5F60718293A4B03 /* LiveKitWebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F60718293A4B02 /* LiveKitWebRTC */; };
+		B10000000000000000000002 /* MirrorMirrorNotifications.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* MirrorMirrorNotifications.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C10000000000000000000003 /* MirrorUI in Frameworks */ = {isa = PBXBuildFile; productRef = C10000000000000000000002 /* MirrorUI */; };
+		D1000000000000000000000C /* MirrorUI in Frameworks */ = {isa = PBXBuildFile; productRef = D1000000000000000000000B /* MirrorUI */; };
+		D1000000000000000000000D /* MirrorMirrorWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = D10000000000000000000001 /* MirrorMirrorWatch.app */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F10000000000000000000B /* MirrorUI in Frameworks */ = {isa = PBXBuildFile; productRef = F10000000000000000000A /* MirrorUI */; };
+		F10000000000000000000D /* LiveKitWebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = F10000000000000000000C /* LiveKitWebRTC */; };
+		F20000000000000000000B /* MirrorUI in Frameworks */ = {isa = PBXBuildFile; productRef = F20000000000000000000A /* MirrorUI */; };
+		F20000000000000000000D /* LiveKitWebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = F20000000000000000000C /* LiveKitWebRTC */; };
+		F30000000000000000000002 /* MirrorMirrorTopShelf.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F30000000000000000000001 /* MirrorMirrorTopShelf.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AA0000000000000000000002 /* MirrorMirrorWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000001 /* MirrorMirrorWidgets.appex */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AA0000000000000000000003 /* MirrorUI in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000010 /* MirrorUI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		805B951C2D3322590073A444 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -21,12 +36,83 @@
 			remoteGlobalIDString = 805B950A2D3322570073A444;
 			remoteInfo = MirrorMirror;
 		};
+		B10000000000000000000004 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 805B95032D3322570073A444 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B1000000000000000000000C;
+			remoteInfo = MirrorMirrorNotifications;
+		};
+		D1000000000000000000000F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 805B95032D3322570073A444 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D10000000000000000000007;
+			remoteInfo = MirrorMirrorWatch;
+		};
+		F30000000000000000000004 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 805B95032D3322570073A444 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F3000000000000000000000B;
+			remoteInfo = MirrorMirrorTopShelf;
+		};
+		AA0000000000000000000004 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 805B95032D3322570073A444 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA000000000000000000000C;
+			remoteInfo = MirrorMirrorWidgets;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B10000000000000000000003 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B10000000000000000000002 /* MirrorMirrorNotifications.appex in Embed Foundation Extensions */,
+				AA0000000000000000000002 /* MirrorMirrorWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D1000000000000000000000E /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				D1000000000000000000000D /* MirrorMirrorWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F30000000000000000000003 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				F30000000000000000000002 /* MirrorMirrorTopShelf.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		805B950B2D3322570073A444 /* MirrorMirror.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MirrorMirror.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		805B951B2D3322590073A444 /* MirrorMirrorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MirrorMirrorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		805B95252D3322590073A444 /* MirrorMirrorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MirrorMirrorUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000000000000000000001 /* MirrorMirrorNotifications.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MirrorMirrorNotifications.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		D10000000000000000000001 /* MirrorMirrorWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MirrorMirrorWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F100000000000000000000 /* MirrorMirrorTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MirrorMirrorTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F200000000000000000000 /* MirrorMirrorVision.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MirrorMirrorVision.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F30000000000000000000001 /* MirrorMirrorTopShelf.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MirrorMirrorTopShelf.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0000000000000000000001 /* MirrorMirrorWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MirrorMirrorWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -36,6 +122,51 @@
 				Info.plist,
 			);
 			target = 805B950A2D3322570073A444 /* MirrorMirror */;
+		};
+		B10000000000000000000008 /* Exceptions for "MirrorMirrorNotifications" folder in "MirrorMirrorNotifications" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				MirrorMirrorNotifications.entitlements,
+			);
+			target = B1000000000000000000000C /* MirrorMirrorNotifications */;
+		};
+		D10000000000000000000003 /* Exceptions for "MirrorMirrorWatch" folder in "MirrorMirrorWatch" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				MirrorMirrorWatch.entitlements,
+			);
+			target = D10000000000000000000007 /* MirrorMirrorWatch */;
+		};
+		F100000000000000000002 /* Exceptions for "MirrorMirrorTV" folder in "MirrorMirrorTV" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				MirrorMirrorTV.entitlements,
+			);
+			target = F100000000000000000006 /* MirrorMirrorTV */;
+		};
+		F200000000000000000002 /* Exceptions for "MirrorMirrorVision" folder in "MirrorMirrorVision" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				MirrorMirrorVision.entitlements,
+			);
+			target = F200000000000000000006 /* MirrorMirrorVision */;
+		};
+		F30000000000000000000007 /* Exceptions for "MirrorMirrorTopShelf" folder in "MirrorMirrorTopShelf" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				MirrorMirrorTopShelf.entitlements,
+			);
+			target = F3000000000000000000000B /* MirrorMirrorTopShelf */;
+		};
+		AA0000000000000000000008 /* Exceptions for "MirrorMirrorWidgets" folder in "MirrorMirrorWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = AA000000000000000000000C /* MirrorMirrorWidgets */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -58,6 +189,69 @@
 			path = MirrorMirrorUITests;
 			sourceTree = "<group>";
 		};
+		B10000000000000000000006 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		B10000000000000000000007 /* MirrorMirrorNotifications */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B10000000000000000000008 /* Exceptions for "MirrorMirrorNotifications" folder in "MirrorMirrorNotifications" target */,
+			);
+			path = MirrorMirrorNotifications;
+			sourceTree = "<group>";
+		};
+		D10000000000000000000002 /* MirrorMirrorWatch */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D10000000000000000000003 /* Exceptions for "MirrorMirrorWatch" folder in "MirrorMirrorWatch" target */,
+			);
+			path = MirrorMirrorWatch;
+			sourceTree = "<group>";
+		};
+		E10000000000000000000001 /* Streaming */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Streaming;
+			sourceTree = "<group>";
+		};
+		F100000000000000000001 /* MirrorMirrorTV */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F100000000000000000002 /* Exceptions for "MirrorMirrorTV" folder in "MirrorMirrorTV" target */,
+			);
+			path = MirrorMirrorTV;
+			sourceTree = "<group>";
+		};
+		F200000000000000000001 /* MirrorMirrorVision */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F200000000000000000002 /* Exceptions for "MirrorMirrorVision" folder in "MirrorMirrorVision" target */,
+			);
+			path = MirrorMirrorVision;
+			sourceTree = "<group>";
+		};
+		F30000000000000000000006 /* MirrorMirrorTopShelf */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F30000000000000000000007 /* Exceptions for "MirrorMirrorTopShelf" folder in "MirrorMirrorTopShelf" target */,
+			);
+			path = MirrorMirrorTopShelf;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000006 /* MirrorMirrorWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AA0000000000000000000008 /* Exceptions for "MirrorMirrorWidgets" folder in "MirrorMirrorWidgets" target */,
+			);
+			path = MirrorMirrorWidgets;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000007 /* LiveActivities */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LiveActivities;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +259,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1B2C3D4E5F60718293A4B03 /* LiveKitWebRTC in Frameworks */,
+				C10000000000000000000003 /* MirrorUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,6 +278,54 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B1000000000000000000000A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D10000000000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D1000000000000000000000C /* MirrorUI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F100000000000000000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F10000000000000000000B /* MirrorUI in Frameworks */,
+				F10000000000000000000D /* LiveKitWebRTC in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F200000000000000000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F20000000000000000000B /* MirrorUI in Frameworks */,
+				F20000000000000000000D /* LiveKitWebRTC in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F30000000000000000000009 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA000000000000000000000A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA0000000000000000000003 /* MirrorUI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -91,6 +335,15 @@
 				805B950D2D3322570073A444 /* MirrorMirror */,
 				805B951E2D3322590073A444 /* MirrorMirrorTests */,
 				805B95282D3322590073A444 /* MirrorMirrorUITests */,
+				B10000000000000000000006 /* Shared */,
+				E10000000000000000000001 /* Streaming */,
+				B10000000000000000000007 /* MirrorMirrorNotifications */,
+				D10000000000000000000002 /* MirrorMirrorWatch */,
+				F100000000000000000001 /* MirrorMirrorTV */,
+				F200000000000000000001 /* MirrorMirrorVision */,
+				F30000000000000000000006 /* MirrorMirrorTopShelf */,
+				AA0000000000000000000007 /* LiveActivities */,
+				AA0000000000000000000006 /* MirrorMirrorWidgets */,
 				805B950C2D3322570073A444 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -101,6 +354,12 @@
 				805B950B2D3322570073A444 /* MirrorMirror.app */,
 				805B951B2D3322590073A444 /* MirrorMirrorTests.xctest */,
 				805B95252D3322590073A444 /* MirrorMirrorUITests.xctest */,
+				B10000000000000000000001 /* MirrorMirrorNotifications.appex */,
+				D10000000000000000000001 /* MirrorMirrorWatch.app */,
+				F100000000000000000000 /* MirrorMirrorTV.app */,
+				F200000000000000000000 /* MirrorMirrorVision.app */,
+				F30000000000000000000001 /* MirrorMirrorTopShelf.appex */,
+				AA0000000000000000000001 /* MirrorMirrorWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -115,16 +374,26 @@
 				805B95072D3322570073A444 /* Sources */,
 				805B95082D3322570073A444 /* Frameworks */,
 				805B95092D3322570073A444 /* Resources */,
+				B10000000000000000000003 /* Embed Foundation Extensions */,
+				D1000000000000000000000E /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				B10000000000000000000005 /* PBXTargetDependency */,
+				D10000000000000000000010 /* PBXTargetDependency */,
+				AA0000000000000000000005 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				805B950D2D3322570073A444 /* MirrorMirror */,
+				B10000000000000000000006 /* Shared */,
+				E10000000000000000000001 /* Streaming */,
+				AA0000000000000000000007 /* LiveActivities */,
 			);
 			name = MirrorMirror;
 			packageProductDependencies = (
+				A1B2C3D4E5F60718293A4B02 /* LiveKitWebRTC */,
+				C10000000000000000000002 /* MirrorUI */,
 			);
 			productName = MirrorMirror;
 			productReference = 805B950B2D3322570073A444 /* MirrorMirror.app */;
@@ -176,6 +445,154 @@
 			productReference = 805B95252D3322590073A444 /* MirrorMirrorUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		B1000000000000000000000C /* MirrorMirrorNotifications */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B1000000000000000000000F /* Build configuration list for PBXNativeTarget "MirrorMirrorNotifications" */;
+			buildPhases = (
+				B10000000000000000000009 /* Sources */,
+				B1000000000000000000000A /* Frameworks */,
+				B1000000000000000000000B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B10000000000000000000007 /* MirrorMirrorNotifications */,
+				B10000000000000000000006 /* Shared */,
+			);
+			name = MirrorMirrorNotifications;
+			packageProductDependencies = (
+			);
+			productName = MirrorMirrorNotifications;
+			productReference = B10000000000000000000001 /* MirrorMirrorNotifications.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		D10000000000000000000007 /* MirrorMirrorWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D1000000000000000000000A /* Build configuration list for PBXNativeTarget "MirrorMirrorWatch" */;
+			buildPhases = (
+				D10000000000000000000004 /* Sources */,
+				D10000000000000000000005 /* Frameworks */,
+				D10000000000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				D10000000000000000000002 /* MirrorMirrorWatch */,
+				B10000000000000000000006 /* Shared */,
+			);
+			name = MirrorMirrorWatch;
+			packageProductDependencies = (
+				D1000000000000000000000B /* MirrorUI */,
+			);
+			productName = MirrorMirrorWatch;
+			productReference = D10000000000000000000001 /* MirrorMirrorWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F100000000000000000006 /* MirrorMirrorTV */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F100000000000000000009 /* Build configuration list for PBXNativeTarget "MirrorMirrorTV" */;
+			buildPhases = (
+				F100000000000000000003 /* Sources */,
+				F100000000000000000004 /* Frameworks */,
+				F100000000000000000005 /* Resources */,
+				F30000000000000000000003 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F30000000000000000000005 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F100000000000000000001 /* MirrorMirrorTV */,
+				B10000000000000000000006 /* Shared */,
+				E10000000000000000000001 /* Streaming */,
+			);
+			name = MirrorMirrorTV;
+			packageProductDependencies = (
+				F10000000000000000000A /* MirrorUI */,
+				F10000000000000000000C /* LiveKitWebRTC */,
+			);
+			productName = MirrorMirrorTV;
+			productReference = F100000000000000000000 /* MirrorMirrorTV.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F200000000000000000006 /* MirrorMirrorVision */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F200000000000000000009 /* Build configuration list for PBXNativeTarget "MirrorMirrorVision" */;
+			buildPhases = (
+				F200000000000000000003 /* Sources */,
+				F200000000000000000004 /* Frameworks */,
+				F200000000000000000005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F200000000000000000001 /* MirrorMirrorVision */,
+				B10000000000000000000006 /* Shared */,
+				E10000000000000000000001 /* Streaming */,
+			);
+			name = MirrorMirrorVision;
+			packageProductDependencies = (
+				F20000000000000000000A /* MirrorUI */,
+				F20000000000000000000C /* LiveKitWebRTC */,
+			);
+			productName = MirrorMirrorVision;
+			productReference = F200000000000000000000 /* MirrorMirrorVision.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F3000000000000000000000B /* MirrorMirrorTopShelf */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F3000000000000000000000E /* Build configuration list for PBXNativeTarget "MirrorMirrorTopShelf" */;
+			buildPhases = (
+				F30000000000000000000008 /* Sources */,
+				F30000000000000000000009 /* Frameworks */,
+				F3000000000000000000000A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F30000000000000000000006 /* MirrorMirrorTopShelf */,
+			);
+			name = MirrorMirrorTopShelf;
+			packageProductDependencies = (
+			);
+			productName = MirrorMirrorTopShelf;
+			productReference = F30000000000000000000001 /* MirrorMirrorTopShelf.appex */;
+			productType = "com.apple.product-type.tv-app-extension";
+		};
+		AA000000000000000000000C /* MirrorMirrorWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA000000000000000000000F /* Build configuration list for PBXNativeTarget "MirrorMirrorWidgets" */;
+			buildPhases = (
+				AA0000000000000000000009 /* Sources */,
+				AA000000000000000000000A /* Frameworks */,
+				AA000000000000000000000B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				AA0000000000000000000006 /* MirrorMirrorWidgets */,
+				AA0000000000000000000007 /* LiveActivities */,
+				B10000000000000000000006 /* Shared */,
+			);
+			name = MirrorMirrorWidgets;
+			packageProductDependencies = (
+				AA0000000000000000000010 /* MirrorUI */,
+			);
+			productName = MirrorMirrorWidgets;
+			productReference = AA0000000000000000000001 /* MirrorMirrorWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -186,6 +603,9 @@
 				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
+					B1000000000000000000000C = {
+						CreatedOnToolsVersion = 26.0;
+					};
 					805B950A2D3322570073A444 = {
 						CreatedOnToolsVersion = 16.2;
 					};
@@ -208,6 +628,10 @@
 			);
 			mainGroup = 805B95022D3322570073A444;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "webrtc-xcframework" */,
+				C10000000000000000000001 /* XCLocalSwiftPackageReference "Packages/MirrorUI" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 805B950C2D3322570073A444 /* Products */;
 			projectDirPath = "";
@@ -216,6 +640,12 @@
 				805B950A2D3322570073A444 /* MirrorMirror */,
 				805B951A2D3322590073A444 /* MirrorMirrorTests */,
 				805B95242D3322590073A444 /* MirrorMirrorUITests */,
+				B1000000000000000000000C /* MirrorMirrorNotifications */,
+				D10000000000000000000007 /* MirrorMirrorWatch */,
+				F100000000000000000006 /* MirrorMirrorTV */,
+				F200000000000000000006 /* MirrorMirrorVision */,
+				F3000000000000000000000B /* MirrorMirrorTopShelf */,
+				AA000000000000000000000C /* MirrorMirrorWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -236,6 +666,48 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		805B95232D3322590073A444 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B1000000000000000000000B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D10000000000000000000006 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F100000000000000000005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F200000000000000000005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3000000000000000000000A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA000000000000000000000B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -266,6 +738,48 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B10000000000000000000009 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D10000000000000000000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F100000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F200000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F30000000000000000000008 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0000000000000000000009 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -278,6 +792,32 @@
 			isa = PBXTargetDependency;
 			target = 805B950A2D3322570073A444 /* MirrorMirror */;
 			targetProxy = 805B95262D3322590073A444 /* PBXContainerItemProxy */;
+		};
+		B10000000000000000000005 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B1000000000000000000000C /* MirrorMirrorNotifications */;
+			targetProxy = B10000000000000000000004 /* PBXContainerItemProxy */;
+		};
+		D10000000000000000000010 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilters = (
+				ios,
+			);
+			target = D10000000000000000000007 /* MirrorMirrorWatch */;
+			targetProxy = D1000000000000000000000F /* PBXContainerItemProxy */;
+		};
+		F30000000000000000000005 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F3000000000000000000000B /* MirrorMirrorTopShelf */;
+			targetProxy = F30000000000000000000004 /* PBXContainerItemProxy */;
+		};
+		AA0000000000000000000005 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilters = (
+				ios,
+			);
+			target = AA000000000000000000000C /* MirrorMirrorWidgets */;
+			targetProxy = AA0000000000000000000004 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -409,22 +949,22 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirror.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"MirrorMirror/Preview Content\"";
-				DEVELOPMENT_TEAM = 34587JNE8E;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirror/Info.plist;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
-				INFOPLIST_KEY_NSCameraUsageDescription = "MirrorMirror needs to use camera to stream.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mirror Mirror needs local network.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "MirrorMirror needs access to your microphone to stream audio.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror needs access to save captured photos to your library.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "MirrorMirror needs access to save captured photos to your library.";
+								INFOPLIST_KEY_NSCameraUsageDescription = "Mira uses the camera to stream video to your paired devices and to scan pairing QR codes.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mira connects directly to your other devices on this network for the fastest, private stream.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Mira streams audio, lets you talk back, and listens for sounds like crying or barking on the camera device.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Mira saves snapshots and exported clips to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Mira needs access to save captured photos to your library.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = arm64;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -433,11 +973,16 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = sriramph.MirrorMirror;
+				INFOPLIST_KEY_CFBundleDisplayName = Mira;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
+				SUPPORTS_MACCATALYST = YES;
+				DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 			};
 			name = Debug;
 		};
@@ -447,22 +992,22 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirror.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"MirrorMirror/Preview Content\"";
-				DEVELOPMENT_TEAM = 34587JNE8E;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirror/Info.plist;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
-				INFOPLIST_KEY_NSCameraUsageDescription = "MirrorMirror needs to use camera to stream.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mirror Mirror needs local network.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "MirrorMirror needs access to your microphone to stream audio.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror needs access to save captured photos to your library.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "MirrorMirror needs access to save captured photos to your library.";
+								INFOPLIST_KEY_NSCameraUsageDescription = "Mira uses the camera to stream video to your paired devices and to scan pairing QR codes.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mira connects directly to your other devices on this network for the fastest, private stream.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Mira streams audio, lets you talk back, and listens for sounds like crying or barking on the camera device.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Mira saves snapshots and exported clips to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Mira needs access to save captured photos to your library.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = arm64;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -471,11 +1016,16 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = sriramph.MirrorMirror;
+				INFOPLIST_KEY_CFBundleDisplayName = Mira;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
+				SUPPORTS_MACCATALYST = YES;
+				DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 			};
 			name = Release;
 		};
@@ -484,12 +1034,12 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 34587JNE8E;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = sriramph.MirrorMirrorTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -503,12 +1053,12 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 34587JNE8E;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = sriramph.MirrorMirrorTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -521,11 +1071,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 34587JNE8E;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = sriramph.MirrorMirrorUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -538,16 +1088,386 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 34587JNE8E;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = sriramph.MirrorMirrorUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = MirrorMirror;
+			};
+			name = Release;
+		};
+		B1000000000000000000000D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorNotifications/MirrorMirrorNotifications.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MirrorMirrorNotifications/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Mira Alerts";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.notifications;
+				SUPPORTS_MACCATALYST = YES;
+				DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B1000000000000000000000E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorNotifications/MirrorMirrorNotifications.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MirrorMirrorNotifications/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Mira Alerts";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.notifications;
+				SUPPORTS_MACCATALYST = YES;
+				DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D10000000000000000000008 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorWatch/MirrorMirrorWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Mira;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Hold to talk through your camera from your wrist.";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.sriramph.mirrormirror;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		D10000000000000000000009 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorWatch/MirrorMirrorWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Mira;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Hold to talk through your camera from your wrist.";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.sriramph.mirrormirror;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
+		F100000000000000000007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorTV/MirrorMirrorTV.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MirrorMirrorTV/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Mira;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mira connects directly to your cameras on this network.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Talk through your camera.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Mira saves snapshots and exported clips to your photo library.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.tv;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 18.0;
+			};
+			name = Debug;
+		};
+		F100000000000000000008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorTV/MirrorMirrorTV.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MirrorMirrorTV/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Mira;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mira connects directly to your cameras on this network.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Talk through your camera.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Mira saves snapshots and exported clips to your photo library.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 18.0;
+			};
+			name = Release;
+		};
+		F200000000000000000007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorVision/MirrorMirrorVision.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/MirrorMirrorVision-Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Mira;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mira connects directly to your cameras on this network.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Talk through your camera.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Mira saves snapshots and exported clips to your photo library.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIApplicationPreferredDefaultSceneSessionRole = UIWindowSceneSessionRoleApplication;
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.vision;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = xros;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 7;
+				XROS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Debug;
+		};
+		F200000000000000000008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorVision/MirrorMirrorVision.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/MirrorMirrorVision-Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Mira;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mira connects directly to your cameras on this network.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Talk through your camera.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Mira saves snapshots and exported clips to your photo library.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIApplicationPreferredDefaultSceneSessionRole = UIWindowSceneSessionRoleApplication;
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = xros;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 7;
+				XROS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Release;
+		};
+		F3000000000000000000000C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorTopShelf/MirrorMirrorTopShelf.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MirrorMirrorTopShelf/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Mira Top Shelf";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.tv.topshelf;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 18.0;
+			};
+			name = Debug;
+		};
+		F3000000000000000000000D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = MirrorMirrorTopShelf/MirrorMirrorTopShelf.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MirrorMirrorTopShelf/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Mira Top Shelf";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.topshelf;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 18.0;
+			};
+			name = Release;
+		};
+		AA000000000000000000000D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MirrorMirrorWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Mira Live";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AA000000000000000000000E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 3YPL755X3M;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MirrorMirrorWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Mira Live";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -590,7 +1510,117 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		B1000000000000000000000F /* Build configuration list for PBXNativeTarget "MirrorMirrorNotifications" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B1000000000000000000000D /* Debug */,
+				B1000000000000000000000E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D1000000000000000000000A /* Build configuration list for PBXNativeTarget "MirrorMirrorWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D10000000000000000000008 /* Debug */,
+				D10000000000000000000009 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F100000000000000000009 /* Build configuration list for PBXNativeTarget "MirrorMirrorTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F100000000000000000007 /* Debug */,
+				F100000000000000000008 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F200000000000000000009 /* Build configuration list for PBXNativeTarget "MirrorMirrorVision" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F200000000000000000007 /* Debug */,
+				F200000000000000000008 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F3000000000000000000000E /* Build configuration list for PBXNativeTarget "MirrorMirrorTopShelf" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F3000000000000000000000C /* Debug */,
+				F3000000000000000000000D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA000000000000000000000F /* Build configuration list for PBXNativeTarget "MirrorMirrorWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA000000000000000000000D /* Debug */,
+				AA000000000000000000000E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		C10000000000000000000001 /* XCLocalSwiftPackageReference "Packages/MirrorUI" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/MirrorUI;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "webrtc-xcframework" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/livekit/webrtc-xcframework.git";
+			requirement = {
+				kind = exactVersion;
+				version = 150.7871.03;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A1B2C3D4E5F60718293A4B02 /* LiveKitWebRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "webrtc-xcframework" */;
+			productName = LiveKitWebRTC;
+		};
+		C10000000000000000000002 /* MirrorUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MirrorUI;
+		};
+		D1000000000000000000000B /* MirrorUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MirrorUI;
+		};
+		F10000000000000000000A /* MirrorUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MirrorUI;
+		};
+		F10000000000000000000C /* LiveKitWebRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "webrtc-xcframework" */;
+			productName = LiveKitWebRTC;
+		};
+		F20000000000000000000A /* MirrorUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MirrorUI;
+		};
+		F20000000000000000000C /* LiveKitWebRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1B2C3D4E5F60718293A4B01 /* XCRemoteSwiftPackageReference "webrtc-xcframework" */;
+			productName = LiveKitWebRTC;
+		};
+		AA0000000000000000000010 /* MirrorUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MirrorUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 805B95032D3322570073A444 /* Project object */;
 }

@@ -1,0 +1,10 @@
+build/
+build-*/
+DerivedData/
+.DS_Store
+xcuserdata/
+*.xcuserstate
+MirrorMirror.xcodeproj/-Xcc/
+
+# Licensed source artwork (renders in Website/assets are what ships)
+Website/Production/*.usdz
