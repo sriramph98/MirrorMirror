@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08090a">
+  <meta name="description" content="Give your spare iPhone a second life as a camera. Discover live viewing, talk-back, local recordings, and more ways to check in with MirrorMirror.">
+  <meta property="og:title" content="MirrorMirror — A second life. A closer look.">
+  <meta property="og:description" content="Turn your spare iPhone into a camera. Keep an eye on the little things.">
+  <meta property="og:type" content="website">
+  <title>MirrorMirror — A second life. A closer look.</title>
+  <link rel="icon" type="image/svg+xml" href="assets/mark.svg">
+  <link rel="preload" as="font" href="assets/fonts/SpaceGrotesk-Bold.ttf" type="font/ttf" crossorigin>
+  <link rel="preload" as="image" href="assets/living-room.jpg">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="m9 5 11 7-11 7Z"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><rect x="3" y="6" width="14" height="13" rx="3"/><path d="m17 10 5-3v11l-5-3"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8"/></symbol>
+    <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M4 9h4l5-5v16l-5-5H4Zm13-1a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></symbol>
+    <symbol id="i-snapshot" viewBox="0 0 24 24"><path d="M3 7h5l2-3h4l2 3h5v13H3Z"/><circle cx="12" cy="13" r="4"/></symbol>
+    <symbol id="i-controls" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/><circle cx="8" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="12" rx="3"/><path d="M8 10V6a4 4 0 0 1 8 0v4m-4 5v3"/></symbol>
+    <symbol id="i-replay" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 1 8M3 4v6h6m3-4v7l4 2"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4m-3 14h2"/></symbol>
+    <symbol id="i-desktop" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M12 17v4m-5 0h10"/></symbol>
+    <symbol id="i-watch" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="4"/><path d="m9 6 1-4h4l1 4m-6 12 1 4h4l1-4m3-9h2v4h-2"/></symbol>
+    <symbol id="i-vision" viewBox="0 0 24 24"><path d="M3 6c4-2 14-2 18 0 2 4 1 11-3 12-3 1-4-3-6-3s-3 4-6 3C2 17 1 10 3 6Z"/></symbol>
+  </svg>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header shell">
+    <a class="brand" href="#" aria-label="MirrorMirror home"><img src="assets/mark.svg" width="35" height="35" alt=""><span>mirror<span class="brand-light">mirror</span></span></a>
+    <nav aria-label="Main navigation">
+      <a href="#experience">The experience</a><a href="#devices">Your devices</a><a href="#questions">Questions</a>
+    </nav>
+    <a class="button button-small button-light" data-beta-cta href="#experience">Explore the app <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+  </header>
+
+  <main id="main">
+    <section class="hero shell" aria-labelledby="hero-title">
+      <p class="eyebrow"><span class="signal-dot"></span> A NEW PURPOSE FOR YOUR SPARE IPHONE</p>
+      <h1 id="hero-title">A second life.<br><span>A closer look.</span></h1>
+      <p class="hero-copy">Turn your spare iPhone into a camera.<br>Stay close to the little things, even from another room.</p>
+      <div class="hero-actions"><a class="button button-accent" data-beta-cta href="#experience">Explore MirrorMirror <svg aria-hidden="true"><use href="#i-arrow"/></svg></a><a class="text-link" href="#setup">See how it works <span>↘</span></a></div>
+
+      <div class="hero-stage" role="img" aria-label="Illustrated MirrorMirror viewing experience: the same living-room camera on a tablet and phone. A dog rests in warm evening light.">
+        <div class="stage-glow"></div>
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+        <div class="device tablet hero-tablet">
+          <div class="tablet-camera"></div>
+          <div class="screen tablet-screen">
+            <div class="device-bar"><span class="mini-mark">M / M</span><span>LIVING ROOM</span><span class="screen-status"><i></i> LIVE</span></div>
+            <div class="viewfinder"><img src="assets/living-room.jpg" width="1536" height="1024" alt="" fetchpriority="high"><div class="viewfinder-top"><span><i></i> LIVE</span><span>REC <b>●</b></span></div><div class="viewfinder-bottom"><span>1080 · 30</span><span class="audio-bars">▂▃▆▅▃▇▅▂</span></div><span class="focus-corner focus-tl"></span><span class="focus-corner focus-br"></span></div>
+            <div class="tablet-deck"><span class="mini-tool"><svg aria-hidden="true"><use href="#i-speaker"/></svg></span><span class="mini-tool"><svg aria-hidden="true"><use href="#i-snapshot"/></svg></span><span class="talk-tool"><svg aria-hidden="true"><use href="#i-mic"/></svg></span><span class="mini-tool"><svg aria-hidden="true"><use href="#i-controls"/></svg></span><span class="mono">LIVE <b>●</b></span></div>
+          </div>
+        </div>
+        <div class="device phone hero-phone">
+          <div class="screen phone-screen">
+            <div class="phone-island"></div><div class="phone-clock"><span>9:41</span><span>▂▅▇ ▰</span></div>
+            <div class="phone-heading"><span class="back-chevron">⌄</span><span>LIVING ROOM<small><i></i> CONNECTED</small></span><span>92%</span></div>
+            <div class="viewfinder"><img src="assets/living-room.jpg" width="1536" height="1024" alt=""><div class="viewfinder-top"><span><i></i> LIVE</span><span>REC <b>●</b></span></div><div class="viewfinder-bottom"><span>1080 · 30</span><span>▂▃▅▇▅▃</span></div></div>
+            <div class="phone-tools"><span><svg aria-hidden="true"><use href="#i-speaker"/></svg></span><span><svg aria-hidden="true"><use href="#i-snapshot"/></svg></span><span><svg aria-hidden="true"><use href="#i-controls"/></svg></span></div>
+            <div class="phone-talk"><svg aria-hidden="true"><use href="#i-mic"/></svg></div><div class="phone-talk-label">HOLD TO TALK</div>
+            <div class="phone-timeline"><div><span>TIMELINE</span><span class="selected">1H</span><span>6H</span><span>24H</span></div><div class="ticks"><span class="event-tick"></span><span class="now-tick"></span></div><div class="timeline-times"><span>09:00</span><span>09:20</span><span>09:40</span></div><div class="phone-event"><span>↗</span><span>Pet detected<small>Living room · 09:32</small></span></div></div>
+          </div>
+        </div>
+        <div class="stage-note"><span class="signal-dot"></span> ONE CAMERA. A LITTLE CLOSER.</div>
+      </div>
+      <p class="visual-caption">Illustrated product view</p>
+      <div class="platform-strip" aria-label="Apple device family"><span>AT HOME ON</span><p>iPhone <i>·</i> iPad <i>·</i> Mac <i>·</i> Apple Watch <i>·</i> Apple TV <i>·</i> Apple Vision Pro</p></div>
+    </section>
+
+    <section class="intro shell section-space" id="experience">
+      <p class="eyebrow">A CAMERA YOU ALREADY OWN</p>
+      <h2>Less in the drawer.<br>More in the picture.</h2>
+      <p>That spare iPhone still has a good camera. Give it a place in your home, open MirrorMirror, and check in from the device already in your hand.</p>
+    </section>
+
+    <section class="feature-story shell" aria-labelledby="live-title">
+      <div class="scene-panel"><img src="assets/living-room.jpg" width="1536" height="1024" loading="lazy" alt="A golden retriever resting on a rug in a softly lit living room"><div class="scene-readout"><span><i></i> LIVING ROOM</span><span>LIVE VIEW</span></div><div class="scene-bottom"><span>THE BEST KIND OF NOTHING HAPPENING.</span><span>↗</span></div></div>
+      <div class="story-copy"><span class="section-number">01 / CHECK IN</span><h2 id="live-title">A little peace<br>of mind.<br><span>In the picture.</span></h2><p>A sleepy pet. A quiet room. The ordinary things you want to see. Open a paired camera for a live view, listen in, or hold to talk through its speaker.</p><div class="feature-points"><span><svg aria-hidden="true"><use href="#i-camera"/></svg> Live video</span><span><svg aria-hidden="true"><use href="#i-speaker"/></svg> Listen in</span><span><svg aria-hidden="true"><use href="#i-mic"/></svg> Talk back</span></div></div>
+    </section>
+
+    <section class="replay-section section-space shell" aria-labelledby="replay-title">
+      <div class="replay-heading"><div><span class="section-number">02 / LOOK BACK</span><h2 id="replay-title">The moment passed.<br><span>The recording didn’t.</span></h2></div><p>Find a moment on the timeline. Replay what your camera recorded, then export the clip you want to keep.</p></div>
+      <div class="replay-demo">
+        <div class="replay-picture"><img src="assets/living-room.jpg" width="1536" height="1024" loading="lazy" alt="Illustrative recording of the living room"><div class="replay-top"><span id="preview-state"><i></i> LIVE</span><span>LIVING ROOM</span><span>1080 · 30</span></div><div class="replay-label"><span id="preview-title">All quiet. All good.</span><small id="preview-detail">Your camera, at a glance.</small></div></div>
+        <div class="replay-controls"><div class="replay-toolbar"><span class="mono">EXPLORE THE TIMELINE</span><div class="segmented" role="group" aria-label="Illustrated timeline mode"><button type="button" data-mode="live" aria-pressed="true">Live</button><button type="button" data-mode="replay" aria-pressed="false"><svg aria-hidden="true"><use href="#i-replay"/></svg> Replay</button></div></div><div class="timeline-track"><div class="timeline-ruler"></div><button class="timeline-event" data-mode="replay" aria-label="Preview pet event at 9:32"><span>Pet detected</span><i></i></button><span class="timeline-now">LIVE</span></div><div class="ruler-labels"><span>09:00</span><span>09:10</span><span>09:20</span><span>09:30</span><span>09:40</span></div></div>
+      </div><p class="visual-caption">Interactive illustration · sample scene and event</p>
+      <div class="recording-details"><div><h3>Record your way.</h3><p>Continuous, event-based, or manual recording. Choose what your camera keeps.</p></div><div><h3>Keep it on the camera.</h3><p>Recordings stay on the camera device, within the storage limit you choose.</p></div><div><h3>Save the good bit.</h3><p>Export a clip from available footage, so a favorite moment can stay with you.</p></div></div>
+    </section>
+
+    <section class="devices-section section-space" id="devices" aria-labelledby="devices-title">
+      <div class="shell"><div class="center-heading"><p class="eyebrow">FAMILIAR DEVICES. A NEW POINT OF VIEW.</p><h2 id="devices-title">At home.<br><span>Across your Apple world.</span></h2><p>Small check-ins. Bigger pictures.<br>Choose the screen that suits the moment.</p></div>
+        <div class="device-switcher" role="group" aria-label="Explore viewing devices"><button aria-pressed="true" data-device="iphone"><svg aria-hidden="true"><use href="#i-phone"/></svg>iPhone & iPad</button><button aria-pressed="false" data-device="mac"><svg aria-hidden="true"><use href="#i-desktop"/></svg>Mac</button><button aria-pressed="false" data-device="tv"><svg aria-hidden="true"><use href="#i-desktop"/></svg>Apple TV</button><button aria-pressed="false" data-device="watch"><svg aria-hidden="true"><use href="#i-watch"/></svg>Watch</button><button aria-pressed="false" data-device="vision"><svg aria-hidden="true"><use href="#i-vision"/></svg>Vision Pro</button></div>
+        <div class="device-explainer" id="device-explainer"><div class="device-visual" data-device="iphone"><div class="display-frame"><div class="display-toolbar"><span>MIRRORMIRROR</span><span>YOUR CAMERAS <i></i></span></div><div class="display-feed"><img src="assets/living-room.jpg" width="1536" height="1024" loading="lazy" alt="Illustrated camera scene on the selected viewing device"><span>LIVING ROOM <i></i></span></div><div class="display-foot"><span>LIVE VIEW</span><svg aria-hidden="true"><use href="#i-mic"/></svg><span>HOLD TO TALK</span></div></div></div><div class="device-copy" aria-live="polite" aria-atomic="true"><p class="eyebrow" id="device-kicker">IPHONE & IPAD</p><h3 id="device-title">Your everyday<br>window home.</h3><p id="device-description">Use a supported iPhone or iPad as a camera or viewer. Check a single room, open the camera wall, or settle into a bigger view on iPad.</p><span class="device-footnote" id="device-footnote">Camera mode stays open on your camera device.</span></div></div><p class="visual-caption">Illustrated device views · companion availability will be listed with the beta</p>
+      </div>
+    </section>
+
+    <section class="privacy-section section-space shell" id="privacy"><div class="privacy-emblem" aria-hidden="true"><div class="privacy-ring"></div><svg aria-hidden="true"><use href="#i-lock"/></svg><span>YOUR CAMERA<br>YOUR MOMENTS</span></div><div class="privacy-copy"><p class="eyebrow">THOUGHTFULLY CONNECTED</p><h2>A home camera.<br><span>With personal space.</span></h2><p>Recordings live on your camera device. Pair the viewers you want to connect, and remove their access when you need to.</p><p class="privacy-detail">Encrypted connections bring your devices together. iCloud helps with connection setup, events, and encrypted still-image fallback on Apple Watch.</p><a class="text-link" href="#questions">A few things to know <span>↘</span></a></div></section>
+
+    <section class="setup-section section-space shell" id="setup"><p class="eyebrow">FROM SPARE PHONE TO CAMERA</p><h2>A small setup.<br><span>A whole new purpose.</span></h2><ol class="setup-steps"><li><span class="step-num">01</span><h3>Give it a good view.</h3><p>Choose a supported spare iPhone or iPad, give it power, and place it where you want a camera.</p></li><li><span class="step-num">02</span><h3>Open camera mode.</h3><p>Open MirrorMirror and tap “Use as camera.” Keep the app open; its dimmed screen lets the camera keep running.</p></li><li><span class="step-num">03</span><h3>Make the connection.</h3><p>Open the viewer on another device. Cameras on your Apple Account can appear automatically; use a pairing code to add another.</p></li></ol></section>
+
+    <section class="faq-section section-space shell" id="questions"><div><p class="eyebrow">THE LITTLE DETAILS</p><h2>A few things<br><span>to know.</span></h2></div><div class="faq-list"><details><summary>What do I need to get started?<span>+</span></summary><p>A supported camera device, a second device to view it, and MirrorMirror on both. The current iPhone and iPad build requires iOS or iPadOS 18.2 or later. Full beta compatibility details will accompany the invitation.</p></details><details><summary>Does the camera keep running when I lock my iPhone?<span>+</span></summary><p>Keep MirrorMirror open in camera mode on an iPhone or iPad. Locking the device or switching away can interrupt camera capture. Use the app’s dimmed camera screen when you want the display to stay dark.</p></details><details><summary>Where are recordings stored?<span>+</span></summary><p>On the camera device. Choose a storage cap and recording mode. Older footage is removed when the storage cap is reached, so export any clips you want to keep.</p></details><details><summary>Can I connect from another network?<span>+</span></summary><p>MirrorMirror supports remote connection setup through iCloud. Some carrier and office networks restrict direct connections and may require an optional relay. Connection behavior depends on the networks at both ends.</p></details><details><summary>How does Apple Watch viewing work?<span>+</span></summary><p>Live pictures and voice are relayed through your paired iPhone. If that connection is unavailable, the Watch can use encrypted still images through iCloud. The Watch does not run an independent live video connection.</p></details><details><summary>How can I try the beta?<span>+</span></summary><p id="beta-answer">The public TestFlight invitation will be added here when it is ready. In the meantime, explore the product and its companion viewing experiences above.</p></details></div></section>
+
+    <section class="closing shell"><img src="assets/mark.svg" width="64" height="64" alt=""><p class="eyebrow">SOMETHING GOOD IS COMING INTO VIEW.</p><h2>Another life<br>for your iPhone.</h2><p>A little closer to what matters.</p><a class="button button-accent" data-beta-cta href="#experience">Explore MirrorMirror <svg aria-hidden="true"><use href="#i-arrow"/></svg></a><span class="beta-status" id="beta-status">TestFlight invitation coming soon</span></section>
+  </main>
+  <footer class="site-footer shell"><a class="brand" href="#"><img src="assets/mark.svg" width="29" height="29" alt=""><span>mirrormirror</span></a><span>A little closer.</span><nav aria-label="Footer navigation"><a href="#privacy">Privacy approach</a><a href="#questions">Questions</a><a href="#setup">Getting started</a></nav><small>© <span id="year">2026</span> MirrorMirror</small></footer>
+</body>
+</html>
