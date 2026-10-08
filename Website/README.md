@@ -18,7 +18,7 @@ Set `betaUrl` in `site-config.js` to the public HTTPS TestFlight join URL when i
 
 The living-room scene is an original generated image, created using built-in ImageGen. Prompt: “A premium editorial photograph of a quiet modern living room at dusk, with a caramel leather sofa, a golden retriever resting on a cream rug, dark green walls, plants, a warm lamp, natural amber light, cinematic shadows, and realistic domestic detail. No devices, people, text, logos, or UI.” The optimized JPEG is used on the page; the PNG is the retained source.
 
-Product and device views are explicitly labeled illustrations, assembled in HTML/CSS from the app's UI vocabulary. They are not captured app sessions or live streams. Timeline controls demonstrate the concept; they do not play a video. Replace the illustrations with reviewed app captures when the beta build and capture session are ready.
+Product UI uses genuine app captures from the running iPhone and iPad builds. The captures are preserved without replacement scenes, redrawn controls, or simulated hardware frames. They are development captures and should be replaced with a reviewed launch capture session when available. Other platform descriptions are text-only until authentic imagery is supplied. Device hardware imagery must use photographs or official renders; product screens must always be actual captures.
 
 The SVG mark is a website exploration, not a replacement for the app icon. Fonts and their OFL notices are copied from the local UI package.
 

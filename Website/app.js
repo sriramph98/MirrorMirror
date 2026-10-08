@@ -13,21 +13,10 @@ deviceButtons.forEach(button => button.addEventListener('click', () => {
   const device = button.dataset.device;
   const content = deviceContent[device];
   deviceButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-  document.querySelector('.device-visual').dataset.device = device;
   document.querySelector('#device-kicker').textContent = content.kicker;
   document.querySelector('#device-title').replaceChildren(...content.title.split('\n').flatMap((line, index) => index ? [document.createElement('br'), document.createTextNode(line)] : [document.createTextNode(line)]));
   document.querySelector('#device-description').textContent = content.description;
   document.querySelector('#device-footnote').textContent = content.note;
-  document.querySelector('.display-toolbar span:last-child').textContent = device === 'watch' ? 'VIA IPHONE' : 'YOUR CAMERAS';
-}));
-
-document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => {
-  const replay = button.dataset.mode === 'replay';
-  document.querySelector('.replay-demo').classList.toggle('is-replay', replay);
-  document.querySelectorAll('.segmented button').forEach(item => item.setAttribute('aria-pressed', String(item.dataset.mode === button.dataset.mode)));
-  document.querySelector('#preview-state').textContent = replay ? 'PLAYBACK · 09:32' : '● LIVE';
-  document.querySelector('#preview-title').textContent = replay ? 'A moment worth a second look.' : 'All quiet. All good.';
-  document.querySelector('#preview-detail').textContent = replay ? 'Sample pet event · recorded timeline illustration.' : 'Your camera, at a glance.';
 }));
 
 if (siteConfig.betaUrl) {
