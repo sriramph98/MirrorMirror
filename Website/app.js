@@ -8,7 +8,7 @@ if (siteConfig.betaUrl) {
       link.href = url.href;
       link.firstChild.textContent = 'Join the beta ';
     });
-    document.querySelector('#beta-status').textContent = 'Try MirrorMirror on TestFlight';
+    document.querySelector('#beta-status').textContent = 'Try Mira on TestFlight';
     const answer = document.querySelector('#beta-answer');
     const link = document.createElement('a');
     link.href = url.href; link.textContent = 'Join the public TestFlight beta'; link.className = 'text-link';

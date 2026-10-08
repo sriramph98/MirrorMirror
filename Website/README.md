@@ -1,4 +1,4 @@
-# MirrorMirror website
+# Mira website
 
 A responsive static marketing website, kept alongside the apps and independently deployable. It uses the app's bundled typefaces and translated visual tokens. No framework, external font service, tracking, or package installation is required.
 
