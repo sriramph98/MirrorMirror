@@ -12,9 +12,15 @@
 
 .capture-stage{display:grid;grid-template-columns:minmax(0,1fr) 230px;align-items:center;gap:40px;max-width:1040px;margin:60px auto 0;padding-bottom:12px}
 .capture-stage figure{margin:0;min-width:0}
-.capture-stage img{width:100%;height:auto;box-shadow:0 15px 45px #0007}
+.capture-stage img{width:100%;height:auto}
 .capture-stage figcaption{font:10px var(--mono);color:var(--secondary);padding-top:18px;text-align:center}
 .device-explainer{display:block;min-height:0;text-align:center}
 .device-copy{max-width:600px;margin:0 auto}
 .device-copy>p:not(.eyebrow),.device-footnote{max-width:540px;margin-left:auto;margin-right:auto}
 @media(max-width:700px){.capture-stage{grid-template-columns:minmax(0,1fr) 110px;gap:15px;margin-top:35px}.capture-stage figcaption{font-size:7px;line-height:1.7;padding-top:12px}.device-copy{padding-top:0}}
+
+.official-device{position:relative;isolation:isolate}
+.official-device .official-artwork{position:relative;z-index:1;width:100%;height:auto;pointer-events:none}
+.official-device .actual-screen{position:absolute;background:#000;object-fit:contain;z-index:0}
+.official-iphone .actual-screen{left:5.333333%;top:2.5%;width:89.333333%;height:95%;border-radius:11% / 5%}
+.official-ipad .actual-screen{left:4.166667%;top:5.638298%;width:91.666667%;height:88.723404%;border-radius:3% / 4%}
