@@ -76,8 +76,8 @@ struct CameraControlsSheet: View {
     // MARK: Instrument cluster
 
     private func cluster(_ status: CameraStatus) -> some View {
-        let total = Double(status.storageUsedBytes + status.storageFreeBytes)
-        let used = total > 0 ? Double(status.storageUsedBytes) / total : 0
+        let total = status.settings.storageCapGB * 1_000_000_000
+        let used = total > 0 ? min(1, Double(status.storageUsedBytes) / total) : 0
         let thermal = ProcessInfo.ThermalState(rawValue: status.thermal)
         return VStack(spacing: Space.m) {
             HStack(spacing: Space.m) {
@@ -85,14 +85,14 @@ struct CameraControlsSheet: View {
                                 label: status.isCharging ? "Charging" : "Battery",
                                 valueText: status.batteryLevel.map { "\(Int($0 * 100))%" } ?? "–",
                                 tint: Palette.ok)
-                InstrumentGauge(value: used, label: "Storage", valueText: "\(Int((used * 100).rounded()))%", tint: Palette.info)
+                InstrumentGauge(value: used, label: "Recordings", valueText: "\(Int((used * 100).rounded()))%", tint: Palette.info)
                 InstrumentGauge(value: Double(min(3, max(0, status.thermal))) / 3, label: "Heat",
                                 valueText: thermal?.label ?? "–",
                                 tint: status.thermal >= 2 ? Palette.live : Palette.warn, ticks: 18)
             }
             ReadoutLine(["\(status.viewerCount) watching",
-                         "\(status.storageUsedBytes.byteString) used",
-                         "\(status.storageFreeBytes.byteString) free"],
+                         "\(status.storageUsedBytes.byteString) recorded",
+                         "\(Int(status.settings.storageCapGB)) GB limit"],
                         color: Palette.textTertiary)
         }
         .panel(padding: Space.l)
@@ -165,8 +165,7 @@ struct CameraControlsSheet: View {
                           recording.set(on)
                           connection.send(.setRecording(on))
                       }))
-            ValueRow("Storage used", value: status.storageUsedBytes.byteString)
-            ValueRow("Free on camera", value: status.storageFreeBytes.byteString)
+            ValueRow("Recording library", value: status.storageUsedBytes.byteString)
         }
     }
 
@@ -220,7 +219,7 @@ private struct RemoteSettingsView: View {
     var body: some View {
         VStack(spacing: 0) {
             SheetHeader("Camera settings", leadingSymbol: "chevron.left", leadingAction: { dismiss() })
-            CameraSettingsForm(settings: $settings, storageUsed: connection.status?.storageUsedBytes, storageFree: connection.status?.storageFreeBytes)
+            CameraSettingsForm(settings: $settings, storageUsed: connection.status?.storageUsedBytes, storageFree: nil)
                 .readableWidth()
         }
         .canvasBackground()

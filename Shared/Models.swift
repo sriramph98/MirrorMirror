@@ -272,7 +272,6 @@ struct CameraStatus: Codable, Equatable {
     var isRecording: Bool
     var recordingMode: RecordingMode
     var storageUsedBytes: Int64
-    var storageFreeBytes: Int64
     var viewerCount: Int
     var quality: QualityPreset
     var effectiveQuality: QualityPreset

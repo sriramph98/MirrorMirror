@@ -167,6 +167,28 @@ struct ProtocolTests {
 
 @Suite("Models")
 struct ModelTests {
+    @Test func remoteStatusExcludesDeviceFreeSpace() throws {
+        let status = CameraStatus(
+            name: "Camera", batteryLevel: 1, isCharging: true, thermal: 0,
+            isRecording: true, recordingMode: .manual, storageUsedBytes: 1234,
+            viewerCount: 1, quality: .standard, effectiveQuality: .standard,
+            nightMode: .off, nightActive: false, torchOn: false, torchAvailable: false,
+            usingFrontCamera: false, lenses: [], zoom: 1, maxZoom: 1,
+            motionLevel: 0, soundLevel: 0, settings: CameraSettings())
+        let encoded = try JSONEncoder().encode(status)
+        var fields = try #require(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        #expect(fields["storageFreeBytes"] == nil)
+        #expect((fields["storageUsedBytes"] as? NSNumber)?.int64Value == 1234)
+        // Older cameras may include this field; decoding must discard it and never relay it.
+        fields["storageFreeBytes"] = 987654321
+        let legacy = try JSONSerialization.data(withJSONObject: fields)
+        let decoded = try JSONDecoder().decode(CameraStatus.self, from: legacy)
+        #expect(decoded == status)
+        let reencoded = try JSONEncoder().encode(decoded)
+        let relayed = try #require(JSONSerialization.jsonObject(with: reencoded) as? [String: Any])
+        #expect(relayed["storageFreeBytes"] == nil)
+    }
+
     @Test func heatStepsQualityDown() {
         #expect(QualityPreset.max2K.lower == .high)
         #expect(QualityPreset.smooth.lower == .high)

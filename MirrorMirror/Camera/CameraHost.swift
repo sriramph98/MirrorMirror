@@ -736,12 +736,10 @@ final class CameraHost: ObservableObject {
     }
 
     private func makeStatus() -> CameraStatus {
-        let free = (try? URL(fileURLWithPath: NSHomeDirectory()).resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]))?
-            .volumeAvailableCapacityForImportantUsage ?? 0
         return CameraStatus(
             name: settings.name, batteryLevel: batteryLevel, isCharging: isCharging, thermal: thermal.rawValue,
             isRecording: isRecording, recordingMode: settings.recordingMode, storageUsedBytes: store.totalBytes,
-            storageFreeBytes: free, viewerCount: sessions.count, quality: settings.quality, effectiveQuality: effectiveQuality,
+            viewerCount: sessions.count, quality: settings.quality, effectiveQuality: effectiveQuality,
             nightMode: settings.nightMode, nightActive: engineState.nightActive, torchOn: engineState.torchOn,
             torchAvailable: engineState.torchAvailable, usingFrontCamera: engineState.usingFrontCamera,
             lenses: engineState.lenses, zoom: engineState.zoom, maxZoom: engineState.maxZoom,
