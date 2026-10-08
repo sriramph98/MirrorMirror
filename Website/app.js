@@ -1,24 +1,5 @@
 import { siteConfig } from './site-config.js';
 
-const deviceContent = {
-  iphone: { kicker: 'IPHONE & IPAD', title: 'Your everyday\nwindow home.', description: 'Use a supported iPhone or iPad as a camera or viewer. Check a single room, open the camera wall, or settle into a bigger view on iPad.', note: 'Camera mode stays open on your camera device.' },
-  mac: { kicker: 'MAC', title: 'A little window.\nBeside your work.', description: 'Keep a camera in its own window while you work. Open more views, review recordings, and use desktop controls on a familiar screen.', note: 'Mac can be a camera or a viewer.' },
-  tv: { kicker: 'APPLE TV', title: 'Your cameras.\nThe big picture.', description: 'Bring your cameras to the biggest screen in the room. Browse the camera wall, open a full-screen view, and look back through recorded footage.', note: 'Viewer companion with device-code pairing.' },
-  watch: { kicker: 'APPLE WATCH', title: 'A quick glance.\nRight on your wrist.', description: 'Check a camera, listen, or hold to talk through your paired iPhone. If that connection is unavailable, encrypted iCloud still images provide a fallback.', note: 'Live pictures and voice require the paired iPhone relay.' },
-  vision: { kicker: 'APPLE VISION PRO', title: 'Give every camera\nits own space.', description: 'Open a separate window for each camera. Arrange your views around you and explore a camera’s controls and recorded timeline.', note: 'Viewer companion. Each camera opens in its own window.' },
-};
-
-const deviceButtons = [...document.querySelectorAll('[data-device]')].filter(element => element.tagName === 'BUTTON');
-deviceButtons.forEach(button => button.addEventListener('click', () => {
-  const device = button.dataset.device;
-  const content = deviceContent[device];
-  deviceButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-  document.querySelector('#device-kicker').textContent = content.kicker;
-  document.querySelector('#device-title').replaceChildren(...content.title.split('\n').flatMap((line, index) => index ? [document.createElement('br'), document.createTextNode(line)] : [document.createTextNode(line)]));
-  document.querySelector('#device-description').textContent = content.description;
-  document.querySelector('#device-footnote').textContent = content.note;
-}));
-
 if (siteConfig.betaUrl) {
   try {
     const url = new URL(siteConfig.betaUrl);
