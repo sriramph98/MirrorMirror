@@ -2,7 +2,7 @@ import SwiftUI
 import MirrorUI
 
 /// Camera settings. Used on the camera itself and, through a binding that forwards changes
-/// over the data channel, from a viewer. Halide-style grouped panels on the canvas.
+/// over the data channel, from a viewer. Grouped panels on the canvas.
 struct CameraSettingsForm: View {
     @Binding var settings: CameraSettings
     var storageUsed: Int64?

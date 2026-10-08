@@ -1,6 +1,6 @@
 import SwiftUI
 
-// Halide-style settings: grouped dark panels on black, a letterspaced caps title, accent
+// Settings: grouped dark panels on black, a letterspaced caps title, accent
 // toggles, hairline separators. Built from plain stacks so it reads the same on iPhone and iPad.
 
 // MARK: - Sheet header
@@ -154,7 +154,7 @@ public struct ToggleRow: View {
     }
 }
 
-/// Row whose value is chosen from a menu (Halide's "Default ⌃⌄").
+/// Row whose value is chosen from a menu ("Default ⌃⌄").
 public struct MenuRow<Value: Hashable>: View {
     let title: String
     let symbol: String?

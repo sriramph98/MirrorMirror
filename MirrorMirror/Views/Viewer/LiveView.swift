@@ -2,7 +2,7 @@ import SwiftUI
 import AVKit
 import MirrorUI
 
-/// Watching one camera (Halide-style): header, viewfinder with corner readouts, a deck of tools
+/// Watching one camera: header, viewfinder with corner readouts, a deck of tools
 /// around the Talk shutter, and the recordings timeline.
 ///
 /// - iPhone portrait: header, viewfinder, deck, timeline below.

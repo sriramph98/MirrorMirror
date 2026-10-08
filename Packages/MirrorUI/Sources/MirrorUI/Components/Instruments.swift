@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - Gauge
 
-/// Analogue dial with tick marks and a red needle (7ahang's radio dial / Halide's meter).
+/// Analogue dial with tick marks and a red needle (like a radio dial or a light meter).
 /// Use for one value with a meaningful range: battery, storage, temperature, signal.
 public struct InstrumentGauge: View {
     let value: Double            // 0...1
@@ -70,7 +70,7 @@ public struct InstrumentGauge: View {
 
 // MARK: - Level meter
 
-/// Segmented LED meter (Kino's audio meter). Green, then amber, then red.
+/// Segmented LED meter (like a recorder's audio meter). Green, then amber, then red.
 public struct LevelMeter: View {
     let level: Double   // 0...1
     let segments: Int
@@ -106,7 +106,7 @@ public struct LevelMeter: View {
 
 // MARK: - Tick ruler
 
-/// Halide's focus/exposure dial: a ruler of ticks that slides under a fixed centre mark.
+/// Focus/exposure-style dial: a ruler of ticks that slides under a fixed centre mark.
 /// Drag to change the value; labels every `labelEvery` steps.
 public struct TickRuler: View {
     @Binding var value: Double
@@ -189,7 +189,7 @@ public struct TickRuler: View {
 
 // MARK: - Focus brackets
 
-/// Corner brackets (Halide's focus box). Frame anything that needs attention: a QR target,
+/// Corner brackets, like a focus box. Frame anything that needs attention: a QR target,
 /// a detected person, the selected event.
 public struct CornerBrackets: Shape {
     var length: CGFloat
@@ -221,7 +221,7 @@ public extension View {
 // MARK: - Viewfinder
 
 /// The live-picture frame: rounded, hairline-edged, black behind the image, with four overlay
-/// slots for readouts in the corners (Halide/Kino put their technical data there).
+/// slots for readouts in the corners (where camera apps put technical data).
 public struct Viewfinder<Content: View, TL: View, TR: View, BL: View, BR: View>: View {
     let content: Content
     let topLeading: TL

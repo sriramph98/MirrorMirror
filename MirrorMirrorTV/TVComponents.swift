@@ -367,7 +367,7 @@ struct TVAlertBanner: View {
 
 // MARK: - Tick ruler
 
-/// Halide's tick dial at TV size, driven by the Siri Remote: the scale slides under a fixed accent
+/// The tick dial at TV size, driven by the Siri Remote: the scale slides under a fixed accent
 /// mark; left/right step `step`, quick successive swipes accelerate; Select runs `onSelect`.
 /// Draws only the visible ticks (a day in 30 s steps is 2 880 of them), plus recorded coverage and
 /// event marks beneath, so the ruler doubles as the timeline instrument.

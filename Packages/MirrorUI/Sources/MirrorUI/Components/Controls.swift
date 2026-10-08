@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - Button styles
 
-/// Round tool button on the camera deck (Halide's RAW / grid buttons). Holds a glyph or a short
+/// Round tool button on the camera deck (like RAW or grid toggles). Holds a glyph or a short
 /// caps label. `isOn` fills it with the accent.
 public struct ToolButtonStyle: ButtonStyle {
     var isOn: Bool
@@ -45,7 +45,7 @@ public struct PillButtonStyle: ButtonStyle {
     }
 }
 
-/// Full-width action, like Halide's "Set Up Siri Shortcuts": warm white slab, dark type.
+/// Full-width action, a warm white slab, dark type.
 public struct PrimaryButtonStyle: ButtonStyle {
     public enum Kind { case primary, secondary, destructive, accent }
     var kind: Kind
@@ -105,7 +105,7 @@ public extension ButtonStyle where Self == PrimaryButtonStyle {
 
 // MARK: - Record button
 
-/// Kino's record button: white ring, red disc that becomes a rounded square while recording.
+/// Record button: white ring, red disc that becomes a rounded square while recording.
 public struct RecordButton: View {
     let isRecording: Bool
     let action: () -> Void
@@ -132,7 +132,7 @@ public struct RecordButton: View {
     }
 }
 
-/// Halide's shutter: a warm white disc in a ring. Used for the primary action on a deck.
+/// Shutter: a warm white disc in a ring. Used for the primary action on a deck.
 public struct ShutterButton<Label: View>: View {
     let isActive: Bool
     let action: () -> Void
@@ -173,7 +173,7 @@ private struct ShutterPressStyle: ButtonStyle {
 
 // MARK: - Segment pill
 
-/// Halide's lens selector: small discs in a capsule; the selected one fills with the accent.
+/// Lens selector: small discs in a capsule; the selected one fills with the accent.
 /// Works for any short options (lenses, playback speed, night mode).
 public struct SegmentPill<Value: Hashable>: View {
     let options: [Value]
@@ -212,7 +212,7 @@ public struct SegmentPill<Value: Hashable>: View {
 
 // MARK: - Toggle
 
-/// Halide's toggle: dark track that fills with the accent when on.
+/// Toggle: dark track that fills with the accent when on.
 public struct AccentToggleStyle: ToggleStyle {
     public func makeBody(configuration: Configuration) -> some View {
         Button {

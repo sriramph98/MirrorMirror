@@ -2,7 +2,7 @@ import SwiftUI
 import MirrorUI
 
 /// Remote control of the camera, shown in a popover from the deck: an instrument cluster
-/// (battery, storage, heat) over Halide-style settings panels.
+/// (battery, storage, heat) over grouped settings panels.
 struct VisionControlsPanel: View {
     @ObservedObject var connection: CameraConnection
     @Environment(\.dismiss) private var dismiss

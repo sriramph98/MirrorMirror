@@ -1,13 +1,13 @@
 # MirrorUI — Mira design system
 
 Mira is a camera. The interface should feel like a well-made camera body: black, quiet,
-precise, with markings that tell you exactly what the instrument is doing. Two references drive
+precise, with markings that tell you exactly what the instrument is doing. Two ideas drive
 everything:
 
-- **Halide / Kino** (Lux): structure and behaviour. A black frame around a rounded viewfinder;
-  technical readouts in the corners; a deck of round tool buttons; a single accent that means
-  *active*; tick-mark dials instead of sliders; grouped dark panels for settings; letterspaced caps.
-- **7ahang / yuhang**: character. Instrument dials with a red needle, big confident numerals with
+- **Structure of a pro camera app**: a black frame around a rounded viewfinder; technical readouts
+  in the corners; a deck of round tool buttons; a single accent that means *active*; tick-mark
+  dials instead of sliders; grouped dark panels for settings; letterspaced caps.
+- **Character of hardware instruments**: dials with a red needle, big confident numerals with
   small units, LED dots next to caps labels, raised widget panels.
 
 The package is the single source of truth. App code imports `MirrorUI` and never uses raw colours,
@@ -92,13 +92,13 @@ with Dynamic Type.
 ### Camera card (home, sidebar detail)
 A panel with: name (`.title`) and connection LED (`LIVE` red when someone is watching, `ON NETWORK` green, `ONLINE` green, `OFFLINE` tertiary); chips for battery, REC and last seen; a small battery `InstrumentGauge` on the trailing side. Whole card is the tap target.
 
-### Camera mode (Kino)
+### Camera mode
 Black frame. Top strip: mic `LevelMeter` + `MIC`, viewer `LED` (`2 WATCHING` / `WAITING`), storage `Readout` (`142 H` / `LEFT`). Badge row: `•REC`, `NIGHT`, `AUTO`, format `ReadoutLine`. `Viewfinder` with talk indicator and brief `focusBrackets` flash on events. Tool row: pair, flip, torch, night, settings. Deck: lens `SegmentPill`, then latest-event thumbnail · `RecordButton` · dim. Landscape / iPad: viewfinder left, deck becomes a vertical rail on the right. Dimmed state: black, large clock `Numeral`, status LEDs, `TAP TO WAKE`.
 
-### Live view (Halide)
+### Live view
 Header: back tool, camera name (`.navTitle`), path readout (`P2P · 8 MS`), battery chip. `Viewfinder` corners: LIVE LED or `PLAYBACK 10:06:56` accent badge (TL); REC/NIGHT badges (TR); `1080 · 30 · 4.1 MBPS` (BL); incoming audio `LevelMeter` (BR). Deck: speaker, snapshot, PiP, controls tools; Talk `ShutterButton` centre; latest event thumbnail left; LIVE / −60 s right. Timeline below: window `SegmentPill`, strip of recorded footage with event ticks, playback row (pause, speed pill, LIVE pill, export), then event rows. iPad: picture and deck on the left, timeline column (≈380 pt) on the right. iPhone landscape: full-bleed picture with overlay deck.
 
-### Sheets and settings (Halide)
+### Sheets and settings
 `canvas` background, `SheetHeader` with caps title, `SettingsSection` panels, accent toggles, `MenuRow`s and `RulerRow`s, footers in footnote. Constrain to `readableWidth()` on iPad.
 
 ### Wall

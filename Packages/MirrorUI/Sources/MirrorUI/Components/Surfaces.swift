@@ -144,7 +144,7 @@ public struct ReadoutLine: View {
     }
 }
 
-/// Stacked value + caption, as on Halide's exposure readout ("7840" over "1/15").
+/// Stacked value + caption, like an exposure readout ("7840" over "1/15").
 public struct Readout: View {
     let value: String
     let caption: String
@@ -167,7 +167,7 @@ public struct Readout: View {
     }
 }
 
-/// Big numeral with a small unit and optional caption, 7ahang style: "142" "H LEFT".
+/// Big numeral with a small unit and optional caption, like an instrument: "142" "H LEFT".
 public struct Numeral: View {
     let value: String
     let unit: String?

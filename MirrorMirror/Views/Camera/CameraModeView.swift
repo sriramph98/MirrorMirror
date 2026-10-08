@@ -1,7 +1,7 @@
 import SwiftUI
 import MirrorUI
 
-/// Full-screen "this device is the camera" screen, laid out like a camera body (Kino):
+/// Full-screen "this device is the camera" screen, laid out like a camera body:
 /// readouts on top, the viewfinder in the middle, a row of tools and a deck with the record
 /// button below. Landscape and iPad move the tools and deck into a rail on the right.
 struct CameraModeView: View {
@@ -243,7 +243,7 @@ struct CameraModeView: View {
 
     // MARK: - Viewfinder
 
-    /// Fills the available space when the picture's shape is close to it (a small crop, like Kino);
+    /// Fills the available space when the picture's shape is close to it (a small crop);
     /// otherwise the frame hugs the picture so nothing being recorded is hidden.
     private func viewfinderArea(landscape: Bool) -> some View {
         GeometryReader { geo in
