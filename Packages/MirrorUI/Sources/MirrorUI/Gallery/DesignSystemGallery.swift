@@ -30,6 +30,7 @@ public struct DesignSystemGallery: View {
                     instruments
                     settings
                     feedback
+                    liveActivity
                 }
                 .padding(Space.l)
                 .readableWidth(820)
@@ -189,6 +190,38 @@ public struct DesignSystemGallery: View {
                 Button("Add camera") {}.buttonStyle(.accent).frame(maxWidth: 240)
             }
             .frame(maxWidth: .infinity)
+        }
+    }
+}
+
+extension DesignSystemGallery {
+    /// The Lock Screen banner's parts, laid out as the viewer's Live Activity draws them.
+    fileprivate var liveActivity: some View {
+        VStack(alignment: .leading, spacing: Space.m) {
+            Text("Live Activity").type(.caps, color: Palette.accent)
+            VStack(alignment: .leading, spacing: Space.s) {
+                HStack {
+                    LED(Palette.live, label: "Live")
+                    Spacer()
+                    Text("LOCAL · BATT 80% · REC").type(.readout)
+                }
+                HStack {
+                    Text("Nursery").type(.title)
+                    Spacer()
+                    LevelMeter(level: 0.6)
+                }
+                ActivityEventLine(symbol: "figure.and.child.holdinghands", label: "Baby crying", date: Date().addingTimeInterval(-90))
+                HStack(spacing: Space.s) {
+                    ActivityControl("Unmute", symbol: "speaker.slash.fill", isOn: true)
+                    ActivityControl("Talk", symbol: "mic.fill")
+                    ActivityControl("Stop", symbol: "stop.fill", role: .destructive)
+                }
+                ActivityStaleNotice("Not updating. Open MirrorMirror to reconnect.")
+            }
+            .padding(.horizontal, Space.l)
+            .padding(.vertical, Space.m)
+            .background(Palette.canvas, in: .continuous(Radius.panel))
+            .overlay(RoundedRectangle(cornerRadius: Radius.panel, style: .continuous).strokeBorder(Palette.hairline))
         }
     }
 }

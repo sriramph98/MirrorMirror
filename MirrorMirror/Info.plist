@@ -19,6 +19,8 @@
 	<array>
 		<string>_mirror-mirror._tcp</string>
 	</array>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

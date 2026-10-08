@@ -23,6 +23,7 @@ struct LiveView: View {
     @Environment(\.commandRouter) private var router
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var pip = PiPController()
+    @ObservedObject private var routes = AppRoutes.shared
     @State private var previousAudioFocus: String??
     @State private var showControls = false
     @State private var showExport = false
@@ -67,6 +68,7 @@ struct LiveView: View {
             connection.connect()
             // A grid-owned connection may already be up, so the phase change below never fires.
             if connection.phase == .connected { handlePendingReplay() }
+            handlePendingTalk()
             registerCommands()
         }
         .onDisappear {
@@ -79,7 +81,17 @@ struct LiveView: View {
             }
         }
         .onChange(of: connection.phase) { _, phase in
-            if phase == .connected { handlePendingReplay() }
+            if phase == .connected {
+                handlePendingReplay()
+                handlePendingTalk()
+            }
+        }
+        // Lock Screen / Dynamic Island: Talk opens the app here; Stop closes this view.
+        .onChange(of: routes.talkCameraID) { _, _ in handlePendingTalk() }
+        .onChange(of: routes.stopCameraID) { _, id in
+            guard id == connection.id else { return }
+            routes.stopCameraID = nil
+            if let onClose { onClose() } else { connection.disconnect() }
         }
         .onChange(of: commandState) { _, _ in registerCommands() }
         .onChange(of: scenePhase) { _, phase in
@@ -152,6 +164,14 @@ struct LiveView: View {
             snapshot: { connection.takeSnapshot() },
             export: { showExport = true }
         )
+    }
+
+    /// Talk pressed on the Lock Screen or in the Dynamic Island: start talking once connected.
+    private func handlePendingTalk() {
+        guard routes.talkCameraID == connection.id, connection.phase == .connected else { return }
+        routes.talkCameraID = nil
+        guard !connection.isTalking else { return }
+        Task { await connection.setTalking(true) }
     }
 
     /// Opened from an event notification: jump to a few seconds before it.

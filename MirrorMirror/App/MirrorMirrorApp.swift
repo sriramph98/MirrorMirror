@@ -37,6 +37,7 @@ struct MirrorMirrorApp: App {
                 .tint(Palette.accent)
                 .preferredColorScheme(.dark)
                 .onOpenURL { url in
+                    if AppRoutes.shared.handle(url) { return }
                     if let invite = PairingInvite(string: url.absoluteString) { pendingInvite = invite }
                 }
                 .onAppear {
@@ -130,6 +131,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
         if CloudRelay.shared.isConfigured { application.registerForRemoteNotifications() }
         // Early, so a watch request that launches the app in the background is handled.
         WatchRelay.shared.activate()
+        LiveActivities.activate()
         return true
     }
 

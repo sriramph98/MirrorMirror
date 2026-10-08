@@ -248,3 +248,50 @@ struct FootageSummaryTests {
         #expect(FootageSummary.windowLabel(7 * 24 * 3600) == "7D" && FootageSummary.windowLabel(6 * 3600) == "6H")
     }
 }
+
+@Suite("Live Activities")
+struct LiveActivityTests {
+    @Test func linksRoundTrip() throws {
+        let talk = LiveActivityLinks.live(cameraID: "CAM-1", talk: true)
+        #expect(LiveActivityLinks.route(for: talk) == .live(cameraID: "CAM-1", talk: true))
+        #expect(LiveActivityLinks.route(for: LiveActivityLinks.live(cameraID: "CAM-1")) == .live(cameraID: "CAM-1", talk: false))
+        #expect(LiveActivityLinks.route(for: LiveActivityLinks.camera) == .camera)
+        // Pairing links and other schemes are left to their own handlers.
+        let invite = PairingInvite(key: .generate(cameraID: "x"), name: "Nursery").url
+        #expect(LiveActivityLinks.route(for: invite) == nil)
+        #expect(LiveActivityLinks.route(for: try #require(URL(string: "https://example.com/live?camera=1"))) == nil)
+        #expect(LiveActivityLinks.route(for: try #require(URL(string: "mirrormirror://live"))) == nil)
+    }
+
+    @Test func meterFollowsLoudnessNotRawAmplitude() {
+        #expect(LiveActivityFormat.meterLevel(nil) == 0)
+        #expect(LiveActivityFormat.meterLevel(0) == 0)
+        #expect(LiveActivityFormat.meterLevel(0.003) == 0)      // room tone stays dark
+        #expect(LiveActivityFormat.meterLevel(0.1) == 0.6)      // speech lights most of it
+        #expect(LiveActivityFormat.meterLevel(1) == 1)
+        #expect(LiveActivityFormat.meterLevel(0.05) == 0.5, "rounded to tenths so small changes don't cost an update")
+    }
+
+    @Test func viewerAndBatteryText() {
+        #expect(LiveActivityFormat.viewers(0, names: []) == "No one watching")
+        #expect(LiveActivityFormat.viewers(1, names: ["Sam's iPhone"]) == "Sam's iPhone watching")
+        #expect(LiveActivityFormat.viewers(3, names: ["A", "B"]) == "3 viewers")
+        #expect(LiveActivityFormat.battery(0.874) == "87%")
+        #expect(LiveActivityFormat.battery(nil) == nil)
+    }
+
+    @Test func activityStateStaysSmallAndRoundTrips() throws {
+        let state = MonitorActivityAttributes.ContentState(
+            link: .live, isMuted: false, soundLevel: 0.6, path: "LOCAL", cameraRecording: true, cameraBattery: 0.5,
+            otherTalker: nil, isTalking: false,
+            lastEvent: ActivityEvent(kind: .crying, label: "Baby crying", date: Date()))
+        let data = try JSONEncoder().encode(state)
+        #expect(data.count < 1024, "ActivityKit caps the state at 4 KB; stay far below")
+        #expect(try JSONDecoder().decode(MonitorActivityAttributes.ContentState.self, from: data) == state)
+
+        let camera = CameraActivityAttributes.ContentState(
+            isPaused: true, isRecording: true, recordingMode: .events, viewerCount: 2, viewerNames: ["A", "B"],
+            talker: "A", battery: 0.2, isCharging: true, isHot: false, lastEvent: nil)
+        #expect(try JSONDecoder().decode(CameraActivityAttributes.ContentState.self, from: JSONEncoder().encode(camera)) == camera)
+    }
+}

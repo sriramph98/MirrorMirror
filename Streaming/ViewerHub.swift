@@ -91,6 +91,9 @@ final class ViewerHub: ObservableObject {
         return connection
     }
 
+    /// The connection to this camera if one was created (never creates one).
+    func existingConnection(id: String) -> CameraConnection? { connections[id] }
+
     @discardableResult
     func add(_ invite: PairingInvite, source: PairedCamera.Source = .invite) -> PairedCamera {
         if let index = cameras.firstIndex(where: { $0.id == invite.key.cameraID }) {

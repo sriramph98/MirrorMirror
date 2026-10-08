@@ -12,6 +12,7 @@ struct ViewerSettingsView: View {
     @State private var turnCredential = ConnectionPreferences.turnCredential
     @State private var showGallery = false
     @State private var showPairDevice = false
+    @State private var liveActivity = MonitorActivityController.isEnabled
 
     var body: some View {
         VStack(spacing: 0) {
@@ -19,6 +20,7 @@ struct ViewerSettingsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Space.xl) {
                     thisDevice
+                    if MonitorActivityController.isAvailable { lockScreen }
                     otherDevices
                     alerts
                     relay
@@ -58,6 +60,19 @@ struct ViewerSettingsView: View {
                         footer: "Apple TV and Vision Pro can't scan a code, so they show one. Enter it here and this device's cameras travel to them sealed through your iCloud.") {
             ActionRow("Pair Apple TV or Vision Pro…", symbol: "qrcode") { showPairDevice = true }
         }
+    }
+
+    private var lockScreen: some View {
+        SettingsSection("Lock Screen", symbol: "platter.filled.bottom.iphone", footer: lockScreenFooter) {
+            ToggleRow("Live Activity", detail: "Keep the camera you're listening to on the Lock Screen and in the Dynamic Island, with Mute, Talk and Stop.",
+                      isOn: $liveActivity)
+        }
+        .onChange(of: liveActivity) { _, on in MonitorActivityController.isEnabled = on }
+    }
+
+    private var lockScreenFooter: String? {
+        guard liveActivity, !MonitorActivityController.isAllowedBySystem else { return nil }
+        return "Live Activities are turned off for MirrorMirror in the Settings app."
     }
 
     private var thisDevice: some View {

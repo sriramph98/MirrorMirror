@@ -8,6 +8,7 @@ struct CameraModeView: View {
     @StateObject private var host = CameraHost()
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showPairing = false
     @State private var showSettings = false
     @State private var confirmStop = false
@@ -40,7 +41,15 @@ struct CameraModeView: View {
         .persistentSystemOverlays(isDimmed ? .hidden : .automatic)
         .preferredColorScheme(.dark)
         .simultaneousGesture(TapGesture().onEnded { lastInteraction = Date() })
-        .task { await host.start() }
+        .task {
+            await host.start()
+            CameraActivityController.shared.attach(host)
+        }
+        // iOS stops the camera while the app is off screen; the Live Activity says so.
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background { CameraActivityController.shared.setPaused(true) }
+            if phase == .active { CameraActivityController.shared.setPaused(false) }
+        }
         .task { await dimLoop() }
         .task(id: host.latestEvent?.id) {
             latestThumbnail = host.latestEvent.flatMap { host.thumbnailImage(for: $0) }
@@ -50,6 +59,7 @@ struct CameraModeView: View {
         .onChange(of: showSettings) { lastInteraction = Date() }
         .onDisappear {
             restoreBrightness()
+            CameraActivityController.shared.detach()
             host.stop()
         }
         .onChange(of: host.recentEvents.first) { _, event in

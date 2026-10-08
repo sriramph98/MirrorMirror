@@ -9,6 +9,7 @@ struct RootView: View {
     @StateObject private var router = CommandRouter(hub: ViewerHub.shared)
     @Environment(\.scenePhase) private var scenePhase
     @State private var showCamera = false
+    @ObservedObject private var routes = AppRoutes.shared
     @State private var showPairDevices = false
 
     var body: some View {
@@ -31,7 +32,10 @@ struct RootView: View {
             PairDeviceSheet().environmentObject(hub).mirrorSheet().presentationSizing(.form)
         }
         .onChange(of: scenePhase) { _, phase in if phase == .active { router.becomeActive() } }
+        // The camera phone's Live Activity, tapped after the app was closed: back to camera mode.
+        .onChange(of: routes.openCameraMode) { _, _ in openCameraModeIfRequested() }
         .onAppear {
+            openCameraModeIfRequested()
             hub.activate()
             router.becomeActive()
             router.useAsCamera = { showCamera = true }
@@ -42,6 +46,12 @@ struct RootView: View {
             if let url = DebugSupport.pairURL, let invite = PairingInvite(string: url) { hub.add(invite) }
             if DebugSupport.autoWatch, let camera = hub.cameras.last { hub.pendingOpenCameraID = camera.id }
         }
+    }
+
+    private func openCameraModeIfRequested() {
+        guard routes.openCameraMode else { return }
+        routes.openCameraMode = false
+        showCamera = true
     }
 }
 

@@ -77,6 +77,7 @@ with Dynamic Type.
 | `.focusBrackets()` | Draw attention: QR target, new event, selected item. |
 | `SheetHeader`, `SettingsSection`, `ToggleRow`, `MenuRow`, `RulerRow`, `ValueRow`, `ActionRow` | All settings and sheets. |
 | `Toast`, `EmptyState`, `Wordmark` | Feedback, empty/error states, branding. |
+| `ActivityControl`, `ActivityEventLine`, `ActivityStaleNotice` | Live Activities only: button faces for `Button(intent:)`/`Link`, the latest-event line, the paused / not-updating warning. |
 
 `DesignSystemGallery` renders all of the above; it is in Settings › Design System and is the package preview.
 
@@ -108,6 +109,18 @@ when the iPhone is out of reach, sealed iCloud snapshots. Screens: a carousel li
 Digital Crown. Over the picture: camera name `.caps`, pulsing LIVE LED or a `STILL · 4s` badge, REC
 badge, battery readout; bottom corners hold a listen tool and a hold-to-talk shutter. Everything on
 the picture sits on a top/bottom gradient so it stays legible on any scene.
+
+### Live Activities (iPhone)
+Two activities, both on `canvas` with accent system actions. **Viewer** (the camera you hear):
+Lock Screen shows LED (`LIVE` red, `RECONNECTING` / `NOT UPDATING` amber) with a `LOCAL · BATT 80% · REC`
+readout, the camera name (`.title`) beside a `LevelMeter` (or `MUTED`), the latest event line, and
+Mute · Talk · Stop controls (Mute lights accent when muted; Talk lights while talking and then stops it).
+Dynamic Island: compact is camera glyph + LED / 5-segment meter (mic when talking, speaker-slash when
+muted); expanded puts LED and meter in the corners, the name centred under the sensor, then the event
+line and the three controls; minimal is the LED. **Camera** (this phone is the camera): LED `REC` /
+`CAMERA ON` / `PAUSED`, name, eye + viewer count, who's watching, recording mode, then the latest event,
+who's talking, or the paused warning. Lock Screen activities are capped at 160 pt, so keep to `Space.s`
+rhythm and one-line notices. The Apple Watch Smart Stack gets a three-line small layout.
 
 ## Accessibility
 - Every icon-only button gets an `accessibilityLabel`; state goes in `accessibilityValue`.

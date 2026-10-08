@@ -207,6 +207,8 @@ struct HomeView: View {
     private func openPending() {
         guard let id = hub.pendingOpenCameraID, let camera = hub.camera(id: id) else { return }
         hub.pendingOpenCameraID = nil
+        // Already watching it (e.g. Talk on the Lock Screen): keep the connection, don't reopen.
+        if openCamera?.id == id, !showAdd, !showSettings, !showWall { return }
         let covered = showAdd || showSettings || showWall || openCamera != nil
         showAdd = false
         showSettings = false
