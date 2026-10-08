@@ -957,11 +957,11 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirror/Info.plist;
-								INFOPLIST_KEY_NSCameraUsageDescription = "MirrorMirror uses the camera to stream video to your paired devices and to scan pairing QR codes.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your other devices on this network for the fastest, private stream.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "MirrorMirror streams audio, lets you talk back, and listens for sounds like crying or barking on the camera device.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror saves snapshots and exported clips to your photo library.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "MirrorMirror needs access to save captured photos to your library.";
+								INFOPLIST_KEY_NSCameraUsageDescription = "Mira uses the camera to stream video to your paired devices and to scan pairing QR codes.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mira connects directly to your other devices on this network for the fastest, private stream.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Mira streams audio, lets you talk back, and listens for sounds like crying or barking on the camera device.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Mira saves snapshots and exported clips to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Mira needs access to save captured photos to your library.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = arm64;
@@ -973,6 +973,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				INFOPLIST_KEY_CFBundleDisplayName = Mira;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -999,11 +1000,11 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirror/Info.plist;
-								INFOPLIST_KEY_NSCameraUsageDescription = "MirrorMirror uses the camera to stream video to your paired devices and to scan pairing QR codes.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your other devices on this network for the fastest, private stream.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "MirrorMirror streams audio, lets you talk back, and listens for sounds like crying or barking on the camera device.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror saves snapshots and exported clips to your photo library.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "MirrorMirror needs access to save captured photos to your library.";
+								INFOPLIST_KEY_NSCameraUsageDescription = "Mira uses the camera to stream video to your paired devices and to scan pairing QR codes.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mira connects directly to your other devices on this network for the fastest, private stream.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Mira streams audio, lets you talk back, and listens for sounds like crying or barking on the camera device.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Mira saves snapshots and exported clips to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Mira needs access to save captured photos to your library.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = arm64;
@@ -1015,13 +1016,14 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				INFOPLIST_KEY_CFBundleDisplayName = Mira;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,6";
 				SUPPORTS_MACCATALYST = YES;
-				DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = YES;
+				DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 			};
@@ -1109,7 +1111,7 @@
 				DEVELOPMENT_TEAM = 3YPL755X3M;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirrorNotifications/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "MirrorMirror Alerts";
+				INFOPLIST_KEY_CFBundleDisplayName = "Mira Alerts";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1138,7 +1140,7 @@
 				DEVELOPMENT_TEAM = 3YPL755X3M;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirrorNotifications/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "MirrorMirror Alerts";
+				INFOPLIST_KEY_CFBundleDisplayName = "Mira Alerts";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1148,7 +1150,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.notifications;
 				SUPPORTS_MACCATALYST = YES;
-				DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = YES;
+				DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1167,7 +1169,7 @@
 				DEVELOPMENT_TEAM = 3YPL755X3M;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = MirrorMirror;
+				INFOPLIST_KEY_CFBundleDisplayName = Mira;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Hold to talk through your camera from your wrist.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKApplication = YES;
@@ -1198,7 +1200,7 @@
 				DEVELOPMENT_TEAM = 3YPL755X3M;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = MirrorMirror;
+				INFOPLIST_KEY_CFBundleDisplayName = Mira;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Hold to talk through your camera from your wrist.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKApplication = YES;
@@ -1230,10 +1232,10 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirrorTV/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = MirrorMirror;
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your cameras on this network.";
+				INFOPLIST_KEY_CFBundleDisplayName = Mira;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mira connects directly to your cameras on this network.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Talk through your camera.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror saves snapshots and exported clips to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Mira saves snapshots and exported clips to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1262,10 +1264,10 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirrorTV/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = MirrorMirror;
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your cameras on this network.";
+				INFOPLIST_KEY_CFBundleDisplayName = Mira;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mira connects directly to your cameras on this network.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Talk through your camera.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror saves snapshots and exported clips to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Mira saves snapshots and exported clips to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1273,7 +1275,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.tv;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1294,10 +1296,10 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Config/MirrorMirrorVision-Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = MirrorMirror;
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your cameras on this network.";
+				INFOPLIST_KEY_CFBundleDisplayName = Mira;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mira connects directly to your cameras on this network.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Talk through your camera.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror saves snapshots and exported clips to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Mira saves snapshots and exported clips to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIApplicationPreferredDefaultSceneSessionRole = UIWindowSceneSessionRoleApplication;
@@ -1328,10 +1330,10 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Config/MirrorMirrorVision-Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = MirrorMirror;
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "MirrorMirror connects directly to your cameras on this network.";
+				INFOPLIST_KEY_CFBundleDisplayName = Mira;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Mira connects directly to your cameras on this network.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Talk through your camera.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MirrorMirror saves snapshots and exported clips to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Mira saves snapshots and exported clips to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIApplicationPreferredDefaultSceneSessionRole = UIWindowSceneSessionRoleApplication;
@@ -1341,7 +1343,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.vision;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = xros;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1361,7 +1363,7 @@
 				DEVELOPMENT_TEAM = 3YPL755X3M;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirrorTopShelf/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "MirrorMirror Top Shelf";
+				INFOPLIST_KEY_CFBundleDisplayName = "Mira Top Shelf";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1389,14 +1391,14 @@
 				DEVELOPMENT_TEAM = 3YPL755X3M;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirrorTopShelf/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "MirrorMirror Top Shelf";
+				INFOPLIST_KEY_CFBundleDisplayName = "Mira Top Shelf";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.tv.topshelf;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sriramph.mirrormirror.topshelf;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
@@ -1417,7 +1419,7 @@
 				DEVELOPMENT_TEAM = 3YPL755X3M;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirrorWidgets/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "MirrorMirror Live";
+				INFOPLIST_KEY_CFBundleDisplayName = "Mira Live";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1448,7 +1450,7 @@
 				DEVELOPMENT_TEAM = 3YPL755X3M;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MirrorMirrorWidgets/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "MirrorMirror Live";
+				INFOPLIST_KEY_CFBundleDisplayName = "Mira Live";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

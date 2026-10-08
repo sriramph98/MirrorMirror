@@ -110,8 +110,10 @@ struct RecordingTests {
             if i % 10 == 0 { try? await Task.sleep(for: .milliseconds(5)) }
         }
         recorder.stop()
-        // stop() finishes the last partial segment asynchronously; wait for all of them.
-        let expected = Int((seconds / segmentSeconds).rounded(.up))
+        // stop() finishes the last partial segment asynchronously; wait for all of them. A tail
+        // shorter than a second isn't kept.
+        let whole = Int(seconds / segmentSeconds)
+        let expected = whole + (seconds - Double(whole) * segmentSeconds >= 1 ? 1 : 0)
         _ = await waitUntil(timeout: 15) { store.segmentsSnapshot().count >= expected }
     }
 
@@ -120,9 +122,10 @@ struct RecordingTests {
         let store = RecordingStore(directory: dir)
         await record(into: store, seconds: 6.5, segmentSeconds: 2)
         let segments = store.segmentsSnapshot()
-        #expect(segments.count == 4)
+        // 2 + 2 + 2, and the half-second tail is dropped rather than kept as a fragment.
+        #expect(segments.count == 3)
         for segment in segments {
-            #expect(segment.duration > 0.3 && segment.duration < 2.6)
+            #expect(segment.duration >= 1 && segment.duration < 2.6)
             #expect(segment.width == 640 && segment.height == 360)
             #expect(FileManager.default.fileExists(atPath: store.url(for: segment).path))
             let asset = AVURLAsset(url: store.url(for: segment))

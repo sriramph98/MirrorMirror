@@ -132,8 +132,33 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
         // Early, so a watch request that launches the app in the background is handled.
         WatchRelay.shared.activate()
         LiveActivities.activate()
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-MMCodeSelfTest") { Task { await Self.cameraCodeSelfTest() } }
+        #endif
         return true
     }
+
+    #if DEBUG
+    /// `-MMCodeSelfTest`: publish a camera code to iCloud and find it again (needs iCloud).
+    private static func cameraCodeSelfTest() async {
+        let code = CameraCode.makeCode()
+        let invite = PairingInvite(key: .generate(cameraID: "code-self-test"), name: "Code self-test")
+        do {
+            let record = try await CameraCode.publish(invite, code: code)
+            let found = try await CameraCode.lookUp(code.lowercased())
+            DebugSupport.log("pairing", "code self-test \(found.key == invite.key ? "PASSED" : "FAILED: wrong invite")")
+            do {
+                _ = try await CameraCode.lookUp(CameraCode.makeCode())
+                DebugSupport.log("pairing", "code self-test FAILED: a random code found something")
+            } catch {
+                DebugSupport.log("pairing", "code self-test random code refused: \(error.localizedDescription)")
+            }
+            await CloudRelay.shared.delete([record])
+        } catch {
+            DebugSupport.log("pairing", "code self-test FAILED: \(error.localizedDescription)")
+        }
+    }
+    #endif
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         RecordingStore.shared.flush()

@@ -51,8 +51,8 @@ struct CameraLiveActivity: Widget {
 }
 
 private struct CameraBannerStatus {
-    static let pausedText = "Paused while MirrorMirror is closed. Tap to resume."
-    static let staleText = "Not updating. Open MirrorMirror to check the camera."
+    static let pausedText = "Paused while Mira is closed. Tap to resume."
+    static let staleText = "Not updating. Open Mira to check the camera."
 
     let color: Color
     let label: String

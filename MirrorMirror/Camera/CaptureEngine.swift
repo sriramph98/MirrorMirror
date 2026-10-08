@@ -583,7 +583,7 @@ final class SyntheticFrameSource {
             ctx.fill(CGRect(x: x + 15, y: 160, width: 120, height: 390))
         }
 
-        let text = "MirrorMirror test camera   \(formatter.string(from: Date()))"
+        let text = "Mira test camera   \(formatter.string(from: Date()))"
         let attributed = NSAttributedString(string: text, attributes: [
             .font: UIFont.monospacedDigitSystemFont(ofSize: 36, weight: .semibold),
             .foregroundColor: UIColor.white,

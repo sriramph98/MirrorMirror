@@ -29,7 +29,7 @@ struct WatchRootView: View {
                                 .frame(width: 52, height: 52)
                                 .focusBrackets(Palette.textTertiary, length: 10, lineWidth: 1.5, inset: 0)
                             Text("No cameras").type(.headline)
-                            Text("Add cameras in MirrorMirror on your iPhone. They appear here automatically.")
+                            Text("Add cameras in Mira on your iPhone. They appear here automatically.")
                                 .type(.footnote, color: Palette.textSecondary)
                                 .multilineTextAlignment(.center)
                         }

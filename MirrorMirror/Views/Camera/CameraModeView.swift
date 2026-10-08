@@ -35,6 +35,8 @@ struct CameraModeView: View {
                         .onTapGesture { wake() }
                         .transition(.opacity)
                 }
+
+                NearbyPairingOverlay(server: host.nearby, cameraName: host.settings.name, wake: wake)
             }
         }
         .statusBarHidden(isDimmed)
@@ -429,9 +431,9 @@ struct CameraModeView: View {
                 Button { MacApp.hide() } label: { Image(systemName: "eye.slash") }
                     .buttonStyle(.tool(size: ControlSize.toolLarge))
                     .toolHover()
-                    .accessibilityLabel("Hide MirrorMirror")
+                    .accessibilityLabel("Hide Mira")
                     .accessibilityHint("Hides the window, like Command-H. The camera keeps running.")
-                    .help("Hide MirrorMirror (⌘H). The camera keeps running.")
+                    .help("Hide Mira (⌘H). The camera keeps running.")
                 Text("⌘H hides")
                     .type(.caps, color: Palette.textTertiary)
                     .lineLimit(1)
@@ -508,7 +510,8 @@ struct CameraModeView: View {
         while !Task.isCancelled {
             try? await Task.sleep(for: .seconds(2))
             let after = host.settings.autoDimAfter
-            if after > 0, !isDimmed, !showPairing, !showSettings, Date().timeIntervalSince(lastInteraction) > after {
+            if after > 0, !isDimmed, !showPairing, !showSettings, host.nearby.request == nil,
+               Date().timeIntervalSince(lastInteraction) > after {
                 dim()
             }
         }
@@ -600,5 +603,70 @@ private struct DimmedOverlay: View {
     private func drift(_ date: Date) -> CGSize {
         let step = Double(Int(date.timeIntervalSince1970 / 30) % 12) / 12 * 2 * .pi
         return CGSize(width: Space.xl * cos(step), height: Space.xl * sin(step))
+    }
+}
+
+// MARK: - Nearby pairing
+
+/// A viewer on this network asked to pair: show the one-time code over everything (waking the
+/// screen), and say how it went afterwards.
+private struct NearbyPairingOverlay: View {
+    @ObservedObject var server: NearbyPairingServer
+    let cameraName: String
+    let wake: () -> Void
+    @State private var toast: String?
+
+    var body: some View {
+        ZStack {
+            if let request = server.request {
+                Palette.frame.opacity(0.75)
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+                VStack(spacing: Space.l) {
+                    LED(Palette.accent, label: "Pairing request", pulsing: true)
+                    Text("\(request.viewerName) wants to watch \(cameraName)")
+                        .type(.title)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                    CodePlate(NearbyPairing.formatted(request.code))
+                    Text("Type this code on \(request.viewerName). It works once and expires in two minutes.")
+                        .type(.callout, color: Palette.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button("Decline") { server.decline() }
+                        .buttonStyle(.secondary)
+                }
+                .padding(Space.xl)
+                .frame(maxWidth: ControlSize.readableWidth * 0.7)
+                .panel()
+                .padding(Space.l)
+                .transition(.scale(scale: 0.96).combined(with: .opacity))
+                .accessibilityAddTraits(.isModal)
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if let toast {
+                Toast(toast, symbol: "checkmark.shield.fill")
+                    .padding(.bottom, Space.xxl)
+            }
+        }
+        .animation(Motion.smooth, value: server.request)
+        .animation(Motion.smooth, value: toast)
+        .onChange(of: server.request) { _, request in
+            if request != nil { wake() }
+        }
+        .onChange(of: server.outcome) { _, outcome in
+            guard let outcome else { return }
+            switch outcome {
+            case let .paired(name): toast = "\(name) can now watch"
+            case let .wrongCode(name): toast = "Wrong code typed on \(name)"
+            }
+            server.clearOutcome()
+            let shown = toast
+            Task {
+                try? await Task.sleep(for: .seconds(3))
+                if toast == shown { toast = nil }
+            }
+        }
     }
 }

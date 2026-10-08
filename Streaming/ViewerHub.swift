@@ -112,13 +112,38 @@ final class ViewerHub: ObservableObject {
         return camera
     }
 
+    /// Unpairs the camera from this device and tells the camera, so it forgets this device too.
     func remove(_ camera: PairedCamera) {
-        connections[camera.id]?.disconnect()
+        let connection = connections[camera.id]
         connections[camera.id] = nil
         cameras.removeAll { $0.id == camera.id }
         if camera.source == .iCloud { hiddenICloudCameras.insert(camera.id) }
         save()
-        Task { await relay.unsubscribe(subscriptionID: camera.subscriptionID) }
+        Task {
+            await sayGoodbye(to: camera, over: connection)
+            await relay.unsubscribe(subscriptionID: camera.subscriptionID)
+        }
+    }
+
+    /// Best effort, over whichever path reaches the camera: the open connection, this network, or
+    /// iCloud. A camera that's off and unreachable keeps listing this device until it's forgotten there.
+    private func sayGoodbye(to camera: PairedCamera, over connection: CameraConnection?) async {
+        DebugSupport.log("viewer", "removing \(camera.name): connection \(connection.map { "\($0.phase)" } ?? "none")")
+        if let connection, connection.phase == .connected {
+            connection.send(.goodbye)
+            try? await Task.sleep(for: .milliseconds(400))
+            connection.disconnect()
+            return
+        }
+        connection?.disconnect()
+        let message = SignalMessage(kind: .goodbye, session: UUID(), from: DeviceIdentity.id, fromName: DeviceIdentity.name)
+        if lan.isVisible(camera.key), !DebugSupport.disableLAN,
+           (try? await lan.exchange(message, key: camera.key, timeout: 5)) != nil {
+            return
+        }
+        if cloudAvailable, let sealed = try? camera.key.seal(message) {
+            _ = try? await relay.post(sealed, to: camera.key.mailbox)
+        }
     }
 
     func rename(_ camera: PairedCamera, to name: String, fromCamera: Bool = false) {

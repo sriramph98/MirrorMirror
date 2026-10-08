@@ -6,7 +6,7 @@ private let serviceType = "_mirror-mirror._tcp"
 // MARK: - Framing
 
 /// 4-byte big-endian length prefix + payload over a TCP NWConnection.
-private enum Framing {
+enum Framing {
     static func send(_ data: Data, on connection: NWConnection) async throws {
         var length = UInt32(data.count).bigEndian
         let frame = Data(bytes: &length, count: 4) + data
@@ -45,6 +45,8 @@ final class LocalSignalServer {
     private var key: PairingKey
     /// Receives a decrypted offer and returns the answer (or rejection) to send back.
     var onOffer: ((SignalMessage) async -> SignalMessage)?
+    /// A viewer that removed this camera saying so (echoed back as the acknowledgement).
+    var onGoodbye: ((SignalMessage) -> Void)?
 
     init(key: PairingKey) { self.key = key }
 
@@ -89,6 +91,12 @@ final class LocalSignalServer {
             do {
                 let data = try await Framing.receive(on: connection)
                 let offer = try key.open(SignalMessage.self, from: data)
+                if offer.kind == .goodbye {
+                    onGoodbye?(offer)
+                    try await Framing.send(try key.seal(offer), on: connection)
+                    try? await Task.sleep(for: .milliseconds(300))
+                    return
+                }
                 guard offer.kind == .offer, let onOffer else { return }
                 let answer = await onOffer(offer)
                 try await Framing.send(try key.seal(answer), on: connection)

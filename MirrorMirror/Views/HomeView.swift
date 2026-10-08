@@ -13,6 +13,7 @@ struct HomeView: View {
     @State private var showAdd = false
     @State private var showSettings = false
     @State private var showWall = false
+    @State private var showPrivacy = false
 
     enum HomeRoute: Hashable { case recordings }
 
@@ -42,6 +43,7 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showAdd) { AddCameraView().mirrorSheet() }
         .sheet(isPresented: $showSettings) { ViewerSettingsView(onClose: { showSettings = false }).mirrorSheet() }
+        .sheet(isPresented: $showPrivacy) { EncryptionInfoSheet().mirrorSheet() }
         .fullScreenCover(isPresented: $showWall) { GridView() }
         .fullScreenCover(item: $openCamera) { camera in
             LiveView(connection: hub.connection(for: camera), onClose: { openCamera = nil })
@@ -95,7 +97,7 @@ struct HomeView: View {
 
             if hub.cameras.isEmpty {
                 EmptyState(symbol: "video.badge.plus", title: "No cameras yet",
-                           message: "Open MirrorMirror on a spare iPhone or iPad and tap Use as camera. Cameras on your Apple Account appear here on their own; for anyone else's, scan its pairing code.") {
+                           message: "Open Mira on a spare iPhone or iPad and tap Use as camera. Cameras on your Apple Account appear here on their own; for anyone else's, scan its pairing code.") {
                     VStack(spacing: Space.s) {
                         Button { showAdd = true } label: { Label("Add camera", systemImage: "qrcode.viewfinder") }
                             .buttonStyle(.accent)
@@ -125,21 +127,14 @@ struct HomeView: View {
                     settingsTool
                 }
             } else {
-                HStack(alignment: .top, spacing: Space.m) {
+                HStack(alignment: .center, spacing: Space.m) {
                     recordingsTool
-                    useAsCamera.padding(.top, Space.xxs)
+                    useAsCamera
                     settingsTool
                 }
             }
-            HStack(spacing: Space.s) {
-                Image(systemName: "lock.fill").font(.caption2.weight(.bold)).foregroundStyle(Palette.textTertiary)
-                ViewThatFits {
-                    ReadoutLine(["P2P", "End-to-end", "No cloud video"], color: Palette.textTertiary)
-                    ReadoutLine(["P2P", "E2E", "No cloud"], color: Palette.textTertiary)
-                }
-            }
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Peer to peer, end-to-end encrypted, no cloud video")
+            Button { showPrivacy = true } label: { EncryptionBadge() }
+                .buttonStyle(.plain)
         }
         .padding(.horizontal, Space.l)
         .padding(.top, Space.l)
@@ -165,36 +160,28 @@ struct HomeView: View {
     }
 
     private var recordingsTool: some View {
-        deckTool(symbol: "film.stack", caption: recordingsCaption, label: "Recordings", value: recordingsValue) {
+        deckTool(symbol: "film.stack", label: "Recordings", value: recordingsValue) {
             path.append(.recordings)
         }
     }
 
     private var settingsTool: some View {
-        deckTool(symbol: "gearshape", caption: "Settings", label: "Settings", value: nil) { showSettings = true }
+        deckTool(symbol: "gearshape", label: "Settings", value: nil) { showSettings = true }
     }
 
-    private func deckTool(symbol: String, caption: String, label: String, value: String?, action: @escaping () -> Void) -> some View {
+    private func deckTool(symbol: String, label: String, value: String?, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(spacing: Space.xs) {
-                Image(systemName: symbol)
-                    .font(.system(.body, weight: .semibold))
-                    .foregroundStyle(Palette.textPrimary)
-                    .frame(width: ControlSize.toolLarge, height: ControlSize.toolLarge)
-                    .background(Palette.raised, in: Circle())
-                    .overlay(Circle().strokeBorder(Palette.hairline, lineWidth: 1))
-                Text(caption).type(.readout, color: Palette.textSecondary).lineLimit(1).fixedSize()
-            }
-            .frame(minWidth: ControlSize.toolLarge + Space.m)
-            .contentShape(Rectangle())
+            Image(systemName: symbol)
+                .font(.system(.body, weight: .semibold))
+                .foregroundStyle(Palette.textPrimary)
+                .frame(width: ControlSize.toolLarge, height: ControlSize.toolLarge)
+                .background(Palette.raised, in: Circle())
+                .overlay(Circle().strokeBorder(Palette.hairline, lineWidth: 1))
+                .contentShape(Circle())
         }
         .buttonStyle(CardPressStyle())
         .accessibilityLabel(label)
         .accessibilityValue(value ?? "")
-    }
-
-    private var recordingsCaption: String {
-        store.segments.isEmpty ? "Clips" : "\(store.segments.count) · \(store.totalBytes.byteString)"
     }
 
     private var recordingsValue: String {

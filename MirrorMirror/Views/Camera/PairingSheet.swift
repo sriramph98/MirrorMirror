@@ -1,3 +1,4 @@
+import CloudKit
 import SwiftUI
 import MirrorUI
 
@@ -7,6 +8,9 @@ struct PairingSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var confirmReset = false
     @State private var copied = false
+    /// The code for adding this camera from anywhere; exists only while this screen is open.
+    @State private var code: String?
+    @State private var codeRecord: CKRecord.ID?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -26,6 +30,9 @@ struct PairingSheet: View {
             }
         }
         .canvasBackground()
+        // A new code whenever iCloud comes up or the pairing key is reset.
+        .task(id: "\(host.remoteReady)-\(host.key.mailbox)") { await rotateCodes() }
+        .onDisappear(perform: retireCode)
         .confirmationDialog("Reset the pairing code?", isPresented: $confirmReset, titleVisibility: .visible) {
             Button("Reset", role: .destructive) { host.resetPairing() }
         } message: {
@@ -49,15 +56,17 @@ struct PairingSheet: View {
                 .padding(Space.m)
                 .accessibilityElement()
                 .accessibilityLabel("Pairing code for \(host.settings.name)")
-                .accessibilityHint("Scan with MirrorMirror on the device you'll watch from")
+                .accessibilityHint("Scan with Mira on the device you'll watch from")
 
             VStack(spacing: Space.xs) {
                 Text(host.settings.name).type(.title).multilineTextAlignment(.center)
-                Text("On the device you'll watch from, open MirrorMirror › Watch › Add Camera and scan this code.")
+                Text("On the device you'll watch from, open Mira, tap + and scan this code. Devices on this Wi-Fi also find “\(host.settings.name)” under Nearby.")
                     .type(.callout, color: Palette.textSecondary)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
+
+            codeBlock
 
             // Mac: the link itself, selectable, for people who'd rather copy a part of it or
             // drag it into a message.
@@ -76,7 +85,7 @@ struct PairingSheet: View {
 
             VStack(spacing: Space.s) {
                 ShareLink(item: host.invite.url, subject: Text("Watch \(host.settings.name)"),
-                          message: Text("Tap to add my MirrorMirror camera “\(host.settings.name)”.")) {
+                          message: Text("Tap to add my Mira camera “\(host.settings.name)”.")) {
                     Label("Share invite", systemImage: "square.and.arrow.up")
                 }
                 .buttonStyle(.primary)
@@ -98,6 +107,47 @@ struct PairingSheet: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity)
+    }
+
+    // MARK: Code
+
+    private var codeBlock: some View {
+        VStack(spacing: Space.s) {
+            Text("Or type this code").type(.caps)
+            if let code {
+                CodePlate(CameraCode.formatted(code), size: 32)
+                Text("Works from anywhere while this screen is open, and changes every few minutes.")
+                    .type(.footnote, color: Palette.textTertiary)
+                    .multilineTextAlignment(.center)
+            } else if host.remoteReady {
+                ProgressView().tint(Palette.accent).padding(Space.l)
+            } else {
+                Text("Codes need iCloud on this camera. Devices on this Wi-Fi can still add it under Nearby, or scan the QR code.")
+                    .type(.footnote, color: Palette.textTertiary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func rotateCodes() async {
+        retireCode()
+        guard host.remoteReady else { return }
+        while !Task.isCancelled {
+            let next = CameraCode.makeCode()
+            guard let record = try? await CameraCode.publish(host.invite, code: next), !Task.isCancelled else { return }
+            retireCode()
+            codeRecord = record
+            code = next
+            try? await Task.sleep(for: .seconds(CameraCode.lifetime))
+        }
+    }
+
+    private func retireCode() {
+        if let record = codeRecord { Task { await CloudRelay.shared.delete([record]) } }
+        codeRecord = nil
+        code = nil
     }
 
     // MARK: Sections

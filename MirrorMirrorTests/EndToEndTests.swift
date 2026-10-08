@@ -79,11 +79,11 @@ struct EndToEndTests {
         viewer.send(.setRecording(true))
         #expect(await wait("recording started") { host.isRecording && viewer.status?.isRecording == true })
 
-        // 6. Timeline of recorded segments.
+        // 6. Timeline of recorded footage (back-to-back segments arrive merged into spans).
         #expect(await wait("segments recorded", timeout: 25) {
             viewer.refreshTimeline()
             try? await Task.sleep(for: .milliseconds(400))
-            return viewer.segments.count >= 2
+            return viewer.segments.reduce(0) { $0 + $1.duration } >= 5
         })
 
         // 7. Motion event pushed live, with a thumbnail fetched on demand.
@@ -183,6 +183,51 @@ struct EndToEndTests {
         // 14. Disconnect cleans up on the camera.
         viewer.disconnect()
         #expect(await wait("camera released viewer") { host.viewers.isEmpty })
-        hub.remove(camera)
+
+        // 15. Removing the camera on the viewer makes the camera forget this device.
+        let fresh = hub.connection(for: try #require(hub.camera(id: camera.id)))
+        fresh.connect()
+        #expect(await wait("connected before removing", timeout: 30) { fresh.phase == .connected })
+        #expect(host.knownViewers.contains { $0.id == DeviceIdentity.id })
+        hub.remove(try #require(hub.camera(id: camera.id)))
+        #expect(await wait("camera forgot the viewer") {
+            host.viewers.isEmpty && !host.knownViewers.contains { $0.id == DeviceIdentity.id }
+        })
+    }
+
+    /// A viewer on the same network finds the camera, the camera shows a code, and only the
+    /// right code gets the invite.
+    @Test(.timeLimit(.minutes(3)))
+    func nearbyPairingWithACode() async throws {
+        let host = CameraHost()
+        await host.start()
+        defer { host.stop() }
+        let browser = NearbyCameraBrowser()
+        browser.start()
+        defer { browser.stop() }
+
+        #expect(await wait("camera listed nearby") { browser.cameras.contains { $0.id == host.key.cameraID } })
+        let nearby = try #require(browser.cameras.first { $0.id == host.key.cameraID })
+        #expect(nearby.name == host.settings.name)
+
+        // A wrong code is refused, ends the attempt, and the camera pauses briefly.
+        let first = try await NearbyPairingSession.begin(with: nearby)
+        #expect(await wait("code shown on the camera") { host.nearby.request != nil })
+        let shown = try #require(host.nearby.request?.code)
+        await #expect(throws: NearbyPairingError.wrongCode) {
+            _ = try await first.complete(code: shown == "000000" ? "111111" : "000000")
+        }
+        #expect(await wait("attempt ended") { host.nearby.request == nil })
+        await #expect(throws: NearbyPairingError.busy) { _ = try await NearbyPairingSession.begin(with: nearby) }
+
+        // After the pause, the right code delivers the camera's invite.
+        try await Task.sleep(for: .seconds(6))
+        let second = try await NearbyPairingSession.begin(with: nearby)
+        #expect(await wait("new code shown") { host.nearby.request != nil })
+        let code = try #require(host.nearby.request?.code)
+        let invite = try await second.complete(code: NearbyPairing.formatted(code))
+        #expect(invite.key == host.key)
+        #expect(invite.name == host.settings.name)
+        #expect(await wait("camera reported the pairing") { host.nearby.request == nil })
     }
 }

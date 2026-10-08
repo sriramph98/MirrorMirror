@@ -5,6 +5,7 @@
 //  Created by Sriram P H on 1/11/25.
 //
 
+import CryptoKit
 import Foundation
 import Testing
 @testable import MirrorMirror
@@ -127,7 +128,7 @@ struct ProtocolTests {
             .hello(viewerID: "v", name: "Phone"), .setLens(0.5), .setZoom(2.5), .flipCamera, .setTorch(true),
             .setNightMode(.on), .setQuality(.max2K), .setRecording(false), .updateSettings(CameraSettings()),
             .talk(true), .requestTimeline, .playback(from: Date()), .playbackPause, .playbackResume, .playbackRate(4),
-            .goLive, .exportClip(requestID: UUID(), from: Date(), to: Date(), quality: .sd540),
+            .goLive, .exportClip(requestID: UUID(), from: Date(), to: Date(), quality: .sd540), .goodbye,
             .requestThumbnail(eventID: UUID()), .requestSnapshot(requestID: UUID()), .ping(Date()),
         ]
         for command in commands {
@@ -293,5 +294,97 @@ struct LiveActivityTests {
             isPaused: true, isRecording: true, recordingMode: .events, viewerCount: 2, viewerNames: ["A", "B"],
             talker: "A", battery: 0.2, isCharging: true, isHot: false, lastEvent: nil)
         #expect(try JSONDecoder().decode(CameraActivityAttributes.ContentState.self, from: JSONEncoder().encode(camera)) == camera)
+    }
+}
+
+@Suite("Code pairing")
+struct CodePairingTests {
+    /// Both halves of the nearby handshake, without the network.
+    private func handshake(viewerCode: String, cameraCode: String) throws -> (viewerKey: SymmetricKey, cameraKey: SymmetricKey) {
+        let nonceV = NearbyPairing.makeNonce(), nonceC = NearbyPairing.makeNonce()
+        let viewer = Curve25519.KeyAgreement.PrivateKey(), camera = Curve25519.KeyAgreement.PrivateKey()
+        let viewerMasked = NearbyPairing.mask(viewer.publicKey.rawRepresentation,
+                                              pad: NearbyPairing.pad(code: viewerCode, role: .viewer, viewerNonce: nonceV, cameraNonce: nonceC))
+        let cameraMasked = NearbyPairing.mask(camera.publicKey.rawRepresentation,
+                                              pad: NearbyPairing.pad(code: cameraCode, role: .camera, viewerNonce: nonceV, cameraNonce: nonceC))
+        let seenByCamera = NearbyPairing.unmask(viewerMasked, pad: NearbyPairing.pad(code: cameraCode, role: .viewer, viewerNonce: nonceV, cameraNonce: nonceC))
+        let seenByViewer = NearbyPairing.unmask(cameraMasked, pad: NearbyPairing.pad(code: viewerCode, role: .camera, viewerNonce: nonceV, cameraNonce: nonceC))
+        let cameraKey = NearbyPairing.sessionKey(try camera.sharedSecretFromKeyAgreement(with: .init(rawRepresentation: seenByCamera)),
+                                                 viewerNonce: nonceV, cameraNonce: nonceC, viewerMasked: viewerMasked, cameraMasked: cameraMasked)
+        let viewerKey = NearbyPairing.sessionKey(try viewer.sharedSecretFromKeyAgreement(with: .init(rawRepresentation: seenByViewer)),
+                                                 viewerNonce: nonceV, cameraNonce: nonceC, viewerMasked: viewerMasked, cameraMasked: cameraMasked)
+        return (viewerKey, cameraKey)
+    }
+
+    @Test func matchingCodesAgreeOnAKey() throws {
+        let keys = try handshake(viewerCode: "482 913", cameraCode: "482913")
+        #expect(NearbyPairing.isValidProof(NearbyPairing.viewerProof(keys.viewerKey), key: keys.cameraKey))
+    }
+
+    @Test func aWrongCodeFailsTheProof() throws {
+        let keys = try handshake(viewerCode: "482914", cameraCode: "482913")
+        #expect(!NearbyPairing.isValidProof(NearbyPairing.viewerProof(keys.viewerKey), key: keys.cameraKey))
+    }
+
+    @Test func maskedKeysLookRandomAndUnmask() {
+        let key = Curve25519.KeyAgreement.PrivateKey().publicKey.rawRepresentation
+        let pad = NearbyPairing.pad(code: "123456", role: .viewer, viewerNonce: Data(count: 16), cameraNonce: Data(count: 16))
+        #expect(NearbyPairing.unmask(NearbyPairing.mask(key, pad: pad), pad: pad) == key)
+        // The public key's always-clear top bit is randomised before masking.
+        let topBits = Set((0..<64).map { _ in NearbyPairing.mask(key, pad: Data(count: 32))[31] >> 7 })
+        #expect(topBits == [0, 1])
+        // Pads differ per role and per attempt.
+        #expect(pad != NearbyPairing.pad(code: "123456", role: .camera, viewerNonce: Data(count: 16), cameraNonce: Data(count: 16)))
+        #expect(pad != NearbyPairing.pad(code: "123456", role: .viewer, viewerNonce: NearbyPairing.makeNonce(), cameraNonce: Data(count: 16)))
+    }
+
+    @Test func nearbyCodesAreSixDigits() {
+        for _ in 0..<50 {
+            let code = NearbyPairing.makeCode()
+            #expect(code.count == 6 && code.allSatisfy(\.isNumber))
+        }
+        #expect(NearbyPairing.formatted("482913") == "482 913")
+        #expect(NearbyPairing.normalize(" 482-913 ") == "482913")
+    }
+
+    @Test func cameraCodesSealTheInvite() throws {
+        let invite = PairingInvite(key: .generate(cameraID: "cam"), name: "Nursery")
+        let sealed = try CameraCode.sealForTesting(invite, code: "abcd-2345")
+        #expect(try CameraCode.openForTesting(sealed, code: "ABCD2345")?.key == invite.key)
+        #expect(throws: (any Error).self) { _ = try CameraCode.openForTesting(sealed, code: "ABCD2346") }
+        #expect(CameraCode.isValid("ABCD-2345") && !CameraCode.isValid("ABC"))
+    }
+}
+
+@Suite("Timeline spans")
+struct TimelineSpanTests {
+    private let t0 = Date(timeIntervalSince1970: 1_800_000_000)
+    private func segment(_ start: TimeInterval, _ duration: TimeInterval) -> RecordingSegment {
+        RecordingSegment(start: t0.addingTimeInterval(start), duration: duration, fileName: "s.mp4", byteSize: 10, width: 1, height: 1)
+    }
+
+    @Test func backToBackSegmentsMerge() {
+        // A week of continuous one-minute segments is one span.
+        let week = (0..<10_080).map { segment(Double($0) * 60, 60) }
+        let spans = RecordingSegment.spans(week)
+        #expect(spans.count == 1)
+        #expect(spans[0].duration == 10_080 * 60)
+        #expect(spans[0].byteSize == 10 * 10_080)
+    }
+
+    @Test func gapsSplitSpansAndOrderDoesNotMatter() {
+        let spans = RecordingSegment.spans([segment(200, 60), segment(0, 60), segment(61, 60), segment(500, 10)])
+        #expect(spans.map(\.start) == [t0, t0.addingTimeInterval(200), t0.addingTimeInterval(500)])
+        #expect(spans[0].duration == 121)
+        #expect(spans.allSatisfy { $0.fileName.isEmpty }, "spans aren't files")
+    }
+
+    @Test func timelineMessageFitsADataChannel() throws {
+        // Worst case: thousands of separate clips and events still encode under the cap.
+        let clips = (0..<5_000).map { segment(Double($0) * 10, 3) }
+        let spans = Array(RecordingSegment.spans(clips).suffix(800))
+        let events = (0..<400).map { CameraEvent(date: t0.addingTimeInterval(Double($0)), kind: .motion, label: "Motion detected", confidence: 1) }
+        let size = try JSONEncoder().encode(CameraMessage.timeline(segments: spans, events: events)).count
+        #expect(size < CameraHost.maxControlMessageBytes)
     }
 }

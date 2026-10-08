@@ -72,7 +72,7 @@ struct ViewerSettingsView: View {
 
     private var lockScreenFooter: String? {
         guard liveActivity, !MonitorActivityController.isAllowedBySystem else { return nil }
-        return "Live Activities are turned off for MirrorMirror in the Settings app."
+        return "Live Activities are turned off for Mira in the Settings app."
     }
 
     private var thisDevice: some View {

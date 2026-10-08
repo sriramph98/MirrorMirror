@@ -186,7 +186,7 @@ public struct DesignSystemGallery: View {
         VStack(alignment: .leading, spacing: Space.m) {
             heading("Feedback")
             Toast("Snapshot saved", symbol: "checkmark.circle.fill")
-            EmptyState(symbol: "video.badge.plus", title: "No cameras yet", message: "Open MirrorMirror on a spare iPhone and tap Use as Camera.") {
+            EmptyState(symbol: "video.badge.plus", title: "No cameras yet", message: "Open Mira on a spare iPhone and tap Use as Camera.") {
                 Button("Add camera") {}.buttonStyle(.accent).frame(maxWidth: 240)
             }
             .frame(maxWidth: .infinity)
@@ -216,7 +216,7 @@ extension DesignSystemGallery {
                     ActivityControl("Talk", symbol: "mic.fill")
                     ActivityControl("Stop", symbol: "stop.fill", role: .destructive)
                 }
-                ActivityStaleNotice("Not updating. Open MirrorMirror to reconnect.")
+                ActivityStaleNotice("Not updating. Open Mira to reconnect.")
             }
             .padding(.horizontal, Space.l)
             .padding(.vertical, Space.m)

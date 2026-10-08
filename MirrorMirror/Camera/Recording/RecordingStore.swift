@@ -18,7 +18,7 @@ final class RecordingStore: ObservableObject {
         var events: [CameraEvent]
     }
 
-    private static let log = Logger(subsystem: "MirrorMirror", category: "RecordingStore")
+    private static let log = Logger(subsystem: "Mira", category: "RecordingStore")
     private static let maxEvents = 5000
     private static let orphanAge: TimeInterval = 10 * 60
     /// Status events don't describe anything in the scene, so they don't keep footage alive.

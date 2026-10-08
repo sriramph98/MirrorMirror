@@ -6,10 +6,13 @@ import os
 /// Writes the live camera feed into fixed-length MP4 segments and hands each finished
 /// segment to a `RecordingStore`. All writer work happens on one private serial queue.
 final class SegmentRecorder {
-    private static let log = Logger(subsystem: "MirrorMirror", category: "SegmentRecorder")
+    private static let log = Logger(subsystem: "Mira", category: "SegmentRecorder")
     /// A PTS jump larger than this means capture was interrupted; start a new segment so the
     /// file doesn't contain a frozen frame spanning the gap.
     private static let maxFrameGap: Double = 1.0
+    /// Shorter pieces aren't worth a file (or a timeline entry). A capture that stutters, as
+    /// in the background, would otherwise leave thousands of them.
+    private static let minSegmentDuration: Double = 1.0
     /// Max video frames queued for the writer before new ones are dropped, so a slow writer
     /// can't starve the camera's buffer pool.
     private static let maxPendingFrames = 3
@@ -302,6 +305,11 @@ final class SegmentRecorder {
         }
 
         let duration = (segment.lastPTS - segment.startPTS).seconds + segment.frameDuration
+        guard duration >= Self.minSegmentDuration else {
+            segment.writer.cancelWriting()
+            try? FileManager.default.removeItem(at: segment.url)
+            return
+        }
         let endTime = segment.lastPTS + CMTime(seconds: segment.frameDuration, preferredTimescale: 600_000)
         segment.videoInput.markAsFinished()
         segment.audioInput?.markAsFinished()

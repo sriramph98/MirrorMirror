@@ -229,20 +229,44 @@ public struct StatChip: View {
 
 // MARK: - Wordmark
 
-/// MIRROR/MIRROR — letterspaced, the second word in the accent, like a lens nameplate.
+/// The Mira nameplate.
 public struct Wordmark: View {
     let size: CGFloat
 
     public init(size: CGFloat = 15) { self.size = size }
 
+    /// MIRA, letterspaced, with the accent dot of a camera's tally light.
     public var body: some View {
-        HStack(spacing: size * 0.35) {
-            Text("MIRROR").foregroundStyle(Palette.textPrimary)
-            Rectangle().fill(Palette.textTertiary).frame(width: 1, height: size * 0.9).rotationEffect(.degrees(18))
-            Text("MIRROR").foregroundStyle(Palette.accent)
+        HStack(alignment: .firstTextBaseline, spacing: size * 0.18) {
+            Text("MIRA").foregroundStyle(Palette.textPrimary)
+            Circle()
+                .fill(Palette.accent)
+                .frame(width: size * 0.34, height: size * 0.34)
+                .shadow(color: Palette.accent.opacity(0.6), radius: size * 0.2)
         }
         .font(.custom(Fonts.groteskBold, size: size, relativeTo: .headline))
         .tracking(size * 0.32)
-        .accessibilityLabel("MirrorMirror")
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Mira")
+    }
+}
+
+/// The privacy promise in one line: lock and END-TO-END ENCRYPTED. Wrap it in a button that
+/// explains how (it's the app's most important claim, so it should always be one tap from proof).
+public struct EncryptionBadge: View {
+    public init() {}
+
+    public var body: some View {
+        HStack(spacing: Space.s) {
+            Image(systemName: "lock.fill").font(.caption2.weight(.bold))
+            Text("End-to-end encrypted").type(.readout, color: Palette.textTertiary)
+            Image(systemName: "info.circle").font(.caption2.weight(.semibold))
+        }
+        .foregroundStyle(Palette.textTertiary)
+        .padding(.vertical, Space.xs)
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("End-to-end encrypted")
+        .accessibilityHint("Shows how your video is protected")
     }
 }

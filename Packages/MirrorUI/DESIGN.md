@@ -1,6 +1,6 @@
-# MirrorUI — MirrorMirror design system
+# MirrorUI — Mira design system
 
-MirrorMirror is a camera. The interface should feel like a well-made camera body: black, quiet,
+Mira is a camera. The interface should feel like a well-made camera body: black, quiet,
 precise, with markings that tell you exactly what the instrument is doing. Two references drive
 everything:
 
@@ -76,7 +76,9 @@ with Dynamic Type.
 | `Viewfinder` | Every live or recorded picture, with four corner readout slots. |
 | `.focusBrackets()` | Draw attention: QR target, new event, selected item. |
 | `SheetHeader`, `SettingsSection`, `ToggleRow`, `MenuRow`, `RulerRow`, `ValueRow`, `ActionRow` | All settings and sheets. |
-| `Toast`, `EmptyState`, `Wordmark` | Feedback, empty/error states, branding. |
+| `Toast`, `EmptyState`, `Wordmark` | Feedback, empty/error states, branding. The wordmark is MIRA with an accent tally-light dot. |
+| `CodePlate`, `CodeField` | A code read off one screen (large mono groups in focus brackets) and the field it's typed into. |
+| `EncryptionBadge` | The one-line privacy promise (lock + END-TO-END ENCRYPTED + info). Always a button that opens the explanation. |
 | `ActivityControl`, `ActivityEventLine`, `ActivityStaleNotice` | Live Activities only: button faces for `Button(intent:)`/`Link`, the latest-event line, the paused / not-updating warning. |
 
 `DesignSystemGallery` renders all of the above; it is in Settings › Design System and is the package preview.
@@ -84,7 +86,7 @@ with Dynamic Type.
 ## Screen blueprints
 
 ### Navigation
-- **iPhone:** `NavigationStack`. Home shows the wordmark, camera cards and a bottom deck with *Use as Camera* (primary), Recordings and Settings tools.
+- **iPhone:** `NavigationStack`. Home shows the wordmark, camera cards and a bottom deck with *Use as Camera* (primary) between icon-only Recordings and Settings tools, and the `EncryptionBadge` under it (opens the Privacy sheet).
 - **iPad (regular width):** `NavigationSplitView`. Sidebar: wordmark; CAMERAS (LED + name + battery); ALL CAMERAS (wall); THIS DEVICE (Use as Camera, Recordings); Settings. Detail shows the selection in place (live view, wall, recordings, settings). Camera mode is always full-screen.
 
 ### Camera card (home, sidebar detail)

@@ -6,6 +6,8 @@ struct SignalMessage: Codable {
         case offer, answer, reject
         /// Apple Watch asking for sealed snapshots via iCloud while it can't reach the iPhone.
         case snapshotRequest
+        /// A viewer removed this camera: the camera forgets it (it leaves "Devices with access").
+        case goodbye
     }
 
     var kind: Kind

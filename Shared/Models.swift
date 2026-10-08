@@ -100,6 +100,24 @@ struct RecordingSegment: Codable, Identifiable, Hashable {
     var end: Date { start.addingTimeInterval(duration) }
 
     func contains(_ date: Date) -> Bool { date >= start && date < end }
+
+    /// Back-to-back segments merged into continuous spans (gaps under `gap` seconds are
+    /// bridged). Viewers only draw coverage, so this is what crosses the network: a week of
+    /// continuous one-minute segments becomes a single entry instead of ten thousand.
+    static func spans(_ segments: [RecordingSegment], bridging gap: TimeInterval = 2) -> [RecordingSegment] {
+        var spans: [RecordingSegment] = []
+        for segment in segments.sorted(by: { $0.start < $1.start }) {
+            if var last = spans.last, segment.start.timeIntervalSince(last.end) < gap {
+                last.duration = max(last.duration, segment.end.timeIntervalSince(last.start))
+                last.byteSize += segment.byteSize
+                spans[spans.count - 1] = last
+            } else {
+                spans.append(RecordingSegment(id: segment.id, start: segment.start, duration: segment.duration, fileName: "",
+                                              byteSize: segment.byteSize, width: segment.width, height: segment.height))
+            }
+        }
+        return spans
+    }
 }
 
 // MARK: - Quality

@@ -93,7 +93,7 @@ struct MonitorLiveActivity: Widget {
 
 /// What the LED and readouts say, derived once from the state.
 private struct MonitorBannerStatus {
-    static let staleText = "Not updating. Open MirrorMirror to reconnect."
+    static let staleText = "Not updating. Open Mira to reconnect."
 
     let color: Color
     let label: String
@@ -145,7 +145,7 @@ private struct MonitorControls: View {
                 Link(destination: LiveActivityLinks.live(cameraID: cameraID)) {
                     ActivityControl("Open", symbol: "arrow.up.forward.app")
                 }
-                .accessibilityLabel("Open MirrorMirror")
+                .accessibilityLabel("Open Mira")
             } else {
                 liveControls
             }
@@ -178,7 +178,7 @@ private struct MonitorControls: View {
                 ActivityControl("Talk", symbol: "mic.fill")
             }
             .accessibilityLabel("Talk through the camera")
-            .accessibilityHint("Opens MirrorMirror")
+            .accessibilityHint("Opens Mira")
         }
     }
 }

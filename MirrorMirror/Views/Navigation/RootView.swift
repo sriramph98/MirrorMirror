@@ -80,6 +80,7 @@ struct SplitRootView: View {
     @State private var renaming: PairedCamera?
     @State private var newName = ""
     @State private var removing: PairedCamera?
+    @State private var showPrivacy = false
 
     var body: some View {
         NavigationSplitView(columnVisibility: $visibility) {
@@ -98,6 +99,7 @@ struct SplitRootView: View {
         }
         .onGeometryChange(for: Bool.self) { $0.size.width < $0.size.height } action: { isPortrait = $0 }
         .sheet(isPresented: $showAdd) { AddCameraView().mirrorSheet().presentationSizing(.page) }
+        .sheet(isPresented: $showPrivacy) { EncryptionInfoSheet().mirrorSheet().presentationSizing(.form) }
         .cameraMenuAlerts(renaming: $renaming, newName: $newName, removing: $removing)
         .onAppear {
             if selection == nil { selection = hub.cameras.first.map { .camera($0.id) } }
@@ -266,13 +268,9 @@ struct SplitRootView: View {
                                isSelected: selection == .settings) { select(.settings) }
                 }
 
-                HStack(spacing: Space.s) {
-                    Image(systemName: "lock.fill").font(.caption2.weight(.bold)).foregroundStyle(Palette.textTertiary)
-                    ReadoutLine(["P2P", "End-to-end"], color: Palette.textTertiary)
-                }
-                .padding(.horizontal, Space.s)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("Peer to peer, end-to-end encrypted")
+                Button { showPrivacy = true } label: { EncryptionBadge() }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, Space.s)
             }
             .padding(.horizontal, Space.m)
             .padding(.bottom, Space.xl)
@@ -322,7 +320,7 @@ struct SplitRootView: View {
 
     private var noCameras: some View {
         EmptyState(symbol: "video.badge.plus", title: "No cameras yet",
-                   message: "Open MirrorMirror on a spare iPhone or iPad and tap Use as camera, or scan a camera's pairing code.") {
+                   message: "Open Mira on a spare iPhone or iPad and tap Use as camera, or scan a camera's pairing code.") {
             VStack(spacing: Space.s) {
                 Button { showAdd = true } label: { Label("Add camera", systemImage: "qrcode.viewfinder") }
                     .buttonStyle(.accent)

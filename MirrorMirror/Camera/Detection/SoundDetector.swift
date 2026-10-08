@@ -105,7 +105,7 @@ final class SoundDetector: @unchecked Sendable {
 
     // MARK: Queue state
 
-    private let queue = DispatchQueue(label: "MirrorMirror.SoundDetector", qos: .utility)
+    private let queue = DispatchQueue(label: "Mira.SoundDetector", qos: .utility)
     private var analyzer: SNAudioStreamAnalyzer?
     private var analyzerFormat: AVAudioFormat?
     private var observer: ClassificationObserver?
@@ -117,7 +117,7 @@ final class SoundDetector: @unchecked Sendable {
     private var lastClassifiedAt: TimeInterval = -.infinity
     private var lastEventAt: [EventKind: TimeInterval] = [:]
     private var generation = 0   // bumped by reset() to cancel delayed generic events
-    private let logger = Logger(subsystem: "MirrorMirror", category: "SoundDetector")
+    private let logger = Logger(subsystem: "Mira", category: "SoundDetector")
 
     init() {}
 

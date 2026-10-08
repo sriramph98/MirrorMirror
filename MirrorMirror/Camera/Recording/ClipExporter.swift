@@ -112,7 +112,7 @@ enum ClipExporter {
             session.videoComposition = fittingVideoComposition(for: videoTrack, pieces: inserted, total: cursor)
         }
 
-        let name = "MirrorMirror-\(fileNameFormatter.string(from: from)).mp4"
+        let name = "Mira-\(fileNameFormatter.string(from: from)).mp4"
         let outputURL = FileManager.default.temporaryDirectory.appendingPathComponent(name)
         try? FileManager.default.removeItem(at: outputURL)
 

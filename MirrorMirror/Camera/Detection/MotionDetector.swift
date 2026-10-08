@@ -96,7 +96,7 @@ final class MotionDetector: @unchecked Sendable {
 
     // MARK: Analysis-queue state
 
-    private let queue = DispatchQueue(label: "MirrorMirror.MotionDetector", qos: .utility)
+    private let queue = DispatchQueue(label: "Mira.MotionDetector", qos: .utility)
     private var background: [Float] = []
     private var gridWidth = 0
     private var gridHeight = 0
@@ -106,7 +106,7 @@ final class MotionDetector: @unchecked Sendable {
     private var loggedUnsupportedFormat = false
     private var loggedVisionError = false
     private let ciContext = CIContext(options: [.cacheIntermediates: false])
-    private let logger = Logger(subsystem: "MirrorMirror", category: "MotionDetector")
+    private let logger = Logger(subsystem: "Mira", category: "MotionDetector")
 
     init() {}
 

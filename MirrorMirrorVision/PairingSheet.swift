@@ -1,17 +1,20 @@
 import SwiftUI
 import MirrorUI
 
-/// Getting cameras onto this device. Two paths:
+/// Getting cameras onto this device. Three paths:
+/// - Nearby & code: pick a camera on this Wi-Fi and type the code it shows, or type the code from
+///   a camera's Pair screen (works from anywhere).
 /// - Same Apple Account: nothing to do, cameras arrive through iCloud.
 /// - From another device: show a short code; an iPhone/iPad/Mac that has the cameras enters it and
 ///   the list travels sealed through iCloud. Also accepts a pasted `mirrormirror://pair?…` link.
 struct PairingSheet: View {
-    enum Path: String, CaseIterable { case account = "Same Apple Account", device = "From another device" }
+    enum Path: String, CaseIterable { case nearby = "Nearby & code", account = "Same Apple Account", device = "From another device" }
 
     @EnvironmentObject private var hub: ViewerHub
     @Environment(\.dismiss) private var dismiss
 
-    @State private var path: Path = .device
+    @State private var path: Path = .nearby
+    @StateObject private var adder = CameraAdder()
     @State private var code = DevicePairing.makeCode()
     @State private var expires = Date().addingTimeInterval(DevicePairing.codeLifetime)
     @State private var receiveTask: Task<Void, Never>?
@@ -34,6 +37,7 @@ struct PairingSheet: View {
                             .pillHover()
                             .frame(maxWidth: .infinity)
                         switch path {
+                        case .nearby: VisionAddByCode(adder: adder)
                         case .account: accountPath
                         case .device: devicePath
                         }
@@ -48,10 +52,14 @@ struct PairingSheet: View {
         .frame(minWidth: 620, minHeight: 640)
         .animation(Motion.smooth, value: added?.count)
         .onAppear {
-            if hub.cloudAvailable && hub.cameras.contains(where: { $0.source == .iCloud }) { path = .account }
+            adder.onInvite = { invite in added = [hub.add(invite)] }
+            adder.start()
             startReceiving()
         }
-        .onDisappear { receiveTask?.cancel() }
+        .onDisappear {
+            receiveTask?.cancel()
+            adder.stop()
+        }
     }
 
     // MARK: Same Apple Account
@@ -59,7 +67,7 @@ struct PairingSheet: View {
     private var accountPath: some View {
         VStack(alignment: .leading, spacing: Space.l) {
             SettingsSection("iCloud", symbol: "icloud.fill",
-                            footer: "Any iPhone or iPad signed in to the same Apple Account that runs MirrorMirror as a camera is added here on its own. Nothing to type.") {
+                            footer: "Any iPhone or iPad signed in to the same Apple Account that runs Mira as a camera is added here on its own. Nothing to type.") {
                 SettingRow("Status") {
                     LED(hub.cloudAvailable ? Palette.ok : Palette.textTertiary, label: hub.cloudAvailable ? "Signed in" : "Not signed in")
                 }
@@ -143,7 +151,7 @@ struct PairingSheet: View {
                 .accessibilityLabel("Pairing code")
                 .accessibilityValue(code.map(String.init).joined(separator: " "))
 
-            Text("On an iPhone, iPad or Mac that has the cameras, open MirrorMirror › Settings › Pair Apple TV or Vision Pro and enter this code.")
+            Text("On an iPhone, iPad or Mac that has the cameras, open Mira › Settings › Pair Apple TV or Vision Pro and enter this code.")
                 .type(.callout, color: Palette.textSecondary)
 
             HStack(spacing: Space.m) {
@@ -199,7 +207,7 @@ struct PairingSheet: View {
             added = [hub.add(invite)]
             linkError = nil
         } else {
-            linkError = "That isn't a MirrorMirror pairing link."
+            linkError = "That isn't a Mira pairing link."
         }
     }
 

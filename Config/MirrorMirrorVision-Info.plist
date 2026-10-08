@@ -18,6 +18,7 @@
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_mirror-mirror._tcp</string>
+		<string>_mirror-pair._tcp</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

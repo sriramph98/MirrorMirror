@@ -98,7 +98,7 @@ struct CameraSettingsForm: View {
 
     private var deviceSection: some View {
         SettingsSection("Camera device", symbol: dimsScreen ? "iphone" : Platform.deviceSymbol,
-                        footer: dimsScreen ? nil : "Press ⌘H to hide MirrorMirror while the camera keeps streaming and recording.") {
+                        footer: dimsScreen ? nil : "Press ⌘H to hide Mira while the camera keeps streaming and recording.") {
             if dimsScreen {
                 MenuRow("Dim screen after", options: Self.dimOptions, selection: $settings.autoDimAfter) { Self.dimLabel($0) }
             } else {

@@ -27,6 +27,8 @@ enum ViewerCommand: Codable {
     case renegotiate(sdp: String)
     /// Send camera audio as voice packets on the voice channel (Apple Watch listening via iPhone).
     case relayVoice(Bool)
+    /// The viewer removed this camera; the camera forgets it and closes the session.
+    case goodbye
 }
 
 /// Camera → viewer, JSON over the "control" data channel.

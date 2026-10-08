@@ -17,6 +17,15 @@ struct PairView: View {
     @State private var failed = false
     @State private var added: [PairedCamera]?
     @State private var cameraCountAtOpen = 0
+    @StateObject private var adder = CameraAdder()
+
+    /// Typing a nearby camera's code, or a camera code from its Pair screen.
+    private var isTypingCode: Bool {
+        switch adder.stage {
+        case .nearbyCode, .checking, .cameraCode, .lookingUp: true
+        default: false
+        }
+    }
 
     enum Item: Hashable { case newCode, back, done }
 
@@ -30,8 +39,10 @@ struct PairView: View {
             Spacer(minLength: 0)
             if let added {
                 confirmation(added).frame(maxWidth: .infinity)
+            } else if isTypingCode {
+                TVCodeEntry(adder: adder)
             } else {
-                HStack(alignment: .top, spacing: TVSize.gutter * 1.5) {
+                HStack(alignment: .top, spacing: TVSize.gutter) {
                     codePanel
                     sidePanel
                 }
@@ -46,10 +57,23 @@ struct PairView: View {
         .onExitCommand { router.screen = .wall }
         .onAppear {
             cameraCountAtOpen = hub.cameras.count
+            adder.onInvite = { invite in
+                let camera = hub.add(invite)
+                cameraCountAtOpen = hub.cameras.count
+                added = [camera]
+            }
+            adder.start()
             startReceiving()
             focus = .newCode
         }
-        .onDisappear { receiveTask?.cancel() }
+        .onDisappear {
+            receiveTask?.cancel()
+            adder.stop()
+        }
+        #if DEBUG
+        // Simulator testing without a remote: "nearby/0", "type/123456", "cameracode".
+        .onChange(of: router.debugCommand) { _, command in handleDebug(command) }
+        #endif
         .onChange(of: hub.cameras.count) { _, count in
             // Cameras that arrived through iCloud while this screen is up count as paired too.
             if added == nil, count > cameraCountAtOpen {
@@ -89,7 +113,7 @@ struct PairView: View {
                 .accessibilityLabel("Pairing code")
                 .accessibilityValue(code.map(String.init).joined(separator: " "))
 
-            Text("On your iPhone, iPad or Mac open MirrorMirror › Settings › Pair Apple TV or Vision Pro and enter this code.")
+            Text("On your iPhone, iPad or Mac open Mira › Settings › Pair Apple TV or Vision Pro and enter this code.")
                 .tv(.body, color: Palette.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -126,21 +150,20 @@ struct PairView: View {
 
     private var sidePanel: some View {
         VStack(alignment: .leading, spacing: Space.xl) {
+            TVNearbySection(adder: adder)
+            Divider().overlay(Palette.hairline)
             Text("Same Apple Account").tv(.caps)
             HStack(spacing: Space.l) {
                 Image(systemName: "icloud.fill").font(.system(size: 36, weight: .semibold)).foregroundStyle(Palette.info)
                 TVLED(hub.cloudAvailable ? Palette.ok : Palette.textTertiary, label: hub.cloudAvailable ? "Signed in" : "Not signed in")
             }
-            Text("Any iPhone or iPad on this Apple Account that runs MirrorMirror as a camera appears on the wall on its own. Nothing to type.")
+            Text("Any iPhone or iPad on this Apple Account that runs Mira as a camera appears on the wall on its own. Nothing to type.")
                 .tv(.callout, color: Palette.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
-            Divider().overlay(Palette.hairline)
-            Text("Cameras here").tv(.caps)
-            TVNumeral("\(hub.cameras.count)", unit: hub.cameras.count == 1 ? "camera" : "cameras")
             Spacer(minLength: 0)
         }
         .padding(Space.xxl)
-        .frame(width: 560)
+        .frame(width: 640)
         .frame(maxHeight: .infinity, alignment: .top)
         .panel(padding: nil)
         .fixedSize(horizontal: false, vertical: true)
@@ -164,6 +187,21 @@ struct PairView: View {
         }
         .transition(.opacity)
     }
+
+    #if DEBUG
+    private func handleDebug(_ command: String?) {
+        guard let parts = command?.split(separator: "/").map(String.init), let verb = parts.first else { return }
+        switch verb {
+        case "nearby":
+            if parts.count > 1, let index = Int(parts[1]), adder.nearbyCameras.indices.contains(index) {
+                adder.pick(adder.nearbyCameras[index])
+            }
+        case "type": adder.typed = parts.count > 1 ? parts[1] : ""
+        case "cameracode": adder.enterCameraCode()
+        default: break
+        }
+    }
+    #endif
 
     // MARK: Receiving
 

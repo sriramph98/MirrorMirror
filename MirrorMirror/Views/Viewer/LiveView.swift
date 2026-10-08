@@ -27,6 +27,7 @@ struct LiveView: View {
     @State private var previousAudioFocus: String??
     @State private var showControls = false
     @State private var showExport = false
+    @State private var confirmRemove = false
     @State private var showChrome = true
     @State private var banner: CameraEvent?
     @State private var bracketFlash = false
@@ -73,7 +74,9 @@ struct LiveView: View {
         }
         .onDisappear {
             // A camera window may still be showing this connection; leave it up for it.
-            if ownsConnection, !pip.isActive, !CameraWindows.isOpen(connection.id) { connection.disconnect() }
+            // A removed camera's connection belongs to the hub until its goodbye has gone out.
+            let removed = hub.existingConnection(id: connection.id) !== connection
+            if ownsConnection, !removed, !pip.isActive, !CameraWindows.isOpen(connection.id) { connection.disconnect() }
             hub.audioFocus = previousAudioFocus ?? nil
             if let router, router.liveOwner == commandToken {
                 router.live = nil
@@ -274,7 +277,43 @@ struct LiveView: View {
             }
             Spacer(minLength: Space.s)
             if showsBattery { batteryChip }
+            connectionMenu
         }
+        .confirmationDialog("Remove “\(connection.camera.name)”?", isPresented: $confirmRemove, titleVisibility: .visible) {
+            Button("Remove Camera", role: .destructive) { removeCamera() }
+        } message: {
+            Text("It's removed from this device and the camera forgets this device. To watch again you'll need a new invite or code.")
+        }
+    }
+
+    /// Stop watching without unpairing, or unpair altogether.
+    private var connectionMenu: some View {
+        Menu {
+            if connection.phase.isActive {
+                Button { connection.disconnect() } label: { Label("Disconnect", systemImage: "stop.circle") }
+            } else {
+                Button { connection.connect() } label: { Label("Reconnect", systemImage: "arrow.clockwise") }
+            }
+            Divider()
+            Button(role: .destructive) { confirmRemove = true } label: { Label("Remove Camera…", systemImage: "trash") }
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.body.weight(.semibold))
+                .foregroundStyle(Palette.textPrimary)
+                .frame(width: ControlSize.tool, height: ControlSize.tool)
+                .background(Palette.raised, in: Circle())
+                .overlay(Circle().strokeBorder(Palette.hairline, lineWidth: 1))
+                .contentShape(Circle())
+        }
+        .menuIndicator(.hidden)
+        .toolHover()
+        .accessibilityLabel("Connection options")
+    }
+
+    private func removeCamera() {
+        // The hub says goodbye over this connection, then closes it; the view just goes away.
+        hub.remove(connection.camera)
+        onClose?()
     }
 
     @ViewBuilder
@@ -299,7 +338,7 @@ struct LiveView: View {
         case .connecting: return ["Connecting"]
         case .failed: return ["Offline"]
         case .rejected: return ["Not allowed"]
-        case .idle: return ["Idle"]
+        case .idle: return ["Disconnected"]
         }
     }
 
@@ -491,7 +530,10 @@ struct LiveView: View {
         case let .rejected(message):
             PhaseMessage(symbol: "lock.fill", title: "Not allowed", message: message) { EmptyView() }
         case .idle:
-            EmptyView()
+            PhaseMessage(symbol: "pause.circle", title: "Disconnected",
+                         message: "You're not watching. The camera keeps recording.") {
+                Button("Reconnect") { connection.connect() }.buttonStyle(.pill(isOn: true))
+            }
         }
     }
 

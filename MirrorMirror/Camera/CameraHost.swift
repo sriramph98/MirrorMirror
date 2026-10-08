@@ -36,6 +36,8 @@ final class CameraHost: ObservableObject {
 
     let store = RecordingStore.shared
     let preview = FrameSink()
+    /// Lets viewers on this network find the camera and pair with a code shown here.
+    let nearby = NearbyPairingServer()
     var invite: PairingInvite { PairingInvite(key: key, name: settings.name) }
 
     private let engine = CaptureEngine()
@@ -103,7 +105,12 @@ final class CameraHost: ObservableObject {
             guard let self else { return SignalMessage(kind: .reject, session: offer.session, from: "", fromName: "") }
             return await self.handleOffer(offer)
         }
+        server.onGoodbye = { [weak self] message in
+            Task { @MainActor in self?.viewerRemovedCamera(message.from, name: message.fromName) }
+        }
         server.start()
+        nearby.invite = { [unowned self] in self.invite }
+        nearby.start(name: settings.name, cameraID: key.cameraID)
         publishToICloud()
         observeDevice()
         DebugSupport.log("camera", "started synthetic=\(engine.state.isSynthetic) audio=\(engine.state.hasAudio) remote=\(relay.isConfigured)")
@@ -133,6 +140,7 @@ final class CameraHost: ObservableObject {
         observers.forEach(NotificationCenter.default.removeObserver)
         observers = []
         server.stop()
+        nearby.stop()
         engine.stop()
         recorder.stop()
         sessionLock.withLock {
@@ -225,7 +233,10 @@ final class CameraHost: ObservableObject {
     private func settingsChanged(from old: CameraSettings) {
         if let data = try? JSONEncoder().encode(settings) { UserDefaults.standard.set(data, forKey: "camera.settings") }
         applySettings()
-        if old.name != settings.name { publishToICloud() }
+        if old.name != settings.name {
+            publishToICloud()
+            nearby.rename(settings.name)
+        }
         if old.recordingMode != settings.recordingMode { manualRecording = false }
         broadcastStatus()
     }
@@ -503,7 +514,17 @@ final class CameraHost: ObservableObject {
         case let .relayVoice(on):
             session.wantsVoice = on
             voiceRelayActive = sessions.contains { $0.wantsVoice }
+        case .goodbye:
+            viewerRemovedCamera(session.viewerID, name: session.viewerName)
         }
+    }
+
+    /// A viewer removed this camera on their side: forget the device and close its session.
+    private func viewerRemovedCamera(_ viewerID: String, name: String) {
+        DebugSupport.log("camera", "\(name) removed this camera")
+        knownViewers.removeAll { $0.id == viewerID }
+        saveKnownViewers()
+        disconnect(viewerID: viewerID)
     }
 
     private func send(_ message: CameraMessage, to session: ViewerSession) {
@@ -517,12 +538,21 @@ final class CameraHost: ObservableObject {
     }
 
     private func sendTimeline(to session: ViewerSession) {
-        // Keep the message small: recent footage and events only; viewers ask again as they scroll.
+        // One control message must stay well under WebRTC's data-channel limit (256 KB), or the
+        // channel fails and the viewer's later commands never arrive. Send merged coverage spans
+        // (viewers only draw coverage) and the newest events, halving until it fits.
         let since = Date().addingTimeInterval(-7 * 24 * 3600)
-        let segments = store.segmentsSnapshot().filter { $0.end > since }
-        let events = Array(store.eventsSnapshot().filter { $0.date > since }.suffix(500))
-        send(.timeline(segments: segments, events: events), to: session)
+        var spans = Array(RecordingSegment.spans(store.segmentsSnapshot().filter { $0.end > since }).suffix(800))
+        var events = Array(store.eventsSnapshot().filter { $0.date > since }.suffix(400))
+        while let size = try? JSONEncoder().encode(CameraMessage.timeline(segments: spans, events: events)).count,
+              size > Self.maxControlMessageBytes, spans.count + events.count > 1 {
+            spans = Array(spans.suffix(max(1, spans.count / 2)))
+            events = Array(events.suffix(events.count / 2))
+        }
+        send(.timeline(segments: spans, events: events), to: session)
     }
+
+    static let maxControlMessageBytes = 150_000
 
     private func exportClip(requestID: UUID, from: Date, to: Date, quality: ExportQuality, for session: ViewerSession) {
         let store = self.store
@@ -628,8 +658,14 @@ final class CameraHost: ObservableObject {
             if let messages = try? await relay.fetch(mailbox: key.mailbox, maxAge: 60) {
                 for message in messages where !processedSignals.contains(message.id.recordName) {
                     processedSignals.insert(message.id.recordName)
-                    guard let offer = try? key.open(SignalMessage.self, from: message.payload),
-                          offer.sentAt > started.addingTimeInterval(-30) else { continue }
+                    guard let offer = try? key.open(SignalMessage.self, from: message.payload) else { continue }
+                    if offer.kind == .goodbye {
+                        // Honoured even if it was sent while this camera was off (within the fetch window).
+                        viewerRemovedCamera(offer.from, name: offer.fromName)
+                        await relay.delete([message.id])
+                        continue
+                    }
+                    guard offer.sentAt > started.addingTimeInterval(-30) else { continue }
                     if offer.kind == .snapshotRequest {
                         serveSnapshots(for: offer.fromName)
                         continue

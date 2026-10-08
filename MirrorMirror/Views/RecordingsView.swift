@@ -353,7 +353,7 @@ private struct RecordingPlayer: View {
                     .buttonStyle(.primary)
                 Button { saveToPhotos(exported) } label: { Label("Save to Photos", systemImage: "photo.on.rectangle") }
                     .buttonStyle(.secondary)
-                    .macSaveAs(exported, suggestedName: "MirrorMirror \(segment.start.formatted(.dateTime.year().month().day().hour().minute()))")
+                    .macSaveAs(exported, suggestedName: "Mira \(segment.start.formatted(.dateTime.year().month().day().hour().minute()))")
             }
         } else {
             Button { export() } label: { Label("Export clip", systemImage: "scissors") }

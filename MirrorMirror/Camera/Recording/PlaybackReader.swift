@@ -6,7 +6,7 @@ import os
 /// Replays recorded footage frame by frame at `rate` × real time, crossing segment boundaries
 /// (and skipping gaps) until it catches up with the newest stored segment.
 final class PlaybackReader {
-    private static let log = Logger(subsystem: "MirrorMirror", category: "PlaybackReader")
+    private static let log = Logger(subsystem: "Mira", category: "PlaybackReader")
     private static let maxDeliveredFPS: Double = 30
     /// Falling further behind schedule than this re-anchors the clock instead of bursting frames.
     private static let maxLag: TimeInterval = 0.25
